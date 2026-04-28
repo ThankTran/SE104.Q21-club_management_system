@@ -1,0 +1,40 @@
+.nav-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.glass-nav {
+  display: flex;
+  gap: 20px;
+  padding: 10px 30px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: fixed;
+  top: 20px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: var(--white-hard);
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover,
+.active {
+  color: var(--white-hard) !important;
+  transition: all 0.3s ease;
+}
+
+.active {
+  font-weight: 600;
+}
