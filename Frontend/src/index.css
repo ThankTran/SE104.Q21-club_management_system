@@ -36,6 +36,7 @@
 }
 body {
   margin: 0;
+  font-family: var(--font-family);
   background-color: var(--bg-dark); /* Dùng biến màu đen đã lưu */
   color: var(--white-hard); /* Chữ mặc định thành màu trắng */
   min-height: 100vh;
@@ -43,4 +44,16 @@ body {
 
 .home-wrapper {
   background-color: var(--white-soft);
+}
+
+.landing-wrapper {
+  background-color: var(--white-soft);
+  color: var(--gray-900);
+}
+
+.landing-blur {
+  background-color: var(--white-soft);
+  filter: blur(4px);
+  pointer-events: none; /* không click được phía sau khi modal mở */
+  user-select: none;
 }
