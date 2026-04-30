@@ -1,0 +1,87 @@
+/* Footer.module.css */
+.footer {
+  background: var(--primary-900);
+  color: var(--white-hard);
+  padding: 48px 80px 32px;
+}
+
+.socialRow {
+  display: flex; gap: 14px; margin-bottom: 32px;
+}
+
+.socialIcon {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary-300);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  text-decoration: none;
+}
+.socialIcon:hover {
+  border-color: var(--primary-500);
+  color: var(--white-hard);
+  background: rgba(100,171,89,0.15);
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin-bottom: 32px;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 36px;
+}
+
+.clubName {
+  font-size: 22px; font-weight: 700;
+  color: var(--white-hard);
+  margin-bottom: 10px;
+}
+.tagline {
+  color: var(--primary-300);
+  font-size: 13px; line-height: 1.65;
+}
+
+.colTitle {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--primary-500); margin-bottom: 16px;
+}
+
+.col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+.colLink {
+  color: var(--primary-300);
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.colLink:hover { color: var(--white-hard); }
+
+.bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.copy { color: var(--primary-300); font-size: 12px; opacity: 0.7; }
+
+.legalLinks { display: flex; gap: 20px; }
+
+.legalLink {
+  color: var(--primary-300);
+  font-size: 12px; opacity: 0.7;
+  text-decoration: none;
+  transition: opacity 0.2s, color 0.2s;
+}
+.legalLink:hover { opacity: 1; color: var(--white-hard); }
+
+@media (max-width: 768px) {
+  .footer { padding: 40px 24px 24px; }
+  .body { grid-template-columns: 1fr 1fr; }
+  .bottom { flex-direction: column; gap: 12px; align-items: flex-start; }
+}

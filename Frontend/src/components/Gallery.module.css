@@ -1,0 +1,71 @@
+/* Gallery.module.css */
+.gallery {
+  background: var(--white-hard);
+  padding: 70px 80px;
+  text-align: center;
+}
+
+.desc {
+  color: var(--gray-700);
+  font-size: 15px; line-height: 1.7;
+  max-width: 500px;
+  margin: 0 auto 36px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.item {
+  border-radius: 12px;
+  aspect-ratio: 4 / 3;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.item:hover {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Màu từng ảnh placeholder dùng bảng màu project */
+.item:nth-child(1) { background: linear-gradient(135deg, var(--primary-900), var(--primary-700)); }
+.item:nth-child(2) { background: linear-gradient(135deg, var(--gray-700), var(--gray-900));       }
+.item:nth-child(3) { background: linear-gradient(135deg, var(--primary-700), var(--primary-500)); }
+.item:nth-child(4) { background: linear-gradient(135deg, var(--primary-300), var(--primary-100)); }
+
+.label {
+  position: absolute;
+  bottom: 10px; left: 10px;
+  background: rgba(37,74,42,0.6);
+  color: var(--white-hard);
+  font-size: 11px; font-weight: 500;
+  padding: 3px 10px; border-radius: 3px;
+  backdrop-filter: blur(4px);
+}
+
+/* Register button */
+.registerBtn {
+  background: var(--primary-700);
+  color: var(--white-hard);
+  padding: 14px 42px;
+  border-radius: 6px;
+  font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer;
+  font-family: var(--font-family);
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.registerBtn:hover {
+  background: var(--primary-900);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37,74,42,0.28);
+}
+
+@media (max-width: 768px) {
+  .gallery { padding: 60px 24px; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}

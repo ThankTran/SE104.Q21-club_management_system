@@ -1,0 +1,55 @@
+/* About.module.css */
+.about {
+  background: var(--white-soft);
+  padding: 80px;
+  text-align: center;
+}
+
+/* section-tag override */
+.about :global(.section-tag) { color: var(--primary-700); }
+
+.desc {
+  max-width: 560px;
+  margin: 0 auto 8px;
+  color: var(--gray-700);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 40px;
+  align-items: end;
+}
+
+.card {
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-end;
+  padding: 18px;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Màu từng card dùng bảng màu project */
+.card:nth-child(1) { background: var(--primary-900); }
+.card:nth-child(2) { background: var(--primary-700); }
+.card:nth-child(3) { background: var(--primary-500); }
+.card:nth-child(4) { background: var(--gray-700);    }
+.card:nth-child(5) { background: var(--primary-700); }
+
+.cardLabel {
+  color: rgba(255,255,255,0.92);
+  font-size: 13px; font-weight: 600;
+  line-height: 1.5; text-align: left;
+}
+
+@media (max-width: 900px) {
+  .about { padding: 60px 24px; }
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .cards .card:last-child { grid-column: span 2; height: 140px !important; }
+}
