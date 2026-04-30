@@ -8,3 +8,7 @@ export const getMeAPI = () =>
 
 export const logoutAPI = () =>
   api.post('auth/logout')
+
+export const registerAPI = (credentials) => {
+  api.post('auth/register', credentials)
+}
