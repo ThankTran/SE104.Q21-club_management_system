@@ -1,10 +1,10 @@
 :root {
   /* colors*/
-  --primary-900: #254a2a;
-  --primary-700: #3f6b39;
-  --primary-500: #64ab59;
-  --primary-300: #c9e8c8;
-  --primary-100: #e3f5d3;
+  --primary-900: #1e3a8a;
+  --primary-700: #1d4ed8;
+  --primary-500: #3b82f6;
+  --primary-300: #93c5fd;
+  --primary-100: #dbeafe;
 
   --pink-900: #ff98a9;
   --pink-500: #ffd8df;
@@ -57,3 +57,20 @@ body {
   pointer-events: none; /* không click được phía sau khi modal mở */
   user-select: none;
 }
+
+/* reveal scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px) scale(0.96);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }

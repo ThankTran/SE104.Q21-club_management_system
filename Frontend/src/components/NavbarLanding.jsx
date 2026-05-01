@@ -1,17 +1,63 @@
 // src/components/Navbar/Navbar.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { navLinks } from '../data/content';
 import styles from './NavbarLanding.module.css';
+import { useNavigate } from 'react-router-dom'
 
 export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState('#hero')
+  const navigate = useNavigate()
 
+  const sectionIds = useMemo(() => navLinks.map(link => link.href.replace('#', '')), [])
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    let isFooterActive = false
+
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+
+      const isAtBottom = 
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 10
+
+      if (isAtBottom) {
+        isFooterActive = true
+        setActiveLink('#footer')
+      } else {
+        isFooterActive = false
+      }
+    }
+    window.addEventListener('scroll', onScroll)
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isFooterActive) return
+
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveLink(prev => {
+              const newLink = `#${entry.target.id}`
+              return prev !== newLink ? newLink : prev
+            })
+          }
+        })
+      },
+      {
+        rootMargin: '-20% 0px -60% 0px',
+        threshold: 0.2,
+      }
+    )
+
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    })
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      observer.disconnect()
+    }
+  }, [sectionIds]);
 
   return (
     <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`}>
@@ -19,8 +65,29 @@ export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
 
       <ul className={styles.links}>
         {navLinks.map((link) => (
-          <li key={link.label}>
-            <a href={link.href} className={styles.link}>{link.label}</a>
+          <li key={link.label} className={styles.linkItem}>
+            <a href={link.href} 
+              onClick={(e) => {
+                e.preventDefault()
+
+                const el = document.querySelector(link.href)
+
+                if (el) {
+                  el.scrollIntoView({
+                    behavior: 'smooth',
+                  })
+                }
+
+                setMenuOpen(false)
+              }}
+
+              className={`${styles.link} ${
+                activeLink === link.href ? styles.active : ''
+              }`}
+            >
+              {link.label}
+              <span className={`${styles.indicator} ${activeLink === link.href ? styles.indicatorActive : ''}`} />
+            </a>
           </li>
         ))}
       </ul>
@@ -33,6 +100,22 @@ export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
           Đăng ký
         </button>
       </div>
+
+      <button
+        onClick={() => navigate('/home')}
+        style={{
+          background: 'orange',
+          color: '#000',
+          border: 'none',
+          padding: '7px 14px',
+          borderRadius: '6px',
+          fontWeight: '700',
+          cursor: 'pointer',
+          fontSize: '12px',
+        }}
+      >
+            🏠 Test Home
+        </button>
 
       {/* Mobile hamburger */}
       <button
@@ -50,7 +133,15 @@ export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
               key={link.label}
               href={link.href}
               className={styles.drawerLink}
-              onClick={() => setMenuOpen(false)}
+              onClick={(e) => {
+                e.preventDefault()
+                
+                const el =document.querySelector(link.href)
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' })
+                }
+                setMenuOpen(false)
+              }}
             >
               {link.label}
             </a>
@@ -59,7 +150,9 @@ export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
             <button className="btn-outline" onClick={onLoginClick}>
               Đăng nhập
             </button>
-            <button className="btn-fill" onClick={onRegisterClick}>Đăng ký</button>
+            <button className="btn-fill" onClick={onRegisterClick}>
+              Đăng ký
+            </button>
           </div>
         </div>
       )}

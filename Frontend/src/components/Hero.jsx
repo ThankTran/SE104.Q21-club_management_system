@@ -8,7 +8,7 @@ export default function Hero() {
   return (
     <section className={styles.hero} id="hero">
       {/* Left content */}
-      <div className={`${styles.left} fade-up`}>
+      <div className={`${styles.left} reveal`}>
         <span className={styles.badge}>{badge}</span>
 
         <h1 className={styles.title}>
@@ -25,11 +25,11 @@ export default function Hero() {
           <span className={styles.dot} />
         </div>
 
-        <button className="btn-primary">{cta} →</button>
+        <button className={styles.cta}>{cta} →</button>
       </div>
 
       {/* Right image */}
-      <div className={`${styles.right} fade-up delay-2`}>
+      <div className={`${styles.right} reveal delay-2`}>
         <div className={styles.circle}>
           {/* Thay thẻ này bằng <img src="..." alt="..." /> khi có ảnh thật */}
           <div className={styles.placeholder}>

@@ -6,20 +6,20 @@ export default function About() {
   const { tag, title, description, cards } = aboutData;
 
   return (
-    <section className={styles.about} id="about">
-      <span className="section-tag">{tag}</span>
-      <h2 className="section-title">{title}</h2>
-      <p className={`section-desc ${styles.desc}`}>{description}</p>
+    <section className={`${styles.about} reveal`} id="about">
+      <span className="section-tag reveal">{tag}</span>
+      <h2 className="section-title reveal">{title}</h2>
+      <p className={`section-desc ${styles.desc} reveal`}>{description}</p>
 
       <div className={styles.cards}>
         {cards.map((card, i) => (
           <div
             key={i}
-            className={`${styles.card} fade-up`}
+            className={`${styles.card} reveal`}
             style={{
               background: card.color,
               height: card.height,
-              animationDelay: `${i * 0.08}s`,
+              transitionDelay: `${i * 0.08}s`,
             }}
           >
             <p className={styles.cardLabel}>

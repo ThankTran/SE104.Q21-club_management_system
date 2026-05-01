@@ -6,10 +6,10 @@ export default function Events() {
   const { tag, title, description, items, cta } = eventsData;
 
   return (
-    <section className={styles.events} id="events">
+    <section className={`${styles.events} reveal`} id="events">
       <div className={styles.inner}>
         {/* Left placeholder image */}
-        <div className={styles.imgBox}>
+        <div className={`${styles.imgBox} reveal`}>
           {/* Thay bằng <img src="..." alt="..." /> khi có ảnh thật */}
           <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={{ opacity: 0.3 }}>
             <rect x="6" y="10" width="48" height="40" rx="4" stroke="#3d5a6c" strokeWidth="2.5" />
@@ -19,14 +19,17 @@ export default function Events() {
         </div>
 
         {/* Right content */}
-        <div className={styles.content}>
+        <div className={`${styles.content} reveal`}>
           <span className="section-tag">{tag}</span>
           <h2 className="section-title">{title}</h2>
-          <p className={`section-desc ${styles.desc}`}>{description}</p>
+          <p className={`section-desc ${styles.desc} reveal`}>{description}</p>
 
           <ul className={styles.list}>
             {items.map((item, i) => (
-              <li key={i} className={styles.item}>
+              <li 
+                key={i} 
+                className={`${styles.item} reveal`}
+                style={{ transitionDelay: `${i * 0.1}s` }}>
                 <span className={styles.dot} />
                 <div>
                   <strong className={styles.itemTitle}>{item.title}</strong>
@@ -36,7 +39,7 @@ export default function Events() {
             ))}
           </ul>
 
-          <button className="btn-primary">{cta} →</button>
+          <button className={`${styles.cta} reveal`}>{cta} →</button>
         </div>
       </div>
     </section>

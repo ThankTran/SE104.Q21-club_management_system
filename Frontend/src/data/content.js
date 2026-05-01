@@ -5,7 +5,7 @@ export const navLinks = [
   { label: 'Trang chủ', href: '#hero' },
   { label: 'Giới thiệu', href: '#about' },
   { label: 'Sự kiện', href: '#events' },
-  { label: 'Thành viên', href: '#gallery' },
+  { label: 'Thành viên', href: '#members'},
   { label: 'Liên hệ', href: '#footer' },
 ];
 

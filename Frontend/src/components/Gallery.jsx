@@ -6,15 +6,15 @@ export default function Gallery() {
   const { description, images, cta } = galleryData;
 
   return (
-    <section className={styles.gallery} id="gallery">
-      <p className={styles.desc}>{description}</p>
+    <section className={`${styles.gallery} reveal`} id="gallery">
+      <p className={`${styles.desc} reveal`}>{description}</p>
 
       <div className={styles.grid}>
         {images.map((img, i) => (
           <div
             key={i}
-            className={`${styles.item} fade-up`}
-            style={{ background: img.bg, animationDelay: `${i * 0.1}s` }}
+            className={`${styles.item} reveal delay-${i % 4}`}
+            style={{ background: img.bg }}
           >
             {/* Thay bằng <img src={img.src} alt={img.label} /> khi có ảnh thật */}
             <span className={styles.label}>{img.label}</span>
@@ -22,7 +22,9 @@ export default function Gallery() {
         ))}
       </div>
 
-      <button className={styles.registerBtn}>{cta}</button>
+      <button className={`${styles.registerBtn} reveal`}>
+        {cta}
+      </button>
     </section>
   );
 }
