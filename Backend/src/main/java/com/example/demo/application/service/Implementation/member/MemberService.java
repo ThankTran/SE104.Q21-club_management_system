@@ -14,7 +14,7 @@ import com.example.demo.domain.repository.member.MemberApprovalRepository;
 import com.example.demo.domain.repository.department.DepartmentRepository;
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
-import com.example.demo.domain.enums.GraduatedStatusEnum;
+import com.example.demo.domain.service.member.MemberDomainService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,28 +31,32 @@ public class MemberService implements MemberUseCase {
     private final MemberApprovalRepository memberApprovalRepository;
     private final DepartmentRepository departmentRepository;
     private final MemberMapper memberMapper;
+    private final MemberDomainService memberDomainService; 
 
     public MemberService(MemberRepository memberRepository,
                          MemberApprovalRepository memberApprovalRepository,
                          DepartmentRepository departmentRepository,
-                         MemberMapper memberMapper) {
+                         MemberMapper memberMapper,
+                         MemberDomainService memberDomainService) {
         this.memberRepository = memberRepository;
         this.memberApprovalRepository = memberApprovalRepository;
         this.departmentRepository = departmentRepository;
         this.memberMapper = memberMapper;
+        this.memberDomainService = memberDomainService;
     }
 
     // ==================== BM1: Tạo phiếu đăng ký ====================
     @Override
     public MemberResponse registerMember(JoinClubRequest request) {
-        validateJoinClubRequest(request);
 
-        // QĐ1.1: Phải là sinh viên chưa tốt nghiệp
-        if (request.getGraduatedStatus() == GraduatedStatusEnum.GRADUATED) {
-            throw new IllegalArgumentException("Chỉ sinh viên chưa tốt nghiệp mới được đăng ký");
-        }
+        // Validate format — domain service lo
+        memberDomainService.validateStudentIdFormat(request.getStudentId());
+        memberDomainService.validateEmailFormat(request.getEmail());
+        memberDomainService.validateNotGraduated(request.getGraduatedStatus());
+        memberDomainService.validateGender(
+                GenderEnum.valueOf(request.getGender().toUpperCase())
+        );
 
-        // QĐ1.2: MSSV và Email không được trùng
         if (memberRepository.existsByStudentId(request.getStudentId())) {
             throw new IllegalArgumentException("MSSV đã tồn tại trong hệ thống");
         }
@@ -60,20 +64,20 @@ public class MemberService implements MemberUseCase {
             throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
         }
 
-        // QĐ1.3: Khoa phải hợp lệ
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new IllegalArgumentException("Khoa không tồn tại trong hệ thống"));
 
         Member member = memberMapper.toEntity(request);
         member.setDepartment(department);
-
-        // QĐ1.5: Trạng thái hồ sơ mặc định là PENDING
         member.setReqStatus(ApprovalStatusEnum.PENDING);
         member.setCreatedAt(LocalDateTime.now());
 
+        // QĐ1.5: Validate trạng thái mặc định
+        memberDomainService.validateDefaultStatus(member.getReqStatus());
+
         Member savedMember = memberRepository.save(member);
 
-        // Tạo phiếu xét duyệt đi kèm
+        // Tạo phiếu xét duyệt
         MemberApproval approval = MemberApproval.builder()
                 .member(savedMember)
                 .status(ApprovalStatusEnum.PENDING)
@@ -83,46 +87,48 @@ public class MemberService implements MemberUseCase {
         return memberMapper.toResponse(savedMember);
     }
 
-    // ==================== BM2: Xét duyệt phiếu đăng ký ====================
+    // ==================== BM2: Xét duyệt ====================
     @Override
     public MemberResponse approveMember(ApprovalRequest request) {
-        validateApprovalRequest(request);
 
+        // Validate request cơ bản
+        if (request.getMemberId() == null)
+            throw new IllegalArgumentException("Member ID không được để trống");
+        if (request.getApprovedBy() == null)
+            throw new IllegalArgumentException("Approver ID không được để trống");
+
+        // QĐ2.4: Validate status
+        memberDomainService.validateApprovalStatus(request.getStatus());
+
+        // Lấy member
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ thành viên"));
 
-        // QĐ2.1: Người xét duyệt phải có quyền (role_id ưu tiên cao - priority thấp)
+        // QĐ2.1: Validate quyền approver
         Member approver = memberRepository.findById(request.getApprovedBy())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người xét duyệt"));
+        memberDomainService.validateApproverPermission(approver);
 
-        if (approver.getRole() == null || approver.getRole().getPriority() > 2) {
-            throw new IllegalArgumentException("Người xét duyệt không có quyền thực hiện thao tác này");
-        }
-
-        // QĐ2.2: Phải tìm được đúng 1 phiếu xét duyệt liên kết
+        // QĐ2.2: Lấy phiếu xét duyệt
         MemberApproval approval = memberApprovalRepository.findByMember(member)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu xét duyệt"));
 
-        // QĐ2.3: Không cho phép duyệt lại nếu đã có kết quả chính thức
-        if (approval.getStatus() != ApprovalStatusEnum.PENDING) {
-            throw new IllegalArgumentException("Hồ sơ này đã được xét duyệt, không thể thay đổi");
-        }
+        // QĐ2.3: Không duyệt lại
+        memberDomainService.validateApprovalNotFinalized(approval);
 
-        // QĐ2.4: Status chỉ được là APPROVED hoặc REJECTED
-        if (request.getStatus() == ApprovalStatusEnum.PENDING) {
-            throw new IllegalArgumentException("Kết quả xét duyệt phải là 'Đã duyệt' hoặc 'Từ chối'");
-        }
+        // QĐ2.5: Validate ngày
+        memberDomainService.validateApprovalDate(member);
 
-        // QĐ2.5: Ngày xét duyệt phải >= ngày tạo hồ sơ
-        if (member.getCreatedAt() != null &&
-                LocalDateTime.now().isBefore(member.getCreatedAt())) {
-            throw new IllegalArgumentException("Ngày xét duyệt không hợp lệ");
-        }
+        // Validate note
+        if (request.getNote() != null && request.getNote().length() > 500)
+            throw new IllegalArgumentException("Ghi chú không được vượt quá 500 ký tự");
 
-        approval.setStatus(request.getStatus());
-        approval.setApprover(approver);
-        approval.setApprovalDate(LocalDateTime.now());
-        approval.setNote(request.getNote());
+        memberDomainService.applyApproval(
+                approval,
+                request.getStatus(),
+                approver,
+                request.getNote()
+        );
         memberApprovalRepository.save(approval);
 
         member.setReqStatus(request.getStatus());
@@ -131,12 +137,10 @@ public class MemberService implements MemberUseCase {
         return memberMapper.toResponse(updatedMember);
     }
 
-    // ==================== BM3: Tra cứu thành viên ====================
+    // ==================== BM3: Tra cứu ====================
     @Override
     public List<MemberResponse> searchMembers(MemberSearchRequest request) {
-        List<Member> members = memberRepository.findAll();
-
-        return members.stream()
+        return memberRepository.findAll().stream()
                 .filter(m -> request.getFullName() == null || request.getFullName().isBlank()
                         || m.getFullName().toLowerCase()
                                 .contains(request.getFullName().toLowerCase()))
@@ -153,11 +157,9 @@ public class MemberService implements MemberUseCase {
                 .collect(Collectors.toList());
     }
 
-    // ==================== Các method hỗ trợ ====================
     @Override
     public List<MemberResponse> getAllMembers() {
-        return memberRepository.findAll()
-                .stream()
+        return memberRepository.findAll().stream()
                 .map(memberMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -165,21 +167,22 @@ public class MemberService implements MemberUseCase {
     @Override
     public MemberResponse getMemberById(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thành viên với ID: " + memberId));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy thành viên với ID: " + memberId));
         return memberMapper.toResponse(member);
     }
 
     @Override
     public MemberResponse updateMember(Long memberId, JoinClubRequest request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thành viên với ID: " + memberId));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy thành viên với ID: " + memberId));
 
-        // Không cho cập nhật nếu đã được duyệt
-        if (member.getReqStatus() == ApprovalStatusEnum.APPROVED) {
-            throw new IllegalArgumentException("Không thể cập nhật thông tin thành viên đã được duyệt");
-        }
+        // Domain service kiểm tra có được update không
+        memberDomainService.validateCanUpdate(member);
 
         // Validate email nếu thay đổi
+        memberDomainService.validateEmailFormat(request.getEmail());
         if (!member.getEmail().equals(request.getEmail())
                 && memberRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
@@ -191,65 +194,12 @@ public class MemberService implements MemberUseCase {
 
         member.setFullName(request.getFullName());
         member.setEmail(request.getEmail());
-        member.setPhone(request.getPhone());
-        member.setGender(request.getGender());
+        member.setPhone(request.getPhoneNumber());
+        member.setGender(GenderEnum.valueOf(request.getGender().toUpperCase()));
         member.setDateOfBirth(request.getDateOfBirth());
         member.setDepartment(department);
         member.setGraduatedStatus(request.getGraduatedStatus());
 
         return memberMapper.toResponse(memberRepository.save(member));
-    }
-
-    // ==================== Validation ====================
-    private void validateJoinClubRequest(JoinClubRequest request) {
-        if (request == null) throw new IllegalArgumentException("Request không được null");
-
-        if (request.getStudentId() == null || request.getStudentId().isBlank())
-            throw new IllegalArgumentException("MSSV không được để trống");
-
-        // QĐ1.2: Validate format MSSV (ví dụ: bắt đầu bằng số, đủ ký tự)
-        if (!request.getStudentId().matches("^[0-9]{8,12}$"))
-            throw new IllegalArgumentException("MSSV không hợp lệ");
-
-        if (request.getFullName() == null || request.getFullName().isBlank())
-            throw new IllegalArgumentException("Họ tên không được để trống");
-
-        if (request.getEmail() == null || request.getEmail().isBlank())
-            throw new IllegalArgumentException("Email không được để trống");
-
-        // QĐ1.2: Validate format Email
-        if (!request.getEmail().matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"))
-            throw new IllegalArgumentException("Email không hợp lệ");
-
-        if (request.getDepartmentId() == null)
-            throw new IllegalArgumentException("Khoa không được để trống");
-
-        // QĐ1.6: Gender chỉ được là Nam hoặc Nữ
-        if (request.getGender() == null)
-            throw new IllegalArgumentException("Giới tính không được để trống");
-
-        if (request.getDateOfBirth() == null)
-            throw new IllegalArgumentException("Ngày sinh không được để trống");
-
-        // QĐ1.4: GraduatedStatus chỉ được là 2 giá trị
-        if (request.getGraduatedStatus() == null)
-            throw new IllegalArgumentException("Tình trạng tốt nghiệp không được để trống");
-    }
-
-    private void validateApprovalRequest(ApprovalRequest request) {
-        if (request == null) throw new IllegalArgumentException("Approval request không được null");
-
-        if (request.getMemberId() == null)
-            throw new IllegalArgumentException("Member ID không được để trống");
-
-        if (request.getApprovedBy() == null)
-            throw new IllegalArgumentException("Approver ID không được để trống");
-
-        // QĐ2.4: Status phải là APPROVED hoặc REJECTED
-        if (request.getStatus() == null)
-            throw new IllegalArgumentException("Kết quả xét duyệt phải là 'Đã duyệt' hoặc 'Từ chối'");
-
-        if (request.getNote() != null && request.getNote().length() > 500)
-            throw new IllegalArgumentException("Ghi chú không được vượt quá 500 ký tự");
     }
 }
