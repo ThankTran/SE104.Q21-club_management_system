@@ -1,6 +1,7 @@
 package com.example.demo.application.dto.response.member;
 
-import lambok.*;
+import lombok.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,8 +13,13 @@ public class MemberResponse {
     private Long memberId;
     private String studentId;
     private String fullName;
+    private Long departmentId;
     private String departmentName;
     private String email;
-    private String reqStatus; 
+    private String phone;
+    private String gender;
+    private LocalDate dateOfBirth;
+    private String roleName;
+    private String status;
     private LocalDateTime createdAt;
 }

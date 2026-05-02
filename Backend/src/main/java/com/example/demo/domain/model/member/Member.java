@@ -45,6 +45,7 @@ public class Member {
     private GenderEnum gender;
 
     @Column(name = "date_of_birth")
+    @Temporal(TemporalType.DATE)
     private LocalDate dateOfBirth;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -55,9 +56,11 @@ public class Member {
     @Column(name = "graduated_status", length = 50)
     private GraduatedStatusEnum graduatedStatus;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "req_status", length = 50)
-    private String reqStatus;
+    private ApprovalStatusEnum reqStatus;
 
-    @Column(name = "created_at")
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 }

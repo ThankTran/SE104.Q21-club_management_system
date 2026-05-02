@@ -1,10 +1,10 @@
 package com.example.demo.application.dto.request.member;
 
+import com.example.demo.domain.enums.ApprovalStatusEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -14,6 +14,6 @@ import java.time.LocalDateTime;
 public class ApprovalRequest {
     private Long memberId;
     private Long approvedBy;
-    private String status; 
-    private String note; 
+    private ApprovalStatusEnum status;
+    private String note;
 }

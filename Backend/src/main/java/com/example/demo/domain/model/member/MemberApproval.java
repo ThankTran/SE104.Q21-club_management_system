@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "member_approvals")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -26,13 +27,18 @@ public class MemberApproval {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private ApprovalStatus status = ApprovalStatus.PENDING;
+    private ApprovalStatusEnum status = ApprovalStatusEnum.PENDING;
 
-    @Column(name = "approved_by")
-    private Long approvedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private Member approvedBy;
 
     @Column(name = "approval_date")
     private LocalDateTime approvalDate;
 
     private String note;
+
+    @CreationTimestamp
+    @Column(name = "approved_at", updatable = false)
+    private LocalDateTime approvedAt;
 }

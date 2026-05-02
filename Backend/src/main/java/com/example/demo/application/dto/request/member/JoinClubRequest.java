@@ -1,6 +1,6 @@
 package com.example.demo.application.dto.request.member;
 
-import lonbok.*;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,5 +15,5 @@ public class JoinClubRequest {
     private String email;
     private String phoneNumber;
     private String gender;
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
 }
