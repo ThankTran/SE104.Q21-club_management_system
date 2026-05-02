@@ -7,8 +7,8 @@ export default function About() {
 
   return (
     <section className={`${styles.about} reveal`} id="about">
-      <span className="section-tag reveal">{tag}</span>
-      <h2 className="section-title reveal">{title}</h2>
+      <span className={`${styles.sectionTag} reveal`}>{tag}</span>
+      <h2 className={`${styles.sectionTitle} reveal`}>{title}</h2>
       <p className={`section-desc ${styles.desc} reveal`}>{description}</p>
 
       <div className={styles.cards}>

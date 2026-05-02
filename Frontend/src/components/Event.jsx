@@ -6,7 +6,7 @@ export default function Events() {
   const { tag, title, description, items, cta } = eventsData;
 
   return (
-    <section className={`${styles.events} reveal`} id="events">
+    <section className={styles.events} id="events">
       <div className={styles.inner}>
         {/* Left placeholder image */}
         <div className={`${styles.imgBox} reveal`}>
@@ -19,10 +19,10 @@ export default function Events() {
         </div>
 
         {/* Right content */}
-        <div className={`${styles.content} reveal`}>
-          <span className="section-tag">{tag}</span>
-          <h2 className="section-title">{title}</h2>
-          <p className={`section-desc ${styles.desc} reveal`}>{description}</p>
+        <div className={styles.content}>
+          <span className={`${styles.sectionTag} reveal`}>{tag}</span>
+          <h2 className={`${styles.sectionTitle} reveal delay-1`}>{title}</h2>
+          <p className={`${styles.desc} reveal delay-2`}>{description}</p>
 
           <ul className={styles.list}>
             {items.map((item, i) => (

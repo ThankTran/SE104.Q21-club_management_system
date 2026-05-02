@@ -8,29 +8,29 @@ export default function Hero() {
   return (
     <section className={styles.hero} id="hero">
       {/* Left content */}
-      <div className={`${styles.left} reveal`}>
-        <span className={styles.badge}>{badge}</span>
+      <div className={styles.left}>
+        <span className={`${styles.badge} reveal`}>{badge}</span>
 
-        <h1 className={styles.title}>
+        <h1 className={`${styles.title} reveal delay-1`}>
           {title.map((line, i) => (
             <span key={i}>{line}<br /></span>
           ))}
         </h1>
 
-        <p className={styles.desc}>{description}</p>
+        <p className={`${styles.desc} reveal delay-2`}>{description}</p>
 
-        <div className={styles.dots}>
+        <div className={`${styles.dots} reveal delay-3`}>
           <span className={styles.dotActive} />
           <span className={styles.dot} />
           <span className={styles.dot} />
-        </div>
+        </div>  
 
-        <button className={styles.cta}>{cta} →</button>
+        <button className={`${styles.cta} reveal delay-3`}>{cta} →</button>
       </div>
 
       {/* Right image */}
-      <div className={`${styles.right} reveal delay-2`}>
-        <div className={styles.circle}>
+      <div className={styles.right}>
+        <div className={`${styles.circle} reveal delay-2`}>
           {/* Thay thẻ này bằng <img src="..." alt="..." /> khi có ảnh thật */}
           <div className={styles.placeholder}>
             <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
@@ -40,7 +40,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className={styles.statBadge}>
+        <div className={`${styles.statBadge} reveal delay-3`}>
           <span className={styles.statValue}>{stats.value}</span>
           <span className={styles.statLabel}>{stats.label}</span>
         </div>

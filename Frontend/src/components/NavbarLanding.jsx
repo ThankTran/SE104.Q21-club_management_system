@@ -11,53 +11,38 @@ export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
   const navigate = useNavigate()
 
   const sectionIds = useMemo(() => navLinks.map(link => link.href.replace('#', '')), [])
-  useEffect(() => {
-    let isFooterActive = false
 
-    const onScroll = () => {
-      setScrolled(window.scrollY > 20);
+useEffect(() => {
+  const onScroll = () => {
+    setScrolled(window.scrollY > 20)
+  }
 
-      const isAtBottom = 
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 10
+  window.addEventListener('scroll', onScroll)
 
-      if (isAtBottom) {
-        isFooterActive = true
-        setActiveLink('#footer')
-      } else {
-        isFooterActive = false
-      }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveLink(`#${entry.target.id}`)
+        }
+      })
+    },
+    {
+      threshold: 0.6,
+      rootMargin: '0px',
     }
-    window.addEventListener('scroll', onScroll)
+  )
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isFooterActive) return
+  sectionIds.forEach(id => {
+    const el = document.getElementById(id)
+    if (el) observer.observe(el)
+  })
 
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setActiveLink(prev => {
-              const newLink = `#${entry.target.id}`
-              return prev !== newLink ? newLink : prev
-            })
-          }
-        })
-      },
-      {
-        rootMargin: '-20% 0px -60% 0px',
-        threshold: 0.2,
-      }
-    )
-
-    sectionIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    })
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      observer.disconnect()
-    }
-  }, [sectionIds]);
+  return () => {
+    window.removeEventListener('scroll', onScroll)
+    observer.disconnect()
+  }
+}, [sectionIds])
 
   return (
     <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`}>

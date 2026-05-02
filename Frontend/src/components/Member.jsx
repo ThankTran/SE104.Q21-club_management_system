@@ -65,7 +65,7 @@ export default function Members() {
               className={styles.card}
               style={{
                 transform: `
-                  translateX(${pos * 220}px)
+                  translateX(${pos * 100}%)
                   scale(${isActive ? 1 : 0.9})  
                 `,
                 opacity: isHidden ? 0 : Math.max(0.3, 1 - Math.abs(pos) * 0.35),
