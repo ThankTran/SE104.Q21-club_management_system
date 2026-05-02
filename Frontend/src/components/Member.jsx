@@ -1,5 +1,5 @@
 // src/components/Members.jsx
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './Member.module.css'
 
 const members = [
@@ -8,64 +8,41 @@ const members = [
   { id: 3, name: 'Lê Văn C',     role: 'Trưởng ban học thuật' },
   { id: 4, name: 'Phạm Thị D',   role: 'Trưởng ban truyền thông' },
   { id: 5, name: 'Hoàng Văn E',  role: 'Trưởng ban sự kiện' },
-  { id: 6, name: 'Đỗ Thị F',     role: 'Thành viên' },
-  { id: 7, name: 'Vũ Văn G',     role: 'Thành viên' },
-  { id: 8, name: 'Bùi Thị H',    role: 'Thành viên' },
 ]
 
 // Clone đủ để băng chuyền liền mạch
-const looped = [...members, ...members]
-
-const CARD_WIDTH = 260
-const GAP = 24
-const STEP = CARD_WIDTH + GAP
+const AUTO_DELAY = 3000
 
 export default function Members() {
-  const [offset, setOffset] = useState(0)
+  const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
-  const rafRef = useRef(null)
-  const lastTimeRef = useRef(null)
-  const SPEED = 0.04 // px per ms
+  const total = members.length
 
-  // Tổng chiều rộng 1 bộ
-  const totalWidth = members.length * STEP
-
-  // Auto scroll bằng requestAnimationFrame — mượt hơn setInterval
   useEffect(() => {
-    const animate = (time) => {
-      if (!paused) {
-        if (lastTimeRef.current !== null) {
-          const delta = time - lastTimeRef.current
-          setOffset(prev => {
-            const next = prev + SPEED * delta
-            // Reset khi đi hết 1 bộ
-            return next >= totalWidth ? next - totalWidth : next
-          })
-        }
-        lastTimeRef.current = time
-      } else {
-        lastTimeRef.current = null
-      }
-      rafRef.current = requestAnimationFrame(animate)
-    }
-
-    rafRef.current = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [paused, totalWidth])
+    if (paused) return
+    const timer = setInterval(() => {
+      setActive(i => (i + 1) % total)
+    }, AUTO_DELAY)
+    return () => clearInterval(timer)
+  }, [paused, total])
 
   // Nút prev/next — nhảy 1 card
-  const prev = () => setOffset(o => {
-    const next = o - STEP
-    return next < 0 ? next + totalWidth : next
-  })
+  const prev = () => setActive(i => (i - 1 + total) % total)
+  const next = () => setActive(i => (i + 1) % total)
 
-  const next = () => setOffset(o => {
-    const next = o + STEP
-    return next >= totalWidth ? next - totalWidth : next
-  })
+  const getPos = (i) => {
+    let diff = i - active
+    if (diff > Math.floor(total / 2)) diff -= total
+    if (diff < -Math.floor(total / 2)) diff += total
+    return diff
+  }
 
   return (
-    <section className={`${styles.section} reveal`} id="members">
+    <section 
+      className={styles.section} id="members"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       {/* Header */}
       <div className={`${styles.header} reveal`}>
         <span className={styles.tag}>Thành viên</span>
@@ -76,41 +53,60 @@ export default function Members() {
       </div>
 
       {/* Prev button */}
-      <div className={styles.carouselRow}>
-        <button className={styles.btn} onClick={prev}>←</button>
+      <div className={`${styles.stage} reveal`}>
+        {members.map((member, i) => {
+          const pos = getPos(i)
+          const isActive = pos === 0
+          const isHidden = Math.abs(pos) > 2
 
-        {/* Belt */}
-        <div
-          className={styles.viewport}
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          <div
-            className={styles.track}
-            style={{ transform: `translateX(-${offset}px)` }}
-          >
-            {looped.map((member, i) => (
-              <div 
-                key={i} 
-                className={`${styles.card} reveal`}
-                style={{ transitionDelay: `${i * 0.05}s` }}
-              >
-                <div className={styles.avatar}>
-                  <svg width="44" height="44" viewBox="0 0 80 80" fill="none">
-                    <circle cx="40" cy="28" r="18" fill="white" opacity="0.5" />
-                    <ellipse cx="40" cy="68" rx="28" ry="16" fill="white" opacity="0.5" />
-                  </svg>
-                </div>
-                <div className={styles.info}>
-                  <p className={styles.name}>{member.name}</p>
-                  <p className={styles.role}>{member.role}</p>
-                </div>
+          return (
+            <div
+              key={member.id}
+              className={styles.card}
+              style={{
+                transform: `
+                  translateX(${pos * 220}px)
+                  scale(${isActive ? 1 : 0.9})  
+                `,
+                opacity: isHidden ? 0 : Math.max(0.3, 1 - Math.abs(pos) * 0.35),
+                zIndex: 10 - Math.abs(pos),
+                filter: isActive ? 'none' : `blur(${Math.abs(pos) * 0.5}px)`,
+                pointerEvents: isActive ? 'auto' : 'none',
+                transition: 'all 0.5s ease',
+              }}
+              onClick={() => !isActive && setActive(i)}
+            >
+              <div className={`${styles.avatar} ${isActive ? styles.avatarActive : ''}`}>
+                <svg width="52" height="52" viewBox="0 0 80 80" fill="none">
+                  <circle cx="40" cy="28" r="18" fill="white" opacity="0.6" />
+                  <ellipse cx="40" cy="68" rx="28" ry="16" fill="white" opacity="0.6" />
+                </svg>
               </div>
-            ))}
-          </div>
-        </div>
+              <div className={styles.info}>
+                <p className={styles.name}>{member.name}</p>
+                <p className={styles.role}>{member.role}</p>
+                {isActive && (
+                  <p className={styles.bio}>
+                    Thành viên tích cực của CLB, đóng góp nhiều giá trị cho cộng đồng học thuật.
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
 
-        {/* Next button */}
+      <div className={`${styles.controls} reveal`}>
+        <button className={styles.btn} onClick={prev}>←</button>
+        <div className={styles.dots}>
+          {members.map((_, i) => (
+            <button
+              key={i}
+              className={`${styles.dot} ${i === active ? styles.dotActive : ''}`}
+              onClick={() => setActive(i)}
+            />
+          ))}
+        </div>
         <button className={styles.btn} onClick={next}>→</button>
       </div>
     </section>

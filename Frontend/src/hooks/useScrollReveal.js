@@ -5,22 +5,21 @@ export default function useScrollReveal() {
     const elements = document.querySelectorAll('.reveal');
 
     const observer = new IntersectionObserver(
-      (entries, obs) => {
+      (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('active');
-            obs.unobserve(entry.target);
+          } else {
+            entry.target.classList.remove('active')
           }
         });
       },
       {
-        threshold: 0.1,
+        threshold: 0.2,
       }
     );
 
-    setTimeout(() => {
-      elements.forEach(el => observer.observe(el));
-    }, 50);
+    elements.forEach(el => observer.observe(el))
 
     return () => observer.disconnect();
   }, []);

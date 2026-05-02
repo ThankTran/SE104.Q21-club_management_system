@@ -1,17 +1,12 @@
-/* src/components/Members.module.css */
-
+/* Members.module.css */
 .section {
   background: var(--white-soft);
-  padding: 80px 0 60px;
-  overflow: hidden;
+  padding: 80px 80px 60px;
   text-align: center;
+  overflow: hidden;
 }
 
-/* Header */
-.header {
-  padding: 0 80px;
-  margin-bottom: 48px;
-}
+.header { margin-bottom: 56px; }
 
 .tag {
   display: inline-block;
@@ -30,59 +25,51 @@
   max-width: 500px; margin: 0 auto;
 }
 
-/* Row chứa nút + viewport */
-.carouselRow {
+/* Stage — nơi các card xếp chồng nhau */
+.stage {
+  position: relative;
+  height: 320px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 40px;
-}
-
-/* Viewport — cắt phần tràn ra ngoài */
-.viewport {
-  flex: 1;
-  overflow: hidden;
-  cursor: grab;
-  padding: 12px 0;  /* cho box-shadow card không bị cắt */
-}
-.viewport:active { cursor: grabbing; }
-
-/* Track — dải card chạy ngang */
-.track {
-  display: flex;
-  gap: 24px;
-  width: max-content;
-  will-change: transform;
+  justify-content: center;
 }
 
 /* Card */
 .card {
-  width: 260px;
-  flex-shrink: 0;
+  position: absolute;
+  width: 220px;
   background: var(--white-hard);
   border: 1.5px solid var(--primary-300);
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 28px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.4s ease,
+              box-shadow 0.4s ease,
+              filter 0.4s ease;
   box-shadow: var(--shadow-light);
+  cursor: pointer;
 }
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 32px rgba(37,74,42,0.15);
+
+.cardActive {
   border-color: var(--primary-500);
+  box-shadow: 0 16px 48px rgba(37,74,42,0.2);
+  cursor: default;
 }
 
 /* Avatar */
 .avatar {
-  width: 90px; height: 90px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-700), var(--primary-900));
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-300), var(--primary-500));
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px rgba(37,74,42,0.2);
-  flex-shrink: 0;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 12px rgba(37,74,42,0.15);
+}
+
+.avatarActive {
+  width: 100px; height: 100px;
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-900));
+  box-shadow: 0 8px 24px rgba(37,74,42,0.3);
 }
 
 /* Info */
@@ -95,20 +82,34 @@
   font-size: 12px; font-weight: 500;
   color: var(--primary-700); margin: 0;
   background: var(--primary-100);
-  padding: 3px 10px; border-radius: 20px;
+  padding: 3px 12px; border-radius: 20px;
   display: inline-block;
 }
 
-/* Prev / Next buttons */
+.bio {
+  font-size: 12px; color: var(--gray-700);
+  line-height: 1.6; margin: 8px 0 0;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Controls */
+.controls {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin-top: 40px;
+}
+
 .btn {
-  width: 44px; height: 44px;
-  border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 50%;
   border: 1.5px solid var(--primary-300);
   background: var(--white-hard);
   color: var(--primary-700);
-  font-size: 18px;
-  cursor: pointer;
-  flex-shrink: 0;
+  font-size: 18px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.2s;
   box-shadow: var(--shadow-light);
@@ -118,13 +119,24 @@
   color: var(--white-hard);
   border-color: var(--primary-700);
   transform: scale(1.08);
-  box-shadow: var(--shadow-medium);
+}
+
+.dots { display: flex; gap: 8px; align-items: center; }
+
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary-300);
+  border: none; cursor: pointer; padding: 0;
+  transition: all 0.3s;
+}
+.dotActive {
+  background: var(--primary-700);
+  width: 24px; border-radius: 4px;
 }
 
 @media (max-width: 768px) {
-  .section { padding: 60px 0 40px; }
-  .header { padding: 0 24px; }
-  .carouselRow { padding: 0 16px; gap: 10px; }
-  .card { width: 200px; }
+  .section { padding: 60px 24px 40px; }
+  .stage { height: 280px; }
+  .card { width: 180px; }
   .title { font-size: 26px; }
 }

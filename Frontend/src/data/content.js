@@ -55,13 +55,21 @@ export const eventsData = {
 };
 
 export const galleryData = {
+  tag: 'Hình ảnh',
+  title: 'Khoảnh khắc đáng nhớ',
   description:
-    'Giới thiệu về các hoạt động sự kiện của CLB qua những khoảnh khắc đáng nhớ.',
+    'Những hình ảnh ghi lại các hoạt động nổi bật của CLB trong suốt hành trình phát triển.',
   images: [
-    { label: 'Hội thảo',   bg: 'linear-gradient(135deg,#1a3d2b,#2d6a4f)' },
-    { label: 'Workshop',   bg: 'linear-gradient(135deg,#3d5a6c,#2d4a5c)' },
-    { label: 'Giao lưu',   bg: 'linear-gradient(135deg,#2d6a4f,#74c69d)' },
-    { label: 'Ngoại khóa', bg: 'linear-gradient(135deg,#b0c4d0,#c8d8e4)' },
+    { id: 1,  label: 'Hội thảo KH', bg: 'linear-gradient(135deg,#254a2a,#3f6b39)' },
+    { id: 2,  label: 'Workshop', bg: 'linear-gradient(135deg,#3f6b39,#64ab59)' },
+    { id: 3,  label: 'Giao lưu', bg: 'linear-gradient(135deg,#1e293b,#4b5563)' },
+    { id: 4,  label: 'Ngoại khóa', bg: 'linear-gradient(135deg,#64ab59,#c9e8c8)' },
+    { id: 5,  label: 'Tọa đàm', bg: 'linear-gradient(135deg,#254a2a,#64ab59)' },
+    { id: 6,  label: 'Văn nghệ', bg: 'linear-gradient(135deg,#4b5563,#1e293b)' },
+    { id: 7,  label: 'Kết nạp thành viên', bg: 'linear-gradient(135deg,#3f6b39,#254a2a)' },
+    { id: 8,  label: 'Sinh hoạt CLB', bg: 'linear-gradient(135deg,#c9e8c8,#64ab59)' },
+    { id: 9,  label: 'Học thuật', bg: 'linear-gradient(135deg,#254a2a,#4b5563)' },
+    { id: 10, label: 'Team building', bg: 'linear-gradient(135deg,#64ab59,#3f6b39)' },
   ],
   cta: 'Đăng ký ngay',
 };

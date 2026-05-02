@@ -1,30 +1,122 @@
 // src/components/Gallery/Gallery.jsx
+import { useState, useRef, useEffect } from 'react';
 import { galleryData } from '../data/content';
 import styles from './Gallery.module.css';
 
 export default function Gallery() {
-  const { description, images, cta } = galleryData;
+  const { tag, title, description, images, cta } = galleryData;
+  const looped = [...images, ...images]
+
+  const CARD_WIDTH = 280
+  const GAP = 20
+  const STEP = CARD_WIDTH + GAP
+  const SPEED = 0.05
+  const totalWidth = images.length * STEP
+
+  const [offset, setOffset] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [selected, setSelected] = useState(null)
+  const rafRef = useRef(null)
+  const lastTimeRef = useRef(null)
+
+  useEffect(() => {
+    const animate = (time) => {
+      if (!paused) {
+        if (lastTimeRef.current !== null) {
+          const delta = time - lastTimeRef.current
+          setOffset(prev => {
+            const next = prev + SPEED * delta
+            return next >= totalWidth ? next - totalWidth : next
+          })
+        }
+        lastTimeRef.current = time
+      } else {
+        lastTimeRef.current = null
+      }
+      rafRef.current = requestAnimationFrame(animate)
+    }
+    rafRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [paused, totalWidth])
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setSelected(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const prev = () => setOffset(o => {
+    const next = o - STEP
+    return next < 0 ? next + totalWidth : next
+  })
+
+  const next = () => setOffset(o => {
+    const next = o + STEP
+    return next >= totalWidth ? next - totalWidth : next
+  })
 
   return (
-    <section className={`${styles.gallery} reveal`} id="gallery">
-      <p className={`${styles.desc} reveal`}>{description}</p>
+    <section className={styles.gallery} id="gallery">
+      <div className={`${styles.header} reveal`}>
+        <span className={styles.tag}>{tag}</span>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.desc}>{description}</p>
+      </div>
 
-      <div className={styles.grid}>
-        {images.map((img, i) => (
+      <div className={`${styles.carouselRow} reveal`}>
+        <button className={styles.btn} onClick={prev}>←</button>
+
+        <div
+          className={styles.viewport}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
           <div
-            key={i}
-            className={`${styles.item} reveal delay-${i % 4}`}
-            style={{ background: img.bg }}
+            className={styles.track}
+            style={{ transform: `translateX(-${offset}px)` }}
           >
-            {/* Thay bằng <img src={img.src} alt={img.label} /> khi có ảnh thật */}
-            <span className={styles.label}>{img.label}</span>
+            {looped.map((img, i) => (
+              <div 
+                key={i} 
+                className={styles.card} 
+                style={{ 
+                  background: img.bg,
+                  transitionDelay: `${(i % images.length) * 0.1}s`
+                }}
+
+                onClick={() => setSelected(img)}
+              >
+                <div className={styles.cardImg} style={{ background: img.bg }}>
+                  <div className={styles.zoomHint}>🔍</div>
+                </div>
+                <div className={styles.caption}>
+                  <span className={styles.captionDot} />
+                  <span className={styles.captionText}>{img.label}</span>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <button className={styles.btn} onClick={next}>→</button>
       </div>
 
       <button className={`${styles.registerBtn} reveal`}>
         {cta}
       </button>
+
+      {selected && (
+        <div className={styles.overlay} onClick={() => setSelected(null)}>
+          <div className={styles.lightbox} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setSelected(null)}>✕</button>
+            <div className={styles.lightboxImg} style={{ background: selected.bg }} />
+            <div className={styles.lightboxInfo}>
+              <p className={styles.lightboxLabel}>{selected.label}</p>
+              <p className={styles.lightboxSub}>CLB Học Thuật • Hoạt động nổi bật</p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
