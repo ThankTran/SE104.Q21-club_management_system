@@ -20,6 +20,7 @@ public class MemberResponse {
     private String gender;
     private LocalDate dateOfBirth;
     private String roleName;
-    private String status;
+    private String reqstatus;
+    private String graduatedStatus;
     private LocalDateTime createdAt;
 }

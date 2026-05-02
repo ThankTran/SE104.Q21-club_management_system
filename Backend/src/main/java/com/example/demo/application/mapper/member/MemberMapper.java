@@ -1,25 +1,45 @@
 package com.example.demo.application.mapper.member;
 
+import com.example.demo.application.dto.request.member.CreateMemberRequest;
 import com.example.demo.application.dto.request.member.JoinClubRequest;
+import com.example.demo.application.dto.response.member.MemberApprovalResponse;
 import com.example.demo.application.dto.response.member.MemberResponse;
+import com.example.demo.application.dto.response.member.MemberSearchResponse;
+import com.example.demo.application.dto.response.department.DepartmentResponse;
+
+import com.example.demo.domain.model.department.Department;
 import com.example.demo.domain.model.member.Member;
-import com.example.demo.domain.enums.GenderEnum;
+import com.example.demo.domain.model.member.MemberApproval;
+
 import com.example.demo.domain.enums.ApprovalStatusEnum;
+import com.example.demo.domain.enums.GenderEnum;
 
 import org.springframework.stereotype.Component;
 
 @Component
 public class MemberMapper {
-    public Member toEntity(JoinClubRequest request) {
-        if (request == null) {
-            return null;
-        }
-        
+
+    public Member toEntity(CreateMemberRequest request) {
+        if (request == null) return null;
         return Member.builder()
+                .studentId(request.getStudentId())
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .phone(request.getPhone())
+                .gender(request.getGender())
+                .dateOfBirth(request.getDateOfBirth())
+                .graduatedStatus(request.getGraduatedStatus())
+                .reqStatus(ApprovalStatusEnum.PENDING)  
+                .build();
+    }
+
+    public Member toEntity(JoinClubRequest request) {
+        if (request == null) return null;
+        return Member.builder()
+                .studentId(request.getStudentId())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phone(request.getPhoneNumber())
-                .studentId(request.getStudentId())
                 .gender(GenderEnum.valueOf(request.getGender().toUpperCase()))
                 .dateOfBirth(request.getDateOfBirth())
                 .reqStatus(ApprovalStatusEnum.PENDING)
@@ -27,19 +47,74 @@ public class MemberMapper {
     }
 
     public MemberResponse toResponse(Member member) {
-        if (member == null) {
-            return null;
-        }
-        
+        if (member == null) return null;
         return MemberResponse.builder()
                 .memberId(member.getMemberId())
+                .studentId(member.getStudentId())
                 .fullName(member.getFullName())
                 .email(member.getEmail())
                 .phone(member.getPhone())
-                .studentId(member.getStudentId())
                 .gender(member.getGender() != null ? member.getGender().name() : null)
                 .dateOfBirth(member.getDateOfBirth())
-                .status(member.getReqStatus() != null ? member.getReqStatus().name() : null)
+                .departmentId(member.getDepartment() != null
+                        ? member.getDepartment().getDepartmentId() : null)
+                .departmentName(member.getDepartment() != null
+                        ? member.getDepartment().getDepartmentName() : null)
+                .roleName(member.getRole() != null
+                        ? member.getRole().getRoleName() : null)
+                .reqStatus(member.getReqStatus() != null
+                        ? member.getReqStatus().name() : null)
+                .graduatedStatus(member.getGraduatedStatus() != null
+                        ? member.getGraduatedStatus().name() : null)
+                .createdAt(member.getCreatedAt())
+                .build();
+    }
+
+    public MemberSearchResponse toSearchResponse(Member member) {
+        if (member == null) return null;
+        return MemberSearchResponse.builder()
+                .memberId(member.getMemberId())
+                .studentId(member.getStudentId())
+                .fullName(member.getFullName())
+                .dateOfBirth(member.getDateOfBirth())
+                .departmentName(member.getDepartment() != null
+                        ? member.getDepartment().getDepartmentName() : null)
+                .phone(member.getPhone())
+                .email(member.getEmail())
+                .reqStatus(member.getReqStatus() != null
+                        ? member.getReqStatus().name() : null)
+                .graduatedStatus(member.getGraduatedStatus() != null
+                        ? member.getGraduatedStatus().name() : null)
+                .build();
+    }
+
+    public MemberApprovalResponse toApprovalResponse(MemberApproval approval) {
+        if (approval == null) return null;
+        return MemberApprovalResponse.builder()
+                .approvalId(approval.getApprovalId())
+                .status(approval.getStatus() != null
+                        ? approval.getStatus().name() : null)
+                .memberId(approval.getMember() != null
+                        ? approval.getMember().getMemberId() : null)
+                .studentId(approval.getMember() != null
+                        ? approval.getMember().getStudentId() : null)
+                .fullName(approval.getMember() != null
+                        ? approval.getMember().getFullName() : null)
+                .approvedById(approval.getApprover() != null
+                        ? approval.getApprover().getMemberId() : null)
+                .approvedByName(approval.getApprover() != null
+                        ? approval.getApprover().getFullName() : null)
+                .approvalDate(approval.getApprovalDate())
+                .approvedAt(approval.getApprovedAt())
+                .note(approval.getNote())
+                .build();
+    }
+
+    public DepartmentResponse toDepartmentResponse(Department department) {
+        if (department == null) return null;
+        return DepartmentResponse.builder()
+                .departmentId(department.getDepartmentId())
+                .departmentName(department.getDepartmentName())
                 .build();
     }
 }
