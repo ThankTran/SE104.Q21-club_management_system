@@ -1,4 +1,4 @@
-// src/components/Gallery/Gallery.jsx
+// src/components/Gallery.jsx
 import { useState, useRef, useEffect } from 'react';
 import { galleryData } from '../data/content';
 import styles from './Gallery.module.css';
@@ -16,9 +16,22 @@ export default function Gallery() {
   const [offset, setOffset] = useState(0)
   const [paused, setPaused] = useState(false)
   const [selected, setSelected] = useState(null)
+  const [inView, setInView] = useState(false)
   const rafRef = useRef(null)
   const lastTimeRef = useRef(null)
+  const sectionRef = useRef(null)
 
+  // IntersectionObserver
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.15 }
+    )
+    if (sectionRef.current) observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  // Auto scroll
   useEffect(() => {
     const animate = (time) => {
       if (!paused) {
@@ -39,6 +52,7 @@ export default function Gallery() {
     return () => cancelAnimationFrame(rafRef.current)
   }, [paused, totalWidth])
 
+  // ESC close lightbox
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') setSelected(null) }
     window.addEventListener('keydown', onKey)
@@ -56,14 +70,19 @@ export default function Gallery() {
   })
 
   return (
-    <section className={styles.gallery} id="gallery">
-      <div className={`${styles.header} reveal`}>
+    <section className={styles.section} id="gallery" ref={sectionRef}>
+      {/* Floating shape */}
+      <div className={styles.shape} />
+
+      {/* Header */}
+      <div className={`${styles.header} ${inView ? styles.headerVisible : ''}`}>
         <span className={styles.tag}>{tag}</span>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.desc}>{description}</p>
       </div>
 
-      <div className={`${styles.carouselRow} reveal`}>
+      {/* Carousel */}
+      <div className={`${styles.carouselRow} ${inView ? styles.carouselVisible : ''}`}>
         <button className={styles.btn} onClick={prev}>←</button>
 
         <div
@@ -76,14 +95,9 @@ export default function Gallery() {
             style={{ transform: `translateX(-${offset}px)` }}
           >
             {looped.map((img, i) => (
-              <div 
-                key={i} 
-                className={styles.card} 
-                style={{ 
-                  background: img.bg,
-                  transitionDelay: `${(i % images.length) * 0.1}s`
-                }}
-
+              <div
+                key={i}
+                className={styles.card}
                 onClick={() => setSelected(img)}
               >
                 <div className={styles.cardImg} style={{ background: img.bg }}>
@@ -101,10 +115,12 @@ export default function Gallery() {
         <button className={styles.btn} onClick={next}>→</button>
       </div>
 
-      <button className={`${styles.registerBtn} reveal`}>
-        {cta}
-      </button>
+      {/* CTA */}
+      <div className={`${styles.ctaWrap} ${inView ? styles.ctaVisible : ''}`}>
+        <button className={styles.registerBtn}>{cta}</button>
+      </div>
 
+      {/* Lightbox */}
       {selected && (
         <div className={styles.overlay} onClick={() => setSelected(null)}>
           <div className={styles.lightbox} onClick={e => e.stopPropagation()}>

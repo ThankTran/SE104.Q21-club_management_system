@@ -1,5 +1,5 @@
 // src/components/Members.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './Member.module.css'
 
 const members = [
@@ -10,14 +10,26 @@ const members = [
   { id: 5, name: 'Hoàng Văn E',  role: 'Trưởng ban sự kiện' },
 ]
 
-// Clone đủ để băng chuyền liền mạch
 const AUTO_DELAY = 3000
 
 export default function Members() {
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [inView, setInView] = useState(false)
+  const sectionRef = useRef(null)
   const total = members.length
 
+  // IntersectionObserver
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.15 }
+    )
+    if (sectionRef.current) observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  // Auto play
   useEffect(() => {
     if (paused) return
     const timer = setInterval(() => {
@@ -26,7 +38,6 @@ export default function Members() {
     return () => clearInterval(timer)
   }, [paused, total])
 
-  // Nút prev/next — nhảy 1 card
   const prev = () => setActive(i => (i - 1 + total) % total)
   const next = () => setActive(i => (i + 1) % total)
 
@@ -37,14 +48,35 @@ export default function Members() {
     return diff
   }
 
+  const getCardStyle = (i) => {
+    const pos = getPos(i)
+    const isActive = pos === 0
+    const isHidden = Math.abs(pos) > 2
+    const absPos = Math.abs(pos)
+
+    return {
+      transform: `translateX(${pos * 260}px) scale(${isActive ? 1 : Math.max(0.7, 1 - absPos * 0.12)})`,
+      opacity: isHidden ? 0 : isActive ? 1 : Math.max(0.35, 1 - absPos * 0.3),
+      zIndex: 10 - absPos,
+      filter: isActive ? 'none' : `brightness(${Math.max(0.6, 1 - absPos * 0.2)})`,
+      pointerEvents: isActive ? 'auto' : 'none',
+      transition: 'all 0.5s cubic-bezier(0.34, 1.2, 0.64, 1)',
+    }
+  }
+
   return (
-    <section 
-      className={styles.section} id="members"
+    <section
+      className={styles.section}
+      id="members"
+      ref={sectionRef}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+      {/* Floating shape */}
+      <div className={styles.shape} />
+
       {/* Header */}
-      <div className={`${styles.header} reveal`}>
+      <div className={`${styles.header} ${inView ? styles.headerVisible : ''}`}>
         <span className={styles.tag}>Thành viên</span>
         <h2 className={styles.title}>Ban lãnh đạo & Thành viên</h2>
         <p className={styles.desc}>
@@ -52,36 +84,29 @@ export default function Members() {
         </p>
       </div>
 
-      {/* Prev button */}
-      <div className={`${styles.stage} reveal`}>
+      {/* Stage */}
+      <div className={`${styles.stage} ${inView ? styles.stageVisible : ''}`}>
         {members.map((member, i) => {
           const pos = getPos(i)
           const isActive = pos === 0
-          const isHidden = Math.abs(pos) > 2
 
           return (
             <div
               key={member.id}
-              className={styles.card}
-              style={{
-                transform: `
-                  translateX(${pos * 100}%)
-                  scale(${isActive ? 1 : 0.9})  
-                `,
-                opacity: isHidden ? 0 : Math.max(0.3, 1 - Math.abs(pos) * 0.35),
-                zIndex: 10 - Math.abs(pos),
-                filter: isActive ? 'none' : `blur(${Math.abs(pos) * 0.5}px)`,
-                pointerEvents: isActive ? 'auto' : 'none',
-                transition: 'all 0.5s ease',
-              }}
+              className={`${styles.card} ${isActive ? styles.cardActive : ''}`}
+              style={getCardStyle(i)}
               onClick={() => !isActive && setActive(i)}
             >
+              {/* Glow ring khi active */}
+              {isActive && <div className={styles.glowRing} />}
+
               <div className={`${styles.avatar} ${isActive ? styles.avatarActive : ''}`}>
                 <svg width="52" height="52" viewBox="0 0 80 80" fill="none">
                   <circle cx="40" cy="28" r="18" fill="white" opacity="0.6" />
                   <ellipse cx="40" cy="68" rx="28" ry="16" fill="white" opacity="0.6" />
                 </svg>
               </div>
+
               <div className={styles.info}>
                 <p className={styles.name}>{member.name}</p>
                 <p className={styles.role}>{member.role}</p>
@@ -96,7 +121,8 @@ export default function Members() {
         })}
       </div>
 
-      <div className={`${styles.controls} reveal`}>
+      {/* Controls */}
+      <div className={`${styles.controls} ${inView ? styles.controlsVisible : ''}`}>
         <button className={styles.btn} onClick={prev}>←</button>
         <div className={styles.dots}>
           {members.map((_, i) => (
