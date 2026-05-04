@@ -1,10 +1,9 @@
-// src/components/Event.jsx
 import { useEffect, useRef, useState } from 'react';
 import { eventsData } from '../data/content';
 import styles from './Event.module.css';
 
 export default function Events() {
-  const { tag, title, description, items, cta } = eventsData;
+  const { title, description, items, cta } = eventsData;
   const [inView, setInView] = useState(false);
   const sectionRef = useRef(null);
 
@@ -19,11 +18,11 @@ export default function Events() {
 
   return (
     <section className={styles.events} id="events" ref={sectionRef}>
-      {/* Floating shape — nhẹ như About */}
+      {/* Floating shape giống như About */}
       <div className={styles.shape} />
 
       <div className={styles.inner}>
-        {/* Left — image box slide từ trái */}
+        {/* Left image box slide từ trái */}
         <div className={`${styles.imgBox} ${inView ? styles.imgVisible : ''}`}>
           {/* Pulse ring */}
           <div className={styles.pulseRing} />
@@ -39,9 +38,8 @@ export default function Events() {
           </svg>
         </div>
 
-        {/* Right content — slide từ phải */}
+        {/* Right content slide từ phải */}
         <div className={`${styles.content} ${inView ? styles.contentVisible : ''}`}>
-          <span className={styles.sectionTag}>{tag}</span>
           <h2 className={styles.sectionTitle}>{title}</h2>
           <p className={styles.desc}>{description}</p>
 

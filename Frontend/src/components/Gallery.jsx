@@ -1,10 +1,9 @@
-// src/components/Gallery.jsx
 import { useState, useRef, useEffect } from 'react';
 import { galleryData } from '../data/content';
 import styles from './Gallery.module.css';
 
 export default function Gallery() {
-  const { tag, title, description, images, cta } = galleryData;
+  const { title, description, images, cta } = galleryData;
   const looped = [...images, ...images]
 
   const CARD_WIDTH = 280
@@ -76,7 +75,6 @@ export default function Gallery() {
 
       {/* Header */}
       <div className={`${styles.header} ${inView ? styles.headerVisible : ''}`}>
-        <span className={styles.tag}>{tag}</span>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.desc}>{description}</p>
       </div>

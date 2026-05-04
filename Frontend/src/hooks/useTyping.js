@@ -7,7 +7,6 @@ export default function useTyping(lines, speed = 60, start = false) {
 
   const prevStart = useRef(false)
 
-  // ✅ Detect false → true
   useEffect(() => {
   if (start && !prevStart.current) {
     const t = setTimeout(() => {

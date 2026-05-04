@@ -1,4 +1,3 @@
-/* About.module.css */
 .about {
   background: var(--white-soft);
   padding: 96px 80px;
@@ -13,7 +12,7 @@
 .shape {
   position: absolute;
   width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, var(--primary-300), transparent 70%);
+  background: radial-gradient(circle, var(--primary-700), transparent 70%);
   top: -200px; left: -150px;
   opacity: 0.2; filter: blur(60px);
   animation: floatShape 12s ease-in-out infinite;

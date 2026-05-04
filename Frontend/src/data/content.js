@@ -1,6 +1,3 @@
-// src/data/content.js
-
-// ── Ảnh imports ──
 import heroAvatar  from '../assets/avatar/avatar.png'
 
 import about1 from '../assets/about/about1.png'
@@ -25,8 +22,6 @@ import member3 from '../assets/member/member3.png'
 import member4 from '../assets/member/member4.png'
 import member5 from '../assets/member/member5.png'
 
-// ─────────────────────────────────────────
-
 export const navLinks = [
   { label: 'Trang chủ',  href: '#hero' },
   { label: 'Giới thiệu', href: '#about' },
@@ -36,10 +31,10 @@ export const navLinks = [
 ];
 
 export const heroData = {
-  avatar: heroAvatar,  // ← ảnh hero
+  avatar: heroAvatar,  // ảnh hero
   slides: [
     {
-      badge: 'CLB Học Thuật',
+      badge: 'CLB Học Thuật THMN',
       title: ['Kết nối tri thức, xây dựng tương lai'],
       description: 'Giới thiệu về CLB học thuật — nơi hội tụ những sinh viên đam mê nghiên cứu, học hỏi và cùng nhau phát triển trong môi trường học thuật năng động.',
       cta: 'Tìm hiểu thêm',
@@ -55,9 +50,9 @@ export const heroData = {
 };
 
 export const aboutData = {
-  tag: 'Về chúng tôi',
-  title: 'About Club',
-  description: 'Đây là nơi để bạn học hỏi, chia sẻ và cùng nhau tạo nên những giá trị tích cực cho cộng đồng sinh viên.',
+  title: 'Giới thiệu',
+  description:
+    'Đây không chỉ là nơi học hỏi, đây còn là môi trường để bạn kết nối, chia sẻ và phát triển, cùng nhau xây dựng một cộng đồng sinh viên năng động, sáng tạo và đầy cảm hứng.',
   cards: [
     { label: 'Nghiên cứu\nkhoa học', color: '#1a3d2b', height: 200, img: about2 },
     { label: 'Hội thảo\nchuyên đề',  color: '#2d6a4f', height: 160, img: about3 },
@@ -68,8 +63,7 @@ export const aboutData = {
 };
 
 export const eventsData = {
-  tag: 'Sự kiện',
-  title: 'Events',
+  title: 'Sự kiện',
   description: 'Giới thiệu về các hoạt động sự kiện của CLB — từ hội thảo, tọa đàm đến các buổi workshop thực tế bổ ích.',
   items: [
     {
@@ -89,7 +83,6 @@ export const eventsData = {
 };
 
 export const galleryData = {
-  tag: 'Hình ảnh',
   title: 'Khoảnh khắc đáng nhớ',
   description: 'Những hình ảnh ghi lại các hoạt động nổi bật của CLB trong suốt hành trình phát triển.',
   images: [
@@ -107,7 +100,7 @@ export const galleryData = {
 };
 
 export const footerData = {
-  clubName: 'CLB Học Thuật',
+  clubName: 'CLB Học Thuật THMN',
   tagline: 'Nơi kết nối những tâm hồn yêu tri thức và khát vọng cống hiến.',
   quickAccess: [
     { label: 'Trang chủ',  href: '#hero' },

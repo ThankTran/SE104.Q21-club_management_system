@@ -1,4 +1,3 @@
-// src/components/Members.jsx
 import { useState, useEffect, useRef } from 'react'
 import styles from './Member.module.css'
 import { membersData } from '../data/content'
@@ -71,7 +70,6 @@ export default function Members() {
 
       {/* Header */}
       <div className={`${styles.header} ${inView ? styles.headerVisible : ''}`}>
-        <span className={styles.tag}>Thành viên</span>
         <h2 className={styles.title}>Ban lãnh đạo & Thành viên</h2>
         <p className={styles.desc}>
           Đội ngũ những người trẻ nhiệt huyết, cùng nhau xây dựng và phát triển CLB.

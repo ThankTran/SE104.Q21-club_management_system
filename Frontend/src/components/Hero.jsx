@@ -1,11 +1,10 @@
-// src/components/Hero.jsx
 import { useState, useEffect, useRef } from 'react'
 import { heroData } from '../data/content'
 import styles from './Hero.module.css'
 import useCounter from '../hooks/useCounter'
 import useTyping from '../hooks/useTyping'
 
-// ── Particle component ──
+// Particle component
 function Particles() {
   const canvasRef = useRef(null)
 
@@ -63,7 +62,7 @@ function Particles() {
   return <canvas ref={canvasRef} className={styles.particles} />
 }
 
-// ── Main component ──
+// Main component
 export default function Hero() {
   const { avatar, slides, stats } = heroData
   const [slideIdx, setSlideIdx] = useState(0)
@@ -92,7 +91,7 @@ export default function Hero() {
     setSlideIdx(idx)
   }
 
-  // Auto slide — luôn sang phải
+  // Auto slide luôn sang phải
   useEffect(() => {
     if (!inView) return
     const timer = setInterval(() => {
@@ -104,7 +103,7 @@ export default function Hero() {
 
   const count = useCounter(500, 2200, inView)
 
-  // ← hasStarted thay vì inView — type 1 lần không reset
+  // hasStarted thay vì inView type 1 lần không reset
   const { displayed, done, lineIdx } = useTyping(slides[0].title, 55, hasStarted)
 
   const { badge, cta } = slides[0]

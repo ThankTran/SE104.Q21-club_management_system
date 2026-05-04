@@ -1,4 +1,3 @@
-// src/components/About.jsx
 import { useEffect, useRef, useState } from 'react';
 import { aboutData } from '../data/content';
 import styles from './About.module.css';

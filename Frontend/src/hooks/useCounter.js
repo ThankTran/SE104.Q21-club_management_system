@@ -1,4 +1,3 @@
-// src/hooks/useCounter.js
 import { useState, useEffect } from 'react'
 
 export default function useCounter(target, duration = 2000, start = false) {

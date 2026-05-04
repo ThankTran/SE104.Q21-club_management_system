@@ -1,8 +1,8 @@
-// src/components/Navbar/Navbar.jsx
 import { useState, useEffect, useMemo } from 'react';
 import { navLinks } from '../data/content';
 import styles from './NavbarLanding.module.css';
 import { useNavigate } from 'react-router-dom'
+import logo from '../assets/logo/logo_cnpm.png'
 
 export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
   const [scrolled, setScrolled] = useState(false);
@@ -46,7 +46,15 @@ useEffect(() => {
 
   return (
     <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`}>
-      <div className={styles.logo}>A</div>
+      <div 
+        className={styles.logo}
+        onClick={() => {
+          document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' })
+        }}
+        style={{ cursor: 'pointer' }}
+      >
+        <img src={logo} alt="Logo"/>
+      </div>
 
       <ul className={styles.links}>
         {navLinks.map((link) => (

@@ -1,4 +1,3 @@
-/* NavbarLanding.module.css */
 .nav {
   position: sticky; top: 0; z-index: 200;
   display: flex; align-items: center; justify-content: space-between;
@@ -11,12 +10,17 @@
 }
 
 .logo {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--primary-500);
+  width: 65px; height: 65px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-family); font-size: 18px; font-weight: 700;
-  color: var(--white-hard); flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  overflow: hidden; flex-shrink: 0;
+}
+
+.logo img {
+  width: 115%;
+  height: 115%;
+
+  object-fit: cover;
+  object-position: center;
 }
 
 .links { display: flex; gap: 32px; list-style: none; }
@@ -31,17 +35,17 @@
   display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
 .link:hover { color: var(--white-hard); }
-.link.active { color: var(--primary-700); font-weight: 600; }
+.link.active { color: var(--primary-500); font-weight: 600; }
 
 .indicator {
   display: block;
-  height: 2px; border-radius: 2px;
+  height: 3px; border-radius: 2px;
   width: 0;
-  background: var(--primary-500);
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-300));
   transition: width 0.3s ease;
 }
 .indicatorActive {
-  width: 100%;   /* ← trải dài bằng chữ khi active */
+  width: 100%;
 }
 
 .actions { display: flex; gap: 10px; align-items: center; }
