@@ -1,18 +1,12 @@
 // src/components/Members.jsx
 import { useState, useEffect, useRef } from 'react'
 import styles from './Member.module.css'
-
-const members = [
-  { id: 1, name: 'Nguyễn Văn A', role: 'Chủ nhiệm CLB' },
-  { id: 2, name: 'Trần Thị B',   role: 'Phó chủ nhiệm' },
-  { id: 3, name: 'Lê Văn C',     role: 'Trưởng ban học thuật' },
-  { id: 4, name: 'Phạm Thị D',   role: 'Trưởng ban truyền thông' },
-  { id: 5, name: 'Hoàng Văn E',  role: 'Trưởng ban sự kiện' },
-]
+import { membersData } from '../data/content'
 
 const AUTO_DELAY = 3000
 
 export default function Members() {
+  const members = membersData
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [inView, setInView] = useState(false)
@@ -101,10 +95,11 @@ export default function Members() {
               {isActive && <div className={styles.glowRing} />}
 
               <div className={`${styles.avatar} ${isActive ? styles.avatarActive : ''}`}>
-                <svg width="52" height="52" viewBox="0 0 80 80" fill="none">
-                  <circle cx="40" cy="28" r="18" fill="white" opacity="0.6" />
-                  <ellipse cx="40" cy="68" rx="28" ry="16" fill="white" opacity="0.6" />
-                </svg>
+                <img
+                  src={member.img}
+                  alt={member.name}
+                  className={styles.avatarImg}
+                />
               </div>
 
               <div className={styles.info}>

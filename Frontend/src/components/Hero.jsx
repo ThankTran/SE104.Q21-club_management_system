@@ -65,30 +65,54 @@ function Particles() {
 
 // ── Main component ──
 export default function Hero() {
-  const { badge, title, description, cta, stats } = heroData
-  const [inView, setInView] = useState(false)  // ← toggle mỗi lần vào/ra viewport
+  const { avatar, slides, stats } = heroData
+  const [slideIdx, setSlideIdx] = useState(0)
+  const [inView, setInView] = useState(false)
+  const [hasStarted, setHasStarted] = useState(false) // ← chỉ true 1 lần
+  const [direction, setDirection] = useState(1)        // 1 = phải→trái, -1 = trái→phải
   const heroRef = useRef(null)
 
-  // Toggle inView mỗi lần scroll vào/ra — typing sẽ replay mỗi lần
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         setInView(entry.isIntersecting)
+        if (entry.isIntersecting && !hasStarted) {
+          setHasStarted(true) // ← chỉ set true 1 lần duy nhất
+        }
       },
       { threshold: 0.2 }
     )
     if (heroRef.current) observer.observe(heroRef.current)
     return () => observer.disconnect()
-  }, [])
+  }, [hasStarted])
+
+  // Đổi slide có direction
+  const changeSlide = (idx) => {
+    setDirection(idx > slideIdx ? 1 : -1)
+    setSlideIdx(idx)
+  }
+
+  // Auto slide — luôn sang phải
+  useEffect(() => {
+    if (!inView) return
+    const timer = setInterval(() => {
+      setDirection(1)
+      setSlideIdx(i => (i + 1) % slides.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [inView, slides.length])
 
   const count = useCounter(500, 2200, inView)
-  const { displayed, done, lineIdx } = useTyping(title, 55, inView)
+
+  // ← hasStarted thay vì inView — type 1 lần không reset
+  const { displayed, done, lineIdx } = useTyping(slides[0].title, 55, hasStarted)
+
+  const { badge, cta } = slides[0]
+  const { description } = slides[slideIdx]
 
   return (
     <section className={styles.hero} id="hero" ref={heroRef}>
       <Particles />
-
-      {/* Floating shapes */}
       <div className={styles.shape1} />
       <div className={styles.shape2} />
       <div className={styles.shape3} />
@@ -101,23 +125,31 @@ export default function Hero() {
           {displayed.map((line, i) => (
             <span key={i} className={styles.titleLine}>
               {line}
-              {/* Cursor chỉ hiện ở dòng đang gõ, mất khi done */}
-              {!done && i === lineIdx && (
-                <span className={styles.cursor}>|</span>
-              )}
+              {!done && i === lineIdx && <span className={styles.cursor}>|</span>}
               <br />
             </span>
           ))}
         </h1>
 
-        <p className={`${styles.desc} ${inView ? styles.descVisible : ''}`}>
+        {/* key="slideIdx-direction" để trigger animation đúng hướng */}
+        <p
+          key={`${slideIdx}-${direction}`}
+          className={`${styles.desc} ${inView ? styles.descVisible : ''} ${
+            direction === 1 ? styles.slideInRight : styles.slideInLeft
+          }`}
+        >
           {description}
         </p>
 
         <div className={`${styles.dots} ${inView ? styles.dotsVisible : ''}`}>
-          <span className={styles.dotActive} />
-          <span className={styles.dot} />
-          <span className={styles.dot} />
+          {slides.map((_, i) => (
+            <span
+              key={i}
+              className={i === slideIdx ? styles.dotActive : styles.dot}
+              onClick={() => changeSlide(i)}
+              style={{ cursor: 'pointer' }}
+            />
+          ))}
         </div>
 
         <button className={`${styles.cta} ${inView ? styles.ctaVisible : ''}`}>
@@ -130,12 +162,7 @@ export default function Hero() {
         <div className={styles.circleWrap}>
           <div className={styles.circlePulse} />
           <div className={styles.circle}>
-            <div className={styles.placeholder}>
-              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-                <circle cx="40" cy="28" r="14" fill="white" opacity="0.5" />
-                <ellipse cx="40" cy="62" rx="24" ry="14" fill="white" opacity="0.5" />
-              </svg>
-            </div>
+            <img src={avatar} alt="CLB" style={{ width:'130%', height:'100%', objectFit:'cover' }} />
           </div>
         </div>
 

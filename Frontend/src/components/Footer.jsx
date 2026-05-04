@@ -1,8 +1,8 @@
-// src/components/Footer/Footer.jsx
+// src/components/Footer.jsx
+import { useEffect, useRef, useState } from 'react';
 import { footerData } from '../data/content';
 import styles from './Footer.module.css';
 
-// Social icons SVG map
 const SocialIcon = ({ name }) => {
   const icons = {
     Facebook: (
@@ -13,7 +13,7 @@ const SocialIcon = ({ name }) => {
     YouTube: (
       <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
         <path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.95C5.12 20 12 20 12 20s6.88 0 8.59-.47a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z" />
-        <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#1a3d2b" />
+        <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="var(--primary-900)" />
       </svg>
     ),
     Instagram: (
@@ -26,7 +26,7 @@ const SocialIcon = ({ name }) => {
     Email: (
       <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-        <polyline points="22,6 12,13 2,6" fill="none" stroke="#1a3d2b" strokeWidth="2" />
+        <polyline points="22,6 12,13 2,6" fill="none" stroke="var(--primary-900)" strokeWidth="2" />
       </svg>
     ),
   };
@@ -35,28 +35,52 @@ const SocialIcon = ({ name }) => {
 
 export default function Footer() {
   const { clubName, tagline, quickAccess, support, legal } = footerData;
+  const [inView, setInView] = useState(false);
+  const footerRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    if (footerRef.current) observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <footer className={styles.footer} id="footer">
+    <footer className={styles.footer} id="footer" ref={footerRef}>
+      {/* Floating shape */}
+      <div className={styles.shape} />
+
       {/* Social row */}
-      <div className={styles.socialRow}>
-        {['Facebook', 'YouTube', 'Instagram', 'Email'].map((name) => (
-          <a key={name} href="#" className={styles.socialIcon} aria-label={name}>
+      <div className={`${styles.socialRow} ${inView ? styles.socialVisible : ''}`}>
+        {['Facebook', 'YouTube', 'Instagram', 'Email'].map((name, i) => (
+          <a
+            key={name}
+            href="#"
+            className={styles.socialIcon}
+            aria-label={name}
+            style={{ transitionDelay: `${i * 0.08}s` }}
+          >
             <SocialIcon name={name} />
           </a>
         ))}
       </div>
 
-      <div className={styles.divider} />
+      <div className={`${styles.divider} ${inView ? styles.dividerVisible : ''}`} />
 
-      {/* Body columns */}
+      {/* Body */}
       <div className={styles.body}>
-        <div className={styles.col}>
+        {/* Col 1 */}
+        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
+          style={{ transitionDelay: '0.15s' }}>
           <p className={styles.clubName}>{clubName}</p>
           <p className={styles.tagline}>{tagline}</p>
         </div>
 
-        <div className={styles.col}>
+        {/* Col 2 */}
+        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
+          style={{ transitionDelay: '0.25s' }}>
           <h4 className={styles.colTitle}>Quick Access</h4>
           <ul>
             {quickAccess.map((item) => (
@@ -67,7 +91,9 @@ export default function Footer() {
           </ul>
         </div>
 
-        <div className={styles.col}>
+        {/* Col 3 */}
+        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
+          style={{ transitionDelay: '0.35s' }}>
           <h4 className={styles.colTitle}>Support</h4>
           <ul>
             {support.map((item) => (
@@ -79,8 +105,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
-      <div className={styles.bottom}>
+      {/* Bottom */}
+      <div className={`${styles.bottom} ${inView ? styles.bottomVisible : ''}`}>
         <p className={styles.copy}>© 2024 {clubName}. All rights reserved.</p>
         <div className={styles.legalLinks}>
           {legal.map((item) => (

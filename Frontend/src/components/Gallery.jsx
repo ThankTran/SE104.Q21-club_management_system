@@ -100,7 +100,8 @@ export default function Gallery() {
                 className={styles.card}
                 onClick={() => setSelected(img)}
               >
-                <div className={styles.cardImg} style={{ background: img.bg }}>
+                <div className={styles.cardImg}>
+                  <img src={img.img} alt={img.label} className={styles.cardPhoto} />
                   <div className={styles.zoomHint}>🔍</div>
                 </div>
                 <div className={styles.caption}>
@@ -125,7 +126,7 @@ export default function Gallery() {
         <div className={styles.overlay} onClick={() => setSelected(null)}>
           <div className={styles.lightbox} onClick={e => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setSelected(null)}>✕</button>
-            <div className={styles.lightboxImg} style={{ background: selected.bg }} />
+            <img src={selected.img} alt={selected.label} className={styles.lightboxImg} />
             <div className={styles.lightboxInfo}>
               <p className={styles.lightboxLabel}>{selected.label}</p>
               <p className={styles.lightboxSub}>CLB Học Thuật • Hoạt động nổi bật</p>

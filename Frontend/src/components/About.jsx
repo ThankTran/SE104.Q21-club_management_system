@@ -97,6 +97,11 @@ export default function About() {
                 onMouseLeave={() => setHoveredIdx(null)}
               >
 
+                {card.img
+                  ? <img src={card.img} alt={card.label} className={styles.cardImg} />
+                  : <div className={styles.cardBg} style={{ background: card.color }} />
+                }
+
                 <div
                   className={styles.overlay}
                   style={{ opacity: getOverlayOpacity(i) }}

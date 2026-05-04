@@ -1,42 +1,76 @@
 // src/data/content.js
-// Toàn bộ nội dung text tập trung tại đây — chỉnh sửa dễ dàng.
+
+// ── Ảnh imports ──
+import heroAvatar  from '../assets/avatar/avatar.png'
+
+import about1 from '../assets/about/about1.png'
+import about2 from '../assets/about/about2.png'
+import about3 from '../assets/about/about3.png'
+import about4 from '../assets/about/about4.png'
+import about5 from '../assets/about/about5.png'
+
+import gallery1  from '../assets/gallery/gallery1.png'
+import gallery2  from '../assets/gallery/gallery2.png'
+import gallery3  from '../assets/gallery/gallery3.png'
+import gallery4  from '../assets/gallery/gallery4.png'
+import gallery5  from '../assets/gallery/gallery5.png'
+import gallery6  from '../assets/gallery/gallery6.png'
+import gallery7  from '../assets/gallery/gallery7.png'
+import gallery8  from '../assets/gallery/gallery8.png'
+import gallery9  from '../assets/gallery/gallery9.png'
+
+import member1 from '../assets/member/member1.png'
+import member2 from '../assets/member/member2.png'
+import member3 from '../assets/member/member3.png'
+import member4 from '../assets/member/member4.png'
+import member5 from '../assets/member/member5.png'
+
+// ─────────────────────────────────────────
 
 export const navLinks = [
-  { label: 'Trang chủ', href: '#hero' },
+  { label: 'Trang chủ',  href: '#hero' },
   { label: 'Giới thiệu', href: '#about' },
-  { label: 'Sự kiện', href: '#events' },
-  { label: 'Thành viên', href: '#members'},
-  { label: 'Liên hệ', href: '#footer' },
+  { label: 'Sự kiện',    href: '#events' },
+  { label: 'Thành viên', href: '#members' },
+  { label: 'Liên hệ',    href: '#footer' },
 ];
 
 export const heroData = {
-  badge: 'CLB Học Thuật',
-  title: ['Kết nối tri thức, xây dựng tương lai'],
-  description:
-    'Giới thiệu về CLB học thuật — nơi hội tụ những sinh viên đam mê nghiên cứu, học hỏi và cùng nhau phát triển trong môi trường học thuật năng động.',
-  cta: 'Tìm hiểu thêm',
+  avatar: heroAvatar,  // ← ảnh hero
+  slides: [
+    {
+      badge: 'CLB Học Thuật',
+      title: ['Kết nối tri thức, xây dựng tương lai'],
+      description: 'Giới thiệu về CLB học thuật — nơi hội tụ những sinh viên đam mê nghiên cứu, học hỏi và cùng nhau phát triển trong môi trường học thuật năng động.',
+      cta: 'Tìm hiểu thêm',
+    },
+    {
+      description: 'CLB được thành lập vào năm 2018 bởi nhóm sinh viên có cùng chí hướng. Hơn 6 năm xây dựng và phát triển, chúng tôi tự hào là một trong những CLB học thuật lớn nhất trường.',
+    },
+    {
+      description: 'Chúng tôi tin rằng tri thức không chỉ để tích lũy mà còn để lan tỏa. Mỗi thành viên là một ngọn lửa nhỏ, cùng nhau thắp sáng cả một thế hệ.',
+    },
+  ],
   stats: { value: '500+', label: 'Thành viên' },
 };
 
 export const aboutData = {
   tag: 'Về chúng tôi',
   title: 'About Club',
-  description:
-    'Đây là nơi để bạn học hỏi, chia sẻ và cùng nhau tạo nên những giá trị tích cực cho cộng đồng sinh viên.',
+  description: 'Đây là nơi để bạn học hỏi, chia sẻ và cùng nhau tạo nên những giá trị tích cực cho cộng đồng sinh viên.',
   cards: [
-    { label: 'Nghiên cứu\nkhoa học', color: '#1a3d2b', height: 200 },
-    { label: 'Hội thảo\nchuyên đề',  color: '#2d6a4f', height: 160 },
-    { label: 'Kết nối\nmạng lưới',   color: '#74c69d', height: 210 },
-    { label: 'Phát triển\nkỹ năng',   color: '#3d5a6c', height: 175 },
-    { label: 'Học bổng &\ncơ hội',    color: '#52b788', height: 190 },
+    { label: 'Nghiên cứu\nkhoa học', color: '#1a3d2b', height: 200, img: about2 },
+    { label: 'Hội thảo\nchuyên đề',  color: '#2d6a4f', height: 160, img: about3 },
+    { label: 'Kết nối\nmạng lưới',   color: '#74c69d', height: 210, img: about1 },
+    { label: 'Phát triển\nkỹ năng',   color: '#3d5a6c', height: 175, img: about4 },
+    { label: 'Học bổng &\ncơ hội',    color: '#52b788', height: 190, img: about5 },
   ],
 };
 
 export const eventsData = {
   tag: 'Sự kiện',
   title: 'Events',
-  description:
-    'Giới thiệu về các hoạt động sự kiện của CLB — từ hội thảo, tọa đàm đến các buổi workshop thực tế bổ ích.',
+  description: 'Giới thiệu về các hoạt động sự kiện của CLB — từ hội thảo, tọa đàm đến các buổi workshop thực tế bổ ích.',
   items: [
     {
       title: 'Hội thảo Nghiên cứu Khoa học 2024',
@@ -57,19 +91,17 @@ export const eventsData = {
 export const galleryData = {
   tag: 'Hình ảnh',
   title: 'Khoảnh khắc đáng nhớ',
-  description:
-    'Những hình ảnh ghi lại các hoạt động nổi bật của CLB trong suốt hành trình phát triển.',
+  description: 'Những hình ảnh ghi lại các hoạt động nổi bật của CLB trong suốt hành trình phát triển.',
   images: [
-    { id: 1,  label: 'Hội thảo KH', bg: 'linear-gradient(135deg,#254a2a,#3f6b39)' },
-    { id: 2,  label: 'Workshop', bg: 'linear-gradient(135deg,#3f6b39,#64ab59)' },
-    { id: 3,  label: 'Giao lưu', bg: 'linear-gradient(135deg,#1e293b,#4b5563)' },
-    { id: 4,  label: 'Ngoại khóa', bg: 'linear-gradient(135deg,#64ab59,#c9e8c8)' },
-    { id: 5,  label: 'Tọa đàm', bg: 'linear-gradient(135deg,#254a2a,#64ab59)' },
-    { id: 6,  label: 'Văn nghệ', bg: 'linear-gradient(135deg,#4b5563,#1e293b)' },
-    { id: 7,  label: 'Kết nạp thành viên', bg: 'linear-gradient(135deg,#3f6b39,#254a2a)' },
-    { id: 8,  label: 'Sinh hoạt CLB', bg: 'linear-gradient(135deg,#c9e8c8,#64ab59)' },
-    { id: 9,  label: 'Học thuật', bg: 'linear-gradient(135deg,#254a2a,#4b5563)' },
-    { id: 10, label: 'Team building', bg: 'linear-gradient(135deg,#64ab59,#3f6b39)' },
+    { id: 1,  label: 'Học thuật',        img: gallery8 },
+    { id: 2,  label: 'Workshop',            img: gallery2 },
+    { id: 3,  label: 'Giao lưu',            img: gallery3 },
+    { id: 4,  label: 'Ngoại khóa',          img: gallery4 },
+    { id: 5,  label: 'Tọa đàm',             img: gallery5 },
+    { id: 6,  label: 'Văn nghệ',            img: gallery6 },
+    { id: 7,  label: 'Kết nạp thành viên',  img: gallery7 },
+    { id: 8,  label: 'Sinh hoạt CLB',       img: gallery1 },
+    { id: 9,  label: 'Teambuilding',           img: gallery9 },
   ],
   cta: 'Đăng ký ngay',
 };
@@ -78,10 +110,10 @@ export const footerData = {
   clubName: 'CLB Học Thuật',
   tagline: 'Nơi kết nối những tâm hồn yêu tri thức và khát vọng cống hiến.',
   quickAccess: [
-    { label: 'Trang chủ',  href: '#' },
-    { label: 'Giới thiệu', href: '#' },
-    { label: 'Sự kiện',    href: '#' },
-    { label: 'Thành viên', href: '#' },
+    { label: 'Trang chủ',  href: '#hero' },
+    { label: 'Giới thiệu', href: '#about' },
+    { label: 'Sự kiện',    href: '#events' },
+    { label: 'Thành viên', href: '#members' },
   ],
   support: [
     { label: 'Liên hệ',         href: '#' },
@@ -93,3 +125,11 @@ export const footerData = {
     { label: 'Điều khoản sử dụng', href: '#' },
   ],
 };
+
+export const membersData = [
+  { id: 1, name: 'Nguyễn Văn A', role: 'Chủ nhiệm CLB',          img: member1 },
+  { id: 2, name: 'Trần Thị B',   role: 'Phó chủ nhiệm',          img: member3 },
+  { id: 3, name: 'Lê Văn C',     role: 'Trưởng ban học thuật',    img: member4 },
+  { id: 4, name: 'Phạm Thị D',   role: 'Trưởng ban truyền thông', img: member5 },
+  { id: 5, name: 'Hoàng Văn E',  role: 'Trưởng ban sự kiện',     img: member2 },
+];
