@@ -1,0 +1,141 @@
+/* Footer.module.css */
+.footer {
+  background: var(--primary-900);
+  color: white;
+  padding: 48px 80px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Floating shape */
+.shape {
+  position: absolute;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, var(--primary-700), transparent 70%);
+  top: -150px; right: -100px;
+  opacity: 0.3; filter: blur(60px);
+  animation: floatShape 12s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+
+@keyframes floatShape {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(-20px, 20px); }
+}
+
+/* ── Social row ── */
+.socialRow {
+  display: flex; gap: 14px;
+  margin-bottom: 32px;
+  position: relative; z-index: 1;
+}
+
+.socialIcon {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary-300);
+  text-decoration: none;
+  /* Start state */
+  opacity: 0; transform: translateY(16px) scale(0.8);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
+}
+.socialVisible .socialIcon {
+  opacity: 1; transform: translateY(0) scale(1);
+}
+.socialIcon:hover {
+  border-color: var(--primary-500);
+  color: var(--white-hard);
+  background: rgba(59,130,246,0.15);
+  transform: translateY(-3px) scale(1.1) !important;
+  transition-delay: 0s !important;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin-bottom: 32px;
+  position: relative; z-index: 1;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s;
+}
+.dividerVisible { transform: scaleX(1); }
+
+/* ── Body ── */
+.body {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 36px;
+  position: relative; z-index: 1;
+}
+
+.col {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.colVisible { opacity: 1; transform: translateY(0); }
+
+.clubName {
+  font-size: 22px; font-weight: 700;
+  color: var(--white-hard); margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  color: var(--primary-300);
+  font-size: 13px; line-height: 1.65;
+}
+
+.colTitle {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--primary-500); margin-bottom: 16px;
+}
+
+.col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+.colLink {
+  color: var(--primary-300); font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s, transform 0.2s;
+  display: inline-block;
+}
+.colLink:hover {
+  color: var(--white-hard);
+  transform: translateX(4px);
+}
+
+/* ── Bottom ── */
+.bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  position: relative; z-index: 1;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 0.6s ease 0.4s, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s;
+}
+.bottomVisible { opacity: 1; transform: translateY(0); }
+
+.copy { color: var(--primary-300); font-size: 12px; opacity: 0.7; }
+
+.legalLinks { display: flex; gap: 20px; }
+
+.legalLink {
+  color: var(--primary-300); font-size: 12px; opacity: 0.7;
+  text-decoration: none;
+  transition: opacity 0.2s, color 0.2s;
+}
+.legalLink:hover { opacity: 1; color: var(--white-hard); }
+
+@media (max-width: 768px) {
+  .footer { padding: 40px 24px 24px; }
+  .body { grid-template-columns: 1fr 1fr; }
+  .bottom { flex-direction: column; gap: 12px; align-items: flex-start; }
+}

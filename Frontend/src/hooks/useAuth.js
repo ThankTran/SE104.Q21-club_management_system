@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../store/auth-store'
 import useAppStore from '../store/app-store'
-import { loginAPI } from '../services/auth-services'
+import { loginAPI, registerAPI } from '../services/auth-services'
 
 const useAuth = () => {
   const { user, isLoggedIn, login: setAuth, logout } = useAuthStore()
@@ -30,14 +30,31 @@ const useAuth = () => {
     }
   }
 
+  const register = async (credentials) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await registerAPI(credentials)
+      setAuth(data.user, data.token)
+      setNotification("Đăng ký thành công!", "success")
+      navigate('/dashboard')
+    } catch (err) {
+      const message = err?.message || 'Đăng ký thất bại'
+      setError(message)
+      setNotification(message, 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleLogout = () => {
     logout()
     queryClient.clear()
     setNotification('Đã đăng xuất', 'info')
-    navigate('/login')
+    navigate('/')
   }
 
-  return { user, isLoggedIn, loading, error, login, logout: handleLogout }
+  return { user, isLoggedIn, loading, error, login, register, logout: handleLogout }
 }
 
 export default useAuth
