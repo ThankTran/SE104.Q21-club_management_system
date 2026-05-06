@@ -22,6 +22,7 @@ public class Role {
     @Column(name = "role_name", nullable = false, unique = true, length = 255)
     private String roleName;
 
+    // prior 1-10 càng thấp thì càng prior cao
     @Column(name = "priority", nullable = false)
     private Integer priority;
 }

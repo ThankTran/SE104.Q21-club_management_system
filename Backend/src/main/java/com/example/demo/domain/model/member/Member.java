@@ -2,13 +2,19 @@ package com.example.demo.domain.model.member;
 
 import com.example.demo.domain.model.department.Department;
 import com.example.demo.domain.model.role.Role;
+import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
 import com.example.demo.domain.enums.GraduatedStatusEnum;
-
+import com.example.demo.domain.enums.DocumentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.DynamicInsert;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "members")
@@ -17,6 +23,9 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@DynamicUpdate
+@Where(clause = "deleted_at IS NULL")
+
 
 public class Member {
     @Id
@@ -45,7 +54,6 @@ public class Member {
     private GenderEnum gender;
 
     @Column(name = "date_of_birth")
-    @Temporal(TemporalType.DATE)
     private LocalDate dateOfBirth;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,7 +68,24 @@ public class Member {
     @Column(name = "req_status", length = 50)
     private ApprovalStatusEnum reqStatus;
 
+    @Column(name = "approval_note", length = 500)
+    private String approvalNote;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private Member approver;
+
+    @Column(name = "approval_date")
+    private LocalDateTime approvalDate;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
