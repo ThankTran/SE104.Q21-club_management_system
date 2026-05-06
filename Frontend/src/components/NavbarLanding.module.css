@@ -5,6 +5,7 @@
   background: var(--primary-900);
   transition: box-shadow 0.3s ease;
 }
+
 .scrolled { 
   box-shadow: 0 4px 24px rgba(0,0,0,0.35); 
 }
@@ -28,7 +29,7 @@
 
 .link {
   color: var(--primary-300);
-  font-size: 14px; font-weight: 500;
+  font-size: 15px; font-weight: 500;
   padding: 6px 14px;
   transition: color 0.2s;
   text-decoration: none;

@@ -49,8 +49,45 @@ export default function Footer() {
 
   return (
     <footer className={styles.footer} id="footer" ref={footerRef}>
-      {/* Floating shape */}
-      <div className={styles.shape} />
+      {/* Body */}
+      <div className={styles.body}>
+        {/* Col 1 */}
+        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
+          style={{ transitionDelay: '0.15s' }}>
+          <p className={styles.clubName}>{clubName}</p>
+          <p className={styles.tagline}>{tagline}</p>
+        </div>
+
+        {/* Col 2 */}
+        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
+          style={{ transitionDelay: '0.25s' }}>
+          <div className={styles.colGroup}>
+            <h4 className={styles.colTitle}>Truy Cập Nhanh</h4>
+            <ul>
+              {quickAccess.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href} className={styles.colLink}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Col 3 */}
+        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
+          style={{ transitionDelay: '0.35s' }}>
+          <div className={styles.colGroup}>
+            <h4 className={styles.colTitle}>Hỗ Trợ</h4>
+            <ul>
+              {support.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href} className={styles.colLink}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
 
       {/* Social row */}
       <div className={`${styles.socialRow} ${inView ? styles.socialVisible : ''}`}>
@@ -65,44 +102,6 @@ export default function Footer() {
             <SocialIcon name={name} />
           </a>
         ))}
-      </div>
-
-      <div className={`${styles.divider} ${inView ? styles.dividerVisible : ''}`} />
-
-      {/* Body */}
-      <div className={styles.body}>
-        {/* Col 1 */}
-        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
-          style={{ transitionDelay: '0.15s' }}>
-          <p className={styles.clubName}>{clubName}</p>
-          <p className={styles.tagline}>{tagline}</p>
-        </div>
-
-        {/* Col 2 */}
-        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
-          style={{ transitionDelay: '0.25s' }}>
-          <h4 className={styles.colTitle}>Quick Access</h4>
-          <ul>
-            {quickAccess.map((item) => (
-              <li key={item.label}>
-                <a href={item.href} className={styles.colLink}>{item.label}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Col 3 */}
-        <div className={`${styles.col} ${inView ? styles.colVisible : ''}`}
-          style={{ transitionDelay: '0.35s' }}>
-          <h4 className={styles.colTitle}>Support</h4>
-          <ul>
-            {support.map((item) => (
-              <li key={item.label}>
-                <a href={item.href} className={styles.colLink}>{item.label}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
 
       {/* Bottom */}
