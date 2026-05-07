@@ -1,0 +1,65 @@
+.textInput,
+.pwInput {
+  width: 100%;
+  padding: 12px;
+  margin-top: 0px;
+  margin-bottom: 8px;
+  margin-left: 0px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--bg-white-off);
+  border-radius: 16px;
+  box-sizing: border-box;
+  border: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.textInput::placeholder,
+.pwInput::placeholder {
+  color: rgba(252, 252, 252, 0.7);
+  font-size: 16px;
+}
+.button {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--brand-primary);
+  color: rgb(253, 253, 253);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  margin-top: 8px;
+  font-size: 16px;
+}
+.signup {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 16px;
+}
+.text {
+  color: var(--white-hard);
+  cursor: default;
+}
+.signupLink {
+  margin-left: 8px;
+  color: var(--white-hard);
+  text-decoration: none;
+  font-weight: lighter;
+  transition: transform 0.3s ease-in-out;
+}
+.signupLink:hover {
+  text-decoration: underline;
+  color: var(--white-hard);
+  transition: transform 0.3s ease-in-out;
+}
+.rememberForgot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.rememberForgot input[type="checkbox"] {
+  margin-right: 4px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-green);
+}
