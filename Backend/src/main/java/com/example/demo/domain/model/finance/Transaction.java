@@ -1,0 +1,86 @@
+package com.example.demo.domain.model.finance;
+
+import com.example.demo.domain.model.event.Event;
+import com.example.demo.domain.model.member.Member;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.Where;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+
+@Entity
+@Table(name = "transactions")
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@DynamicUpdate
+@Where(clause = "deleted_at IS NULL")
+public class Transaction {
+    @Id
+    @Column(name = "transaction_id", length = 50)
+    private String transactionId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id")
+    private Event event;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 20)
+    private TransactionType type;
+
+    @Column(name = "amount", precision = 10, scale = 2, nullable = false)
+    private BigDecimal amount;
+
+    @Column(name = "description", columnDefinition = "text")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(name = "status", length = 50)
+    private TransactionStatus status  = TransactionStatus.PENDING;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private Member createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private Member approvedBy;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+}

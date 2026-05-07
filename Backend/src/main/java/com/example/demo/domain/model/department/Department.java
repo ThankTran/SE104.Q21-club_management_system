@@ -1,8 +1,8 @@
 package com.example.demo.domain.model.department;
 
+import com.example.demo.domain.model.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -16,13 +16,14 @@ import java.util.List;
 public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
     @Column(name = "department_id")
     private Long departmentId;
 
     @Column(name = "department_name", nullable = false, unique = true, length = 255)
     private String departmentName;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Member> members;
 }
