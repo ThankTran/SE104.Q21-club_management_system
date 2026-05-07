@@ -101,7 +101,8 @@ export const galleryData = {
 
 export const footerData = {
   clubName: 'CLB Học Thuật THMN',
-  tagline: 'Nơi kết nối những tâm hồn yêu tri thức và khát vọng cống hiến.',
+  tagline: 
+    'Nơi hội tụ những người trẻ yêu tri thức, luôn khao khát học hỏi và không ngừng vươn lên. Tại đây, mỗi ý tưởng đều được lắng nghe, mỗi nỗ lực đều được ghi nhận, và mỗi thành viên đều có cơ hội cùng nhau tạo nên những giá trị ý nghĩa cho cộng đồng.',
   quickAccess: [
     { label: 'Trang chủ',  href: '#hero' },
     { label: 'Giới thiệu', href: '#about' },
