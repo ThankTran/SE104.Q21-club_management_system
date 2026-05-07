@@ -1,5 +1,5 @@
 :root {
-  /* colors*/
+  /* Legacy/Core Palette */
   --primary-900: #254a2a;
   --primary-700: #3f6b39;
   --primary-500: #64ab59;
@@ -23,24 +23,112 @@
   --white-hard: #ffffff;
   --white-soft: #f8f9fa;
 
-  /* fonts */
-  --font-family:
-    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
+  /* Unified Project Palette */
+  --bg-main: #f7f9fb;
+  --bg-white-off: #fcfcfc;
+  --bg-sidebar-start: #f5f7fa;
+  --bg-sidebar-end: #e8eff8;
+  --bg-navbar-end: #f5f5f5;
+  --bg-gray-soft: #f2f4f6;
+  --bg-gray-hover: #e8ecf0;
 
-  /* shadows */
+  --text-deep-navy: #002045;
+  --text-main: #43474e;
+  --text-muted-blue: #86a0cd;
+  --text-muted-gray: #8b92a0;
+  --text-light-gray: #999999;
+  --text-dark-gray: #666666;
+  --text-header: #333333;
+  --text-darkest: #1a1a1a;
+  --text-error-light: #fff4f4;
+  --text-muted-light-gray: #888;
+
+  --brand-primary: #2000d3;
+  --brand-primary-dark: #1a00a8;
+  --brand-secondary: #003d82;
+  --brand-cyan: #57dffe;
+  --brand-teal: #006172;
+  --brand-navy: #1a365d;
+  --brand-navy-dark: #003366;
+  --brand-blue-action: #0066cc;
+  --brand-blue-link: #2563eb;
+
+  --accent-cyan: #00e5ff;
+  --accent-green: #00ca51;
+  --accent-emerald: #34d399;
+  --accent-purple: #a78bfa;
+  --accent-pink: #f472b6;
+
+  --border-subtle: #e0e6ed;
+  --border-soft: #e0e0e0;
+  
+  --shadow-inner: #cbd5e0;
+  --shadow-logo-blue: #646cffaa;
+  --shadow-logo-react: #61dafbaa;
+
+  /* Fonts */
+  --font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+  /* Shadows */
   --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-heavy: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 body {
   margin: 0;
-  background-color: var(--bg-dark); /* Dùng biến màu đen đã lưu */
-  color: var(--white-hard); /* Chữ mặc định thành màu trắng */
+  padding: 0;
+  background-color: transparent;
+  font-family: var(--font-family);
+  color: var(--white-hard);
   min-height: 100vh;
 }
 
-.home-wrapper {
-  background-color: var(--white-soft);
+html {
+  height: 100%;
+  width: 100%;
 }
+
+.home-wrapper {
+  background-color: transparent;
+}
+
+/* Scroll Reveal Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+  visibility: hidden;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+  visibility: hidden;
+}
+
+.reveal-left.active {
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+  visibility: hidden;
+}
+
+.reveal-right.active {
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+}
+
