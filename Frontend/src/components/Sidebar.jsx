@@ -7,11 +7,13 @@ import events from "../assets/icons/events.svg";
 import finance from "../assets/icons/finance.svg";
 import help from "../assets/icons/help.svg";
 import logout from "../assets/icons/logout.svg";
+import home from "../assets/icons/home.svg";
 
 const Sidebar = () => {
   const [activeItem, setActiveItem] = useState("dashboard");
 
   const menuItems = [
+    { id: "home", label: "Home", icon: home },
     { id: "dashboard", label: "Dashboard", icon: dashboard },
     { id: "members", label: "Members", icon: members },
     { id: "resources", label: "Resources", icon: resources },

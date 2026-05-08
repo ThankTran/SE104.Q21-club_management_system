@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import styles from "./NavbarFM.module.css";
+import search from "../assets/icons/search.svg";
+import noti from "../assets/icons/noti.svg";
+import setting from "../assets/icons/setting.svg";
 
 const NavbarFM = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -13,6 +16,11 @@ const NavbarFM = () => {
     <nav className={styles.navbar}>
       {/* Left Section - Logo */}
       <div className={styles.logoSection}>
+        <img
+          src="/logo_cnpm.png"
+          alt="THMN club logo"
+          className={styles.logoImg}
+        />
         <h2 className={styles.logo}>THMN club</h2>
       </div>
 
@@ -37,17 +45,17 @@ const NavbarFM = () => {
           className={styles.searchInput}
         />
         <button className={styles.searchBtn}>
-          <span>🔍</span>
+          <img src={search} alt="Search" className={styles.searchIcon} />
         </button>
       </div>
 
       {/* Right Section - Icons */}
       <div className={styles.actionsSection}>
         <button className={styles.iconBtn} title="Notifications">
-          <span>🔔</span>
+          <img src={noti} alt="Notifications" className={styles.iconImg} />
         </button>
         <button className={styles.iconBtn} title="Settings">
-          <span>⚙️</span>
+          <img src={setting} alt="Settings" className={styles.iconImg} />
         </button>
         <button className={styles.profileBtn} title="Profile">
           <div className={styles.avatar}></div>
