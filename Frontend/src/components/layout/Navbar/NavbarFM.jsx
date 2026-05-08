@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import styles from "./NavbarFM.module.css";
-import search from "../assets/icons/search.svg";
-import noti from "../assets/icons/noti.svg";
-import setting from "../assets/icons/setting.svg";
+import styles from "./NavbarFM.module.css"; 
+import search from "../../../assets/icons/search.svg";
+import noti from "../../../assets/icons/noti.svg";
+import setting from "../../../assets/icons/setting.svg";
 
 const NavbarFM = () => {
   const [activeTab, setActiveTab] = useState("dashboard");

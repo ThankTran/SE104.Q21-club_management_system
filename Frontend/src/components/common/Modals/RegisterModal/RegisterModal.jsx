@@ -1,14 +1,11 @@
-// src/components/LoginModal.jsx
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import useAuth from '../hooks/useAuth'
-import styles from './LoginModal.module.css'
+import useAuth from '../../../../hooks/useAuth'
+import styles from './RegisterModal.module.css'
 
-const LoginModal = ({ onClose, onSwitchToRegister }) => {
-  const { login, loading, error } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '' })
+const RegisterModal = ({ onClose, onSwitchToLogin }) => {
+  const { register, loading, error } = useAuth()
+  const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [errors, setErrors] = useState({})
-  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -17,12 +14,16 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
 
   const validate = () => {
     const newErrors = {}
+    if (!form.name.trim())
+      newErrors.name = 'Please enter username'
     if (!form.email.trim())
       newErrors.email = 'Please enter email'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       newErrors.email = 'Invalid email address'
     if (!form.password)
       newErrors.password = 'Please enter password'
+    else if (form.password.length < 6)
+      newErrors.password = 'Password must be at least 6 characters'
     return newErrors
   }
 
@@ -32,8 +33,8 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
       setErrors(newErrors)
       return
     }
-    await login(form)
-    navigate('/home')
+    await register(form)
+    onClose()
   }
 
   return (
@@ -44,8 +45,8 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
 
         {/* Header */}
         <div className={styles.header}>
-          <h2 className={styles.title}>Đăng nhập</h2>
-          <p className={styles.subtitle}>Chào mừng trở lại!</p>
+          <h2 className={styles.title}>Đơn gia nhập câu lạc bộ</h2>
+          <p className={styles.subtitle}>Tham gia câu lạc bộ để nhận ngay ưu đãi!</p>
         </div>
 
         {/* Server error */}
@@ -53,6 +54,20 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
 
         {/* Form */}
         <div className={styles.form}>
+          {/* Username */}
+          <div className={styles.field}>
+            <label className={styles.label}>Họ và tên</label>
+            <input
+              name="name"
+              type="text"
+              placeholder="Nguyễn Văn A"
+              value={form.name}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
+            />
+            {errors.name && <p className={styles.errorMsg}>{errors.name}</p>}
+          </div>
+
           {/* Email */}
           <div className={styles.field}>
             <label className={styles.label}>Email</label>
@@ -69,7 +84,7 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
 
           {/* Password */}
           <div className={styles.field}>
-            <label className={styles.label}>Mật khẩu</label>
+            <label className={styles.label}>Mật Khẩu</label>
             <input
               name="password"
               type="password"
@@ -87,14 +102,14 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
             onClick={handleSubmit}
             disabled={loading}
           >
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            {loading ? 'Đang đăng ký...' : 'Tham gia'}
           </button>
 
-          {/* Switch to register */}
+          {/* Switch to login */}
           <p className={styles.footer}>
-            Chưa có tài khoản?{' '}
-            <span className={styles.footerLink} onClick={onSwitchToRegister}>
-              Đăng ký
+            Đã có tài khoản?{' '}
+            <span className={styles.footerLink} onClick={onSwitchToLogin}>
+              Đăng nhập
             </span>
           </p>
         </div>
@@ -103,4 +118,4 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
   )
 }
 
-export default LoginModal
+export default RegisterModal
