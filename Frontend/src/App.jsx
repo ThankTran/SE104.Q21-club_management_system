@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import PublicLayout from "./components/PublicLayout";
-import DashboardLayout from "./components/DashboardLayout";
+import PublicLayout from "./components/layout/Navigation/PublicLayout";
+import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
 import Signin from "./pages/SigninPage";
 import SignupPage from "./pages/SignupPage";
@@ -10,6 +10,9 @@ import Homepage from "./pages/Homepage";
 import Aboutpage from "./pages/Aboutpage";
 import DashboardPage from "./pages/DashboardPage";
 import MembersPage from "./pages/MembersPage";
+
+// TESTING
+
 
 const App = () => {
   return (
@@ -25,7 +28,10 @@ const App = () => {
         </Route>
 
         {/*dùng Dashboard Layout */}
-        <Route element={<DashboardLayout />}></Route>
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/members" element={<MembersPage />} />
+        </Route>      
       </Routes>
     </Router>
   );

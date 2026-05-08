@@ -1,0 +1,160 @@
+.wrapper {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+/* Header styling */
+.table thead th {
+  padding: 16px;
+  color: #718096;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #edf2f7;
+  text-transform: uppercase;
+}
+
+/* Row styling */
+.row {
+  border-bottom: 1px solid #f7fafc;
+  transition: background 0.2s ease;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background-color: #f8fafc;
+}
+
+.table td {
+  padding: 16px;
+  vertical-align: middle;
+  color: #2d3748;
+}
+
+/* Member Cell with Avatar and Info */
+.memberCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.memberName {
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.memberId {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  margin: 0;
+}
+
+/* Department Column */
+.dept {
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+/* Badge (Role) styling */
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Status with Dot */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Action Buttons */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editBtn, .deleteBtn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.editBtn {
+  background: #ebf8ff;
+  color: #3182ce;
+}
+
+.editBtn:hover {
+  background: #bee3f8;
+}
+
+.deleteBtn {
+  background: #fff5f5;
+  color: #e53e3e;
+}
+
+.deleteBtn:hover {
+  background: #fed7d7;
+}
+
+/* Empty State */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #a0aec0;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px dashed #edf2f7;
+}
+
+.empty p {
+  margin-top: 12px;
+  font-weight: 500;
+}

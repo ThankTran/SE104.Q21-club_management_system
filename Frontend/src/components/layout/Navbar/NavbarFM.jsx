@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import styles from "./NavbarFM.module.css"; 
+import styles from "./NavbarFM.module.css";
+import logo from "../../../assets/logo/logo_cnpm.png";
 import search from "../../../assets/icons/search.svg";
 import noti from "../../../assets/icons/noti.svg";
 import setting from "../../../assets/icons/setting.svg";
@@ -17,11 +18,15 @@ const NavbarFM = () => {
       {/* Left Section - Logo */}
       <div className={styles.logoSection}>
         <img
-          src="/logo_cnpm.png"
+          src={logo}
           alt="THMN club logo"
           className={styles.logoImg}
         />
-        <h2 className={styles.logo}>THMN club</h2>
+        <div className={styles.logoText}>
+          <h1 className={styles.logoTitle}>THMN</h1>
+          <h2 className={styles.logoSubtitle}>Academic Club</h2>
+          <h3 className={styles.logoSlogan}>KNOWLEDGE - LEADERSHIP - IMPACT</h3>
+        </div>
       </div>
 
       {/* Navigation Tabs */}
