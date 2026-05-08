@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { heroData } from '../data/content'
+import { heroData } from '../../../data/content'
 import styles from './Hero.module.css'
-import useCounter from '../hooks/useCounter'
-import useTyping from '../hooks/useTyping'
+import useCounter from '../../../hooks/useCounter'
+import useTyping from '../../../hooks/useTyping'
 
 // Particle component
 function Particles() {
