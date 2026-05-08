@@ -1,10 +1,10 @@
 :root {
-  /* Legacy/Core Palette */
-  --primary-900: #254a2a;
-  --primary-700: #3f6b39;
-  --primary-500: #64ab59;
-  --primary-300: #c9e8c8;
-  --primary-100: #e3f5d3;
+  /* colors*/
+  --primary-900: #1e3a8a;
+  --primary-700: #1d4ed8;
+  --primary-500: #3b82f6;
+  --primary-300: #93c5fd;
+  --primary-100: #dbeafe;
 
   --pink-900: #ff98a9;
   --pink-500: #ffd8df;
@@ -74,6 +74,14 @@
   --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-heavy: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
+
+/*section*/
+section {
+  padding: 100px 80px;
+  min-height: 70vh;
+  scroll-margin-top: 60px;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -132,3 +140,31 @@ html {
   visibility: visible;
 }
 
+.landing-wrapper {
+  background-color: var(--white-soft);
+  color: var(--gray-900);
+}
+
+.landing-blur {
+  background-color: var(--white-soft);
+  filter: blur(4px);
+  pointer-events: none; /* không click được phía sau khi modal mở */
+  user-select: none;
+}
+
+/* reveal scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px) scale(0.96);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
