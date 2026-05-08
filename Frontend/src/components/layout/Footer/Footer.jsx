@@ -1,6 +1,6 @@
 // src/components/Footer.jsx
 import { useEffect, useRef, useState } from 'react';
-import { footerData } from '../data/content';
+import { footerData } from '../../../data/content';
 import styles from './Footer.module.css';
 
 const SocialIcon = ({ name }) => {

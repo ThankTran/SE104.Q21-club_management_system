@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { navLinks } from '../data/content';
+import { navLinks } from '../../../data/content';
 import styles from './NavbarLanding.module.css';
 import { useNavigate } from 'react-router-dom'
 import logo from '../assets/logo/logo_cnpm.png'
