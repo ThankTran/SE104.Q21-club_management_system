@@ -1,9 +1,9 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./NavbarFM.module.css";
-import search from "../assets/icons/search.svg";
-import noti from "../assets/icons/noti.svg";
-import setting from "../assets/icons/setting.svg";
+import search from "../../../assets/icons/search.svg";
+import noti from "../../../assets/icons/noti.svg";
+import setting from "../../../assets/icons/setting.svg";
 
 const NavbarFMfull = () => {
   const location = useLocation();

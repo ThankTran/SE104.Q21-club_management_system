@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import NavbarFMfull from "./NavbarFMfull";
+import NavbarFMfull from "../Navbar/NavbarFMfull";
 
 const PublicLayout = () => {
   return (

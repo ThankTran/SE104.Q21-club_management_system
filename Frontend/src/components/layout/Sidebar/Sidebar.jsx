@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import styles from "./Sidebar.module.css";
-import dashboard from "../assets/icons/dashboard.svg";
-import members from "../assets/icons/members.svg";
-import resources from "../assets/icons/resources.svg";
-import events from "../assets/icons/events.svg";
-import finance from "../assets/icons/finance.svg";
-import help from "../assets/icons/help.svg";
-import logout from "../assets/icons/logout.svg";
-import home from "../assets/icons/home.svg";
+import dashboard from "../../../assets/icons/dashboard.svg";
+import members from "../../../assets/icons/members.svg";
+import resources from "../../../assets/icons/resources.svg";
+import events from "../../../assets/icons/events.svg";
+import finance from "../../../assets/icons/finance.svg";
+import help from "../../../assets/icons/help.svg";
+import logout from "../../../assets/icons/logout.svg";
+import home from "../../../assets/icons/home.svg";
 
 const Sidebar = () => {
   const [activeItem, setActiveItem] = useState("dashboard");
