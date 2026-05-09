@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { navLinks } from '../../../data/content';
 import styles from './NavbarLanding.module.css';
 import { useNavigate } from 'react-router-dom'
-import logo from '../assets/logo/logo_cnpm.png'
+import logo from "../../../assets/logo/logo_cnpm.png";
 
 export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
   const [scrolled, setScrolled] = useState(false);
@@ -53,7 +53,13 @@ useEffect(() => {
         }}
         style={{ cursor: 'pointer' }}
       >
-        <img src={logo} alt="Logo"/>
+        <img  src={logo}
+              alt="THMN club logo"
+              className={styles.logoImg}/>
+          <div className={styles.logoText}>
+            <h1 className={styles.logoTitle}>THMN</h1>
+              <h2 className={styles.logoSubtitle}>Academic Club</h2>
+            </div>
       </div>
 
       <ul className={styles.links}>

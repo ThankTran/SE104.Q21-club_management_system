@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "../components/layout/Navbar/Navbar"; // Đường dẫn đến file Navbar của bạn
+import Navbar from "../components/layout/Navbar/Navbar"; 
 import Searchbar from "../components/common/SearchBar/Searchbar";
 import Sidebar from "../components/layout/Sidebar/Sidebar";
 import NavbarFM from "../components/layout/Navbar/NavbarFM";

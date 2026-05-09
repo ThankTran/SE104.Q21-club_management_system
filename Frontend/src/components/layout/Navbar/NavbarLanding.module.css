@@ -11,17 +11,80 @@
 }
 
 .logo {
-  width: 65px; height: 65px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden; flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 12px;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background 0.2s ease;
+  padding: 8px 14px;
+  border-radius: 14px;
 }
 
-.logo img {
-  width: 115%;
-  height: 115%;
+.logo:hover {
+  transform: translateY(-1px);
+}
 
-  object-fit: cover;
+.logo img,
+.logoImg {
+  width: 65px;
+  height: 65px;
+  object-fit: contain;
   object-position: center;
+  margin: 0;
+  margin-left: -30px;
+  transform: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.logoImg:hover {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.2));
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.logoTitle {
+  margin: 0;
+  margin-left: 23px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white-hard);
+  letter-spacing: -0.35px;
+  line-height: 1.05;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  animation: logoFadeIn 0.8s ease-out;
+}
+
+@keyframes logoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logoSubtitle {
+  margin: 0;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-secondary-logo);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  opacity: 0.85;
+  animation: logoFadeIn 0.8s ease-out 0.2s both;
 }
 
 .links { display: flex; gap: 32px; list-style: none; }
