@@ -7,6 +7,7 @@ import About from '../components/sections/About/About'
 import Event from '../components/sections/Event/Event'
 import Gallery from '../components/sections/Gallery/Gallery'
 
+import Member from '../components/sections/Member/Member'
 import MemberF from '../components/sections/Member/MemberForm'
 import MemberT from '../components/sections/Member/MemberTable'
 
@@ -30,6 +31,7 @@ export default function LandingPage() {
         <About />
         <Event />
         <Gallery />
+        <Member />
         <MemberF />
         <MemberT />
         <Footer />

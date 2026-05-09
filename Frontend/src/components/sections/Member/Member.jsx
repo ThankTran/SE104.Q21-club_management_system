@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './Member.module.css'
-import { membersData } from '../data/content'
+import { membersData } from '../../../data/content';
 
 const AUTO_DELAY = 3000
 
