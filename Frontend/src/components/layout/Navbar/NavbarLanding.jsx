@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { navLinks } from '../../../data/content';
 import styles from './NavbarLanding.module.css';
 import { useNavigate } from 'react-router-dom'
-import logo from '../assets/logo/logo_cnpm.png'
+import logo from "../../../assets/logo/logo_cnpm.png";
 
 export default function NavbarLanding({ onLoginClick, onRegisterClick }) {
   const [scrolled, setScrolled] = useState(false);

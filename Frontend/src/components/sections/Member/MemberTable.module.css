@@ -1,49 +1,52 @@
+/* MemberTable.module.css */
+
 .wrapper {
-  background: #ffffff;
+  width: 100%;
   border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  overflow-x: auto;
+  border: 1px solid var(--gray-300);
+  background: var(--white-hard);
+  overflow: hidden;
 }
 
+/* ── Table ── */
 .table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+  font-family: var(--font-family);
+  font-size: 13.5px;
 }
 
-/* Header styling */
+.table thead tr {
+  background: var(--white-soft);
+  border-bottom: 1.5px solid var(--gray-300);
+}
+
 .table thead th {
-  padding: 16px;
-  color: #718096;
-  font-size: 0.75rem;
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid #edf2f7;
+  letter-spacing: 0.8px;
+  color: var(--gray-500);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-/* Row styling */
+/* ── Rows ── */
 .row {
-  border-bottom: 1px solid #f7fafc;
-  transition: background 0.2s ease;
+  border-bottom: 1px solid #f1f3f5;
+  transition: background 0.15s;
 }
-
-.row:last-child {
-  border-bottom: none;
-}
-
-.row:hover {
-  background-color: #f8fafc;
-}
+.row:last-child { border-bottom: none; }
+.row:hover { background: #f5f8ff; }
 
 .table td {
-  padding: 16px;
+  padding: 15px 20px;
   vertical-align: middle;
-  color: #2d3748;
+  color: var(--gray-900);
 }
 
-/* Member Cell with Avatar and Info */
+/* ── Member cell ── */
 .memberCell {
   display: flex;
   align-items: center;
@@ -51,110 +54,203 @@
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.875rem;
   flex-shrink: 0;
+  letter-spacing: 0.5px;
 }
 
 .memberName {
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0;
-  font-size: 0.95rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 2px;
+  line-height: 1.3;
 }
 
 .memberId {
-  font-size: 0.75rem;
-  color: #a0aec0;
+  font-size: 12px;
+  color: var(--gray-500);
   margin: 0;
 }
 
-/* Department Column */
+/* ── Department ── */
 .dept {
-  font-size: 0.9rem;
-  color: #4a5568;
+  color: var(--gray-700);
+  font-weight: 500;
 }
 
-/* Badge (Role) styling */
+/* ── Role badge ── */
 .badge {
+  display: inline-block;
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-/* Status with Dot */
-.status {
-  display: flex;
+/* ── Status ── */
+.statusWrap {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.875rem;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 500;
-  color: #4a5568;
 }
 
 .statusDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
-/* Action Buttons */
-.actions {
+/* ── Action buttons ── */
+.actionBtns {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .editBtn, .deleteBtn {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  font-family: var(--font-family);
+  border: 1.5px solid transparent;
 }
 
 .editBtn {
-  background: #ebf8ff;
-  color: #3182ce;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  border-color: var(--primary-300);
 }
-
 .editBtn:hover {
-  background: #bee3f8;
+  background: var(--primary-700);
+  color: var(--white-hard);
+  border-color: var(--primary-700);
 }
 
 .deleteBtn {
   background: #fff5f5;
   color: #e53e3e;
+  border-color: #fed7d7;
 }
-
 .deleteBtn:hover {
-  background: #fed7d7;
+  background: #e53e3e;
+  color: var(--white-hard);
+  border-color: #e53e3e;
 }
 
-/* Empty State */
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-300);
+  background: var(--white-hard);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.paginationInfo {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-family: var(--font-family);
+}
+.pageBtn:hover:not(:disabled) {
+  border-color: var(--primary-500);
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageBtnActive {
+  background: var(--primary-900) !important;
+  color: var(--white-hard) !important;
+  border-color: var(--primary-900) !important;
+  font-weight: 700;
+}
+
+.ellipsis {
+  color: var(--gray-500);
+  padding: 0 2px;
+  font-size: 13px;
+}
+
+/* ── Loading ── */
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 20px;
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--primary-100);
+  border-top-color: var(--primary-500);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty ── */
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 60px 0;
-  color: #a0aec0;
-  background: #ffffff;
+  gap: 12px;
+  padding: 64px 20px;
+  color: var(--gray-500);
+  font-size: 14px;
+  background: var(--white-hard);
   border-radius: 12px;
-  border: 2px dashed #edf2f7;
-}
-
-.empty p {
-  margin-top: 12px;
-  font-weight: 500;
+  border: 1px solid var(--gray-300);
 }
