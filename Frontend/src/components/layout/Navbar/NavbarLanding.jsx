@@ -85,8 +85,8 @@ useEffect(() => {
               }`}
             >
               {link.label}
-              <span className={`${styles.indicator} ${activeLink === link.href ? styles.indicatorActive : ''}`} />
             </a>
+            <span className={`${styles.indicator} ${activeLink === link.href ? styles.indicatorActive : ''}`} />
           </li>
         ))}
       </ul>

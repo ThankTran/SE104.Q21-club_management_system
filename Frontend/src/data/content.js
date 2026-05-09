@@ -34,7 +34,7 @@ export const heroData = {
   avatar: heroAvatar,  // ảnh hero
   slides: [
     {
-      badge: 'CLB Học Thuật THMN',
+      badge: 'Câu Lạc Bộ Học Thuật THMN',
       title: ['Kết nối tri thức, xây dựng tương lai'],
       description: 'Giới thiệu về CLB học thuật — nơi hội tụ những sinh viên đam mê nghiên cứu, học hỏi và cùng nhau phát triển trong môi trường học thuật năng động.',
       cta: 'Tìm hiểu thêm',

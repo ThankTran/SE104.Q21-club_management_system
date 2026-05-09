@@ -87,7 +87,12 @@
   animation: logoFadeIn 0.8s ease-out 0.2s both;
 }
 
-.links { display: flex; gap: 32px; list-style: none; }
+.links { 
+  display: flex; 
+  gap: 32px; 
+  list-style: none; 
+  align-items: center;
+}
 .linkItem { position: relative; }
 
 .link {
@@ -102,14 +107,15 @@
 .link.active { color: var(--primary-500); font-weight: 600; }
 
 .indicator {
-  display: block;
+  position: absolute;
+  bottom: 0px; left: 14px; right: 14px; /* ← khớp với padding link */
   height: 3px; border-radius: 2px;
   width: 0;
   background: linear-gradient(135deg, var(--primary-700), var(--primary-300));
   transition: width 0.3s ease;
 }
 .indicatorActive {
-  width: 100%;
+  width: calc(100% - 28px);
 }
 
 .actions { display: flex; gap: 10px; align-items: center; }
