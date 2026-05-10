@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import styles from "./NavbarFM.module.css";
 import logo from "../../../assets/logo/logo_cnpm.png";
 import search from "../../../assets/icons/search.svg";
@@ -6,13 +6,6 @@ import noti from "../../../assets/icons/noti.svg";
 import setting from "../../../assets/icons/setting.svg";
 
 const NavbarFM = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
-
-  const tabs = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "reports", label: "Reports" },
-  ];
-
   return (
     <nav className={styles.navbar}>
       {/* Left Section - Logo */}
@@ -27,19 +20,6 @@ const NavbarFM = () => {
           <h2 className={styles.logoSubtitle}>Academic Club</h2>
           <h3 className={styles.logoSlogan}>KNOWLEDGE - LEADERSHIP - IMPACT</h3>
         </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className={styles.tabsSection}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`${styles.tab} ${activeTab === tab.id ? styles.active : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
       </div>
 
       {/* Center Section - Search */}
