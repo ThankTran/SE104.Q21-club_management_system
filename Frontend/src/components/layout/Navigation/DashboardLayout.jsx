@@ -16,13 +16,15 @@ const DashboardLayout = () => {
         <main
           style={{
             flex: 1,
-            marginLeft: 180,      
+            marginLeft: 180,
             overflowY: "auto",
-            padding: "20px 36px",
+            padding: "32px 36px",
             background: "#f8f9fa",
           }}
         >
-          <Outlet />
+          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+            <Outlet />
+          </div>
         </main>
 
       </div>

@@ -5,6 +5,7 @@
   flex-direction: column;
   gap: 22px;
   font-family: var(--font-family);
+  padding: 30px;
 }
 
 /* ── Header ── */

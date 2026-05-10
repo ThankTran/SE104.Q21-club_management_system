@@ -3,19 +3,40 @@ import MemberTable from '../components/sections/Member/MemberTable';
 import styles from './MemberUserPage.module.css';
 
 // ── Mock data (same shape, read-only) ───────────────────────
+// ── Mock data ────────────────────────────────────────────────
 const MOCK_MEMBERS = [
-  { id: '44021', name: 'Dr. Elena Rodriguez', department: 'Astrophysics',      role: 'Head of Research', status: 'Active',   avatar: 'ER' },
-  { id: '44038', name: 'Marcus Thorne',        department: 'Data Science',      role: 'Senior Fellow',    status: 'On Leave', avatar: 'MT' },
-  { id: '44102', name: 'Sarah Jenkins',        department: 'Molecular Biology', role: 'Researcher',       status: 'Active',   avatar: 'SJ' },
-  { id: '44095', name: 'Julian Vance',         department: 'Quantum Physics',   role: 'Senior Fellow',    status: 'Active',   avatar: 'JV' },
-  { id: '44110', name: 'Anh Nguyen',           department: 'Computer Science',  role: 'Researcher',       status: 'Active',   avatar: 'AN' },
-  { id: '44055', name: 'Priya Patel',          department: 'Biochemistry',      role: 'Senior Fellow',    status: 'Inactive', avatar: 'PP' },
-  { id: '44073', name: 'Leo Kim',              department: 'Mathematics',       role: 'Researcher',       status: 'Active',   avatar: 'LK' },
-  { id: '44088', name: 'Fatima Al-Hassan',     department: 'Astrophysics',      role: 'Head of Research', status: 'Active',   avatar: 'FA' },
+  { id: '2410001', name: 'Nguyễn Minh Anh',      department: 'Khoa Khoa học máy tính',               role: 'Chủ nhiệm',                status: 'Active',   avatar: 'NA' },
+  { id: '2410002', name: 'Trần Quốc Bảo',        department: 'Khoa Công nghệ phần mềm',             role: 'Phó chủ nhiệm',           status: 'Active',   avatar: 'TB' },
+  { id: '2410003', name: 'Lê Hoàng Nam',         department: 'Khoa Kỹ thuật máy tính',             role: 'Trưởng ban học thuật',    status: 'Active',   avatar: 'LN' },
+  { id: '2410004', name: 'Phạm Gia Hân',         department: 'Khoa Hệ thống thông tin',            role: 'Trưởng ban truyền thông', status: 'Active',   avatar: 'PH' },
+  { id: '2410005', name: 'Võ Đức Tài',           department: 'Khoa Mạng máy tính & Truyền thông',  role: 'Thành viên',              status: 'Active',   avatar: 'VT' },
+  { id: '2410006', name: 'Nguyễn Khánh Linh',    department: 'Khoa Khoa học & Kỹ thuật thông tin', role: 'Thành viên',              status: 'On Leave', avatar: 'NL' },
+  { id: '2410007', name: 'Đặng Nhật Quang',      department: 'Khoa Công nghệ phần mềm',             role: 'Thành viên',              status: 'Active',   avatar: 'DQ' },
+  { id: '2410008', name: 'Huỳnh Bảo Trân',       department: 'Khoa Khoa học máy tính',             role: 'Thành viên',              status: 'Inactive', avatar: 'HT' },
+  { id: '2410009', name: 'Trương Hải Đăng',      department: 'Khoa Kỹ thuật máy tính',             role: 'Thành viên',              status: 'Active',   avatar: 'TD' },
+  { id: '2410010', name: 'Bùi Ngọc Mai',         department: 'Khoa Hệ thống thông tin',            role: 'Thành viên',              status: 'Active',   avatar: 'BM' },
+
+  { id: '2410011', name: 'Lý Tuấn Kiệt',         department: 'Khoa Công nghệ phần mềm',             role: 'Thành viên',              status: 'Active',   avatar: 'LK' },
+  { id: '2410012', name: 'Phan Thảo Vy',         department: 'Khoa Khoa học máy tính',             role: 'Thành viên',              status: 'Active',   avatar: 'PV' },
+  { id: '2410013', name: 'Ngô Gia Huy',          department: 'Khoa Mạng máy tính & Truyền thông',  role: 'Thành viên',              status: 'On Leave', avatar: 'NH' },
+  { id: '2410014', name: 'Mai Thanh Tùng',       department: 'Khoa Kỹ thuật máy tính',             role: 'Thành viên',              status: 'Active',   avatar: 'MT' },
+  { id: '2410015', name: 'Đoàn Yến Nhi',         department: 'Khoa Hệ thống thông tin',            role: 'Thành viên',              status: 'Active',   avatar: 'DN' },
+  { id: '2410016', name: 'Tạ Minh Khoa',         department: 'Khoa Khoa học & Kỹ thuật thông tin', role: 'Thành viên',              status: 'Inactive', avatar: 'TK' },
+  { id: '2410017', name: 'Vũ Thành Công',        department: 'Khoa Công nghệ phần mềm',             role: 'Thành viên',              status: 'Active',   avatar: 'VC' },
+  { id: '2410018', name: 'Châu Bích Ngọc',       department: 'Khoa Khoa học máy tính',             role: 'Thành viên',              status: 'Active',   avatar: 'CN' },
+  { id: '2410019', name: 'Nguyễn Quốc Hưng',     department: 'Khoa Kỹ thuật máy tính',             role: 'Thành viên',              status: 'Active',   avatar: 'NH' },
+  { id: '2410020', name: 'Lâm Gia Linh',         department: 'Khoa Hệ thống thông tin',            role: 'Thành viên',              status: 'On Leave', avatar: 'LL' },
 ];
 
-const DEPT_OPTIONS = ['All', 'Astrophysics', 'Data Science', 'Molecular Biology', 'Quantum Physics', 'Computer Science', 'Biochemistry', 'Mathematics'];
-
+const DEPT_OPTIONS = [
+  'All',
+  'Khoa Khoa học máy tính',
+  'Khoa Công nghệ phần mềm',
+  'Khoa Kỹ thuật máy tính',
+  'Khoa Khoa học & Kỹ thuật thông tin',
+  'Khoa Hệ thống thông tin',
+  'Khoa Mạng máy tính & Truyền thông'
+];
 const PAGE_SIZE = 10;
 
 export default function MemberUserPage() {
@@ -44,7 +65,7 @@ export default function MemberUserPage() {
       {/* ── Header ── */}
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Member Directory</h1>
+          <h1 className={styles.pageTitle}>Danh sách thành viên</h1>
           <p className={styles.pageSubtitle}>
             Xem danh sách các thành viên trong câu lạc bộ.
           </p>

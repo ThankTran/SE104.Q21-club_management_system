@@ -2,16 +2,17 @@ import styles from './MemberTable.module.css';
 
 // ── Constants ────────────────────────────────────────────────
 const ROLE_STYLE = {
-  'Head of Research': { bg: '#dff0f7', color: '#1a6b8a' },
-  'Senior Fellow':    { bg: '#ede8f8', color: '#5b3fa8' },
-  'Researcher':       { bg: '#e8ecf2', color: '#3a4a5c' },
-  'Admin':            { bg: '#fef3c7', color: '#92400e' },
+  'Chủ nhiệm':                { bg: '#dff0f7', color: '#1a6b8a' },
+  'Phó chủ nhiệm':            { bg: '#e8f4e8', color: '#276749' },
+  'Trưởng ban học thuật':     { bg: '#ede8f8', color: '#5b3fa8' },
+  'Trưởng ban truyền thông':  { bg: '#fef3c7', color: '#92400e' },
+  'Thành viên':               { bg: '#e8ecf2', color: '#3a4a5c' },
 };
 
 const STATUS_STYLE = {
-  'Active':   { dot: '#38a169', text: '#38a169' },
-  'On Leave': { dot: '#a0aec0', text: '#718096' },
-  'Inactive': { dot: '#e53e3e', text: '#e53e3e' },
+  'Active':   { dot: '#38a169', text: '#38a169', label: 'Hoạt động'  },
+  'On Leave': { dot: '#a0aec0', text: '#718096', label: 'Tạm nghỉ'   },
+  'Inactive': { dot: '#e53e3e', text: '#e53e3e', label: 'Không hoạt động' },
 };
 
 const AVATAR_COLORS = [
@@ -39,11 +40,11 @@ function RoleBadge({ role }) {
 }
 
 function StatusCell({ status }) {
-  const s = STATUS_STYLE[status] || { dot: '#a0aec0', text: '#718096' };
+  const s = STATUS_STYLE[status] || { dot: '#a0aec0', text: '#718096', label: status };
   return (
     <span className={styles.statusWrap} style={{ color: s.text }}>
       <span className={styles.statusDot} style={{ background: s.dot }} />
-      {status}
+      {s.label}
     </span>
   );
 }
@@ -53,7 +54,6 @@ function Pagination({ page, totalPages, total, pageSize, onPageChange }) {
   const start = (page - 1) * pageSize + 1;
   const end   = Math.min(page * pageSize, total);
 
-  // Build page number list: always show 1,2,3 … last
   const getPages = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
     const pages = new Set([1, 2, page - 1, page, page + 1, totalPages - 1, totalPages]);
@@ -67,9 +67,8 @@ function Pagination({ page, totalPages, total, pageSize, onPageChange }) {
   return (
     <div className={styles.pagination}>
       <span className={styles.paginationInfo}>
-        Showing {start}–{end} of {total.toLocaleString()} members
+        Hiển thị {start}–{end} trong tổng số {total.toLocaleString()} thành viên
       </span>
-
       <div className={styles.paginationControls}>
         <button
           className={styles.pageBtn}
@@ -104,19 +103,6 @@ function Pagination({ page, totalPages, total, pageSize, onPageChange }) {
 }
 
 // ── Main ─────────────────────────────────────────────────────
-/**
- * Props:
- *   members[]   – array of member objects
- *   total       – total records (for pagination label)
- *   page        – current page (1-indexed)
- *   totalPages
- *   pageSize
- *   onPageChange(newPage)
- *   onEdit(member)    – admin only
- *   onDelete(member)  – admin only
- *   isAdmin     – show action column
- *   loading
- */
 export default function MemberTable({
   members = [],
   total = 0,
@@ -156,11 +142,11 @@ export default function MemberTable({
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>MEMBER</th>
-            <th>DEPARTMENT</th>
-            <th>ROLE</th>
-            <th>STATUS</th>
-            {isAdmin && <th>ACTIONS</th>}
+            <th>THÀNH VIÊN</th>
+            <th>KHOA</th>
+            <th>VAI TRÒ</th>
+            <th>TRẠNG THÁI</th>
+            {isAdmin && <th>THAO TÁC</th>}
           </tr>
         </thead>
         <tbody>
@@ -171,7 +157,7 @@ export default function MemberTable({
                   <Avatar initials={m.avatar} name={m.name} />
                   <div>
                     <p className={styles.memberName}>{m.name}</p>
-                    <p className={styles.memberId}>ID: #{m.id}</p>
+                    <p className={styles.memberId}>MSSV: {m.id}</p>
                   </div>
                 </div>
               </td>
@@ -181,8 +167,12 @@ export default function MemberTable({
               {isAdmin && (
                 <td>
                   <div className={styles.actionBtns}>
-                    <button className={styles.editBtn} onClick={() => onEdit?.(m)}>Edit</button>
-                    <button className={styles.deleteBtn} onClick={() => onDelete?.(m)}>Delete</button>
+                    <button className={styles.editBtn} onClick={() => onEdit?.(m)}>
+                      Sửa
+                    </button>
+                    <button className={styles.deleteBtn} onClick={() => onDelete?.(m)}>
+                      Xoá
+                    </button>
                   </div>
                 </td>
               )}
