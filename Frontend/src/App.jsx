@@ -11,6 +11,10 @@ import HomePage    from "./pages/HomePage";
 import MemberAdminPage from "./pages/MemberAdminPage";
 import MemberUserPage  from "./pages/MemberUserPage";
 
+// Event pages
+import EventUserPage from "./pages/Event/EventUserPage";
+import EventAdminPage from "./pages/Event/EventAdminPage";
+
 // Placeholder cho các trang chưa code
 const Placeholder = ({ title }) => (
   <div style={{ padding: "40px 32px" }}>
@@ -37,7 +41,8 @@ export default function App() {
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
           <Route path="/resources" element={<Placeholder title="Resources" />} />
-          <Route path="/events"    element={<Placeholder title="Events" />} />
+          <Route path="/eventuser"    element={<EventUserPage />} />
+          <Route path="/eventadmin" element={<EventAdminPage />} />
           <Route path="/finance"   element={<Placeholder title="Finance" />} />
         </Route>
 
