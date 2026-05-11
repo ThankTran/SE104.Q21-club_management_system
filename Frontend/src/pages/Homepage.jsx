@@ -4,6 +4,7 @@ import Searchbar from "../components/Searchbar";
 import Sidebar from "../components/Sidebar";
 import NavbarFM from "../components/NavbarFM";
 
+
 const HomePage = () => {
   return (
     <div className="home-wrapper">
