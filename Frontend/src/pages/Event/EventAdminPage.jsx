@@ -1,7 +1,15 @@
 import { useState, useMemo } from 'react';
+
 import EventCard from '../../components/sections/Event/EventCard';
 import EventForm from '../../components/sections/Event/EventForm';
+import EventFilter from '../../components/sections/Event/EventFilter';
+
+import exportEventsExcel from '../../utils/Export/exportEventsExcel';
+
 import styles from './EventAdminPage.module.css';
+
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 // ── Mock data ────────────────────────────────────────────────
 const MOCK_EVENTS = [
@@ -28,22 +36,78 @@ const MOCK_EVENTS = [
 ];
 
 const STATUS_LABEL = {
-  published: { label: 'ĐÃ CÔNG BỐ', bg: '#e6f4ea', color: '#276749' },
-  draft:     { label: 'NHÁP',       bg: '#e8ecf2', color: '#3a4a5c' },
-  completed: { label: 'ĐÃ KẾT THÚC', bg: '#ede8f8', color: '#5b3fa8' },
-  upcoming:  { label: 'SẮP TỚI',    bg: '#e0f0ff', color: '#1a6b8a' },
-  cancelled: { label: 'ĐÃ HUỶ',     bg: '#fff0f0', color: '#e53e3e' },
+  published: { label: 'Đang diễn ra', bg: '#e6f4ea', color: '#276749' },
+  draft:     { label: 'Nháp',       bg: '#e8ecf2', color: '#3a4a5c' },
+  completed: { label: 'Đã kết thúc', bg: '#ede8f8', color: '#5b3fa8' },
+  upcoming:  { label: 'Sắp tới',    bg: '#e0f0ff', color: '#1a6b8a' },
+  cancelled: { label: 'Đã hủy',     bg: '#fff0f0', color: '#e53e3e' },
 };
 
+const TAG_LABEL = {
+  TECH:   { label: 'CÔNG NGHỆ', bg: '#e0f2fe', color: '#0369a1' },
+  ACAD:   { label: 'HỌC THUẬT', bg: '#ede9fe', color: '#6d28d9' },
+  SOCIAL: { label: 'XÃ HỘI',    bg: '#dcfce7', color: '#15803d' },
+  CERT:   { label: 'CHỨNG CHỈ', bg: '#fef3c7', color: '#b45309' },
+};
+
+
 const PAGE_SIZE = 5;
+
+// Xuất dữ liệu ra Excel
+const exportExcel = () => {
+  const data = filtered.map((event, index) => ({
+    STT: index + 1,
+    'Tên sự kiện': event.title,
+    'Địa điểm': event.location,
+    'Loại': TAG_LABEL[event.tag]?.label || event.tag,
+    'Trạng thái': STATUS_LABEL[event.status]?.label || event.status,
+    'Ngày': event.date,
+    'Giờ': event.time,
+    'Sức chứa': event.capacity,
+    'Đã tham gia': event.attendance,
+    'Chi phí dự kiến': event.estimatedCost,
+    'Mô tả': event.description,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    'Danh sách sự kiện'
+  );
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: 'xlsx',
+    type: 'array',
+  });
+
+  const fileData = new Blob(
+    [excelBuffer],
+    {
+      type:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    }
+  );
+
+  saveAs(
+    fileData,
+    `SuKien_${new Date().toISOString().slice(0,10)}.xlsx`
+  );
+};
 
 export default function EventAdminPage() {
   const [events, setEvents]           = useState(MOCK_EVENTS);
   const [search, setSearch]           = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [tagFilter, setTagFilter]     = useState('all' );
+  const [filterOpen, setFilterOpen] = useState(false);
   const [formOpen, setFormOpen]       = useState(false);
   const [editTarget, setEditTarget]   = useState(null);
   const [formLoading, setFormLoading] = useState(false);
   const [page, setPage]               = useState(1);
+  const [dateSort, setDateSort] = useState('nearest');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // ── Stats ────────────────────────────────────────────────
@@ -56,12 +120,32 @@ export default function EventAdminPage() {
   // ── Filter ───────────────────────────────────────────────
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    if (!q) return events;
-    return events.filter((e) =>
-      e.title.toLowerCase().includes(q) ||
-      e.location.toLowerCase().includes(q),
-    );
-  }, [events, search]);
+
+    let result = events.filter((e) => {
+      const matchSearch =
+        e.title.toLowerCase().includes(q) ||
+        e.location.toLowerCase().includes(q);
+
+      const matchStatus =
+        statusFilter === 'all' || e.status === statusFilter;
+
+      const matchTag =
+        tagFilter === 'all' || e.tag === tagFilter;
+
+      return matchSearch && matchStatus && matchTag;
+    });
+
+    result.sort((a, b) => {
+      const da = new Date(a.date);
+      const db = new Date(b.date);
+
+      return dateSort === 'nearest'
+        ? da - db
+        : db - da;
+    });
+
+    return result;
+  }, [events, search, statusFilter, tagFilter, dateSort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -105,7 +189,10 @@ export default function EventAdminPage() {
           <p className={styles.pageSubtitle}>Tổ chức, theo dõi và quản lý các sự kiện học thuật của câu lạc bộ.</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.exportBtn}>
+          <button
+            className={styles.exportBtn}
+            onClick={() => exportEventsExcel(filtered)}
+          >            
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
             </svg>
@@ -167,6 +254,19 @@ export default function EventAdminPage() {
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               />
             </div>
+            <EventFilter
+              open={filterOpen}
+              setOpen={setFilterOpen}
+
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+
+              tagFilter={tagFilter}
+              setTagFilter={setTagFilter}
+
+              statuses={STATUS_LABEL}
+              tags={['Tech', 'Acad', 'Social', 'Cert']}
+            />
             <span className={styles.publishedBadge}>{publishedCount} đã công bố</span>
           </div>
         </div>
@@ -176,8 +276,27 @@ export default function EventAdminPage() {
           <thead>
             <tr>
               <th>TÊN SỰ KIỆN</th>
+              <th>LOẠI SỰ KIỆN</th>
               <th>TRẠNG THÁI</th>
-              <th>NGÀY</th>
+              <th>
+              <div className={styles.dateHead}>
+                NGÀY
+
+                <button
+                  className={styles.sortBtn}
+                  onClick={() =>
+                    setDateSort(
+                      dateSort === 'nearest'
+                        ? 'farthest'
+                        : 'nearest'
+                    )
+                  }
+                  title="Sắp xếp ngày"
+                >
+                  {dateSort === 'nearest' ? '↑' : '↓'}
+                </button>
+              </div>
+            </th>
               <th>THAM DỰ</th>
               <th>THAO TÁC</th>
             </tr>
@@ -185,6 +304,7 @@ export default function EventAdminPage() {
           <tbody>
             {paginated.map((event) => {
               const ss  = STATUS_LABEL[event.status] || STATUS_LABEL.upcoming;
+              const tg = TAG_LABEL[event.tag];
               const d   = new Date(event.date);
               const pct = event.capacity > 0
                 ? Math.round((event.attendance / event.capacity) * 100)
@@ -195,6 +315,13 @@ export default function EventAdminPage() {
                   <td>
                     <p className={styles.eventName}>{event.title}</p>
                     <p className={styles.eventLocation}>{event.location}</p>
+                  </td>
+                  <td>
+                    <span
+                      className={styles.tagBadge}
+                      style={{ background: tg.bg, color: tg.color }}>
+                      {tg.label}
+                    </span>
                   </td>
                   <td>
                     <span className={styles.statusBadge} style={{ background: ss.bg, color: ss.color }}>
