@@ -271,12 +271,21 @@ const HIGHLIGHTS = [
   { id: 'h20', date: '2024-12-30', title: 'Countdown Year End Meetup', sub: 'Sân trường | 20:00 – 23:30' },
 ];
 
+const PAGE_SIZE = 5; 
+
+const HL_PAGE_SIZE = 4;
+
 export default function EventUserPage() {
   const [activeTag, setActiveTag] = useState('Tất cả');
   const [search, setSearch]       = useState('');
   const [selected, setSelected]   = useState(null);
   // Lưu set các id đã đăng ký
   const [registeredIds, setRegisteredIds] = useState(new Set());
+
+  const [regPage, setRegPage] = useState(1);
+  const [upPage, setUpPage]   = useState(1);
+  const [endPage, setEndPage] = useState(1);
+  const [hlPage, setHlPage] = useState(1);
 
   const filtered = useMemo(() => {
     return MOCK_EVENTS.filter((e) => {
@@ -288,9 +297,14 @@ export default function EventUserPage() {
 
   const upcoming  = filtered.filter((e) => e.status === 'upcoming');
   const completed = filtered.filter((e) => e.status === 'completed');
-
-  // Danh sách sự kiện đã đăng ký (giữ đúng thứ tự đăng ký)
   const registeredEvents = MOCK_EVENTS.filter((e) => registeredIds.has(e.id));
+
+  // Hàm cắt dữ liệu theo trang
+  const paginate = (data, currentPage) => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return data.slice(start, start + PAGE_SIZE);
+  };
+
 
   const isRegistered = (id) => registeredIds.has(id);
 
@@ -307,6 +321,19 @@ export default function EventUserPage() {
     });
     // Nếu đang mở modal của event này thì đóng lại
     if (selected?.id === eventId) setSelected(null);
+  };
+
+  // Component phụ trợ cho Pagination
+  const PaginationControls = ({ current, total, onPageChange }) => {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    if (totalPages <= 1) return null;
+    return (
+      <div className={styles.pagination}>
+        <button disabled={current === 1} onClick={() => onPageChange(current - 1)}>‹</button>
+        <span>Trang {current} / {totalPages}</span>
+        <button disabled={current === totalPages} onClick={() => onPageChange(current + 1)}>›</button>
+      </div>
+    );
   };
 
   return (
@@ -356,75 +383,46 @@ export default function EventUserPage() {
         </div>
       </div>
 
-      {/* ── Hoạt động đã đăng ký ── */}
+      {/* ── Section: Hoạt động đã đăng ký ── */}
       {registeredEvents.length > 0 && (
-        <section className={styles.section}>
+        <section className={styles.sectionSmall}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Hoạt động đã đăng ký</h2>
+            <h2 className={styles.sectionTitle}>Hoạt động đã đăng ký ({registeredEvents.length})</h2>
           </div>
-
           <div className={styles.highlightList}>
-            {registeredEvents.map((event) => {
-              const d     = new Date(event.date);
-              const month = d.toLocaleString('vi-VN', { month: 'short' }).toUpperCase();
-              const day   = d.getDate();
-
-              return (
-                <div
-                  key={event.id}
-                  className={styles.highlightItem}
-                  onClick={() => setSelected(event)}
-                >
-                  <div className={styles.hlBadge}>
-                    <span className={styles.hlMonth}>{month}</span>
-                    <span className={styles.hlDay}>{day}</span>
-                  </div>
-
-                  <div className={styles.hlContent}>
-                    <p className={styles.hlTitle}>{event.title}</p>
-                    <p className={styles.hlSub}>{event.location} | {event.time}</p>
-                  </div>
-
-                  {/* Single-click để hủy đăng ký */}
-                  <button
-                    className={styles.hlUnregisterBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleUnregister(event.id);
-                    }}
-                    title="Hủy đăng ký"
-                  >
-                    Hủy đăng ký
-                  </button>
+            {paginate(registeredEvents, regPage).map((event) => (
+              <div key={event.id} className={styles.highlightItemSmall} onClick={() => setSelected(event)}>
+                <div className={styles.hlContent}>
+                  <p className={styles.hlTitle}>{event.title}</p>
                 </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ── Sắp diễn ra ── */}
-      {upcoming.length > 0 && (
-        <section className={styles.sectionfut}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Sắp diễn ra</h2>
-          </div>
-
-          <div className={styles.cardList}>
-            {upcoming.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onClick={() => setSelected(event)}
-                onRegister={() => handleRegister(event)}
-                onUnregister={() => handleUnregister(event.id)}
-                isRegistered={isRegistered(event.id)}
-                isAdmin={false}
-              />
+                <button className={styles.hlUnregisterBtn} onClick={(e) => { e.stopPropagation(); handleUnregister(event.id); }}>
+                  Hủy
+                </button>
+              </div>
             ))}
           </div>
+          <PaginationControls current={regPage} total={registeredEvents.length} onPageChange={setRegPage} />
         </section>
       )}
+
+      {/* ── Section: Sắp diễn ra ── */}
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Sắp diễn ra</h2>
+        </div>
+        <div className={styles.cardList}>
+          {paginate(upcoming, upPage).map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              onClick={() => setSelected(event)}
+              onRegister={() => handleRegister(event)}
+              isRegistered={registeredIds.has(event.id)}
+            />
+          ))}
+        </div>
+        <PaginationControls current={upPage} total={upcoming.length} onPageChange={setUpPage} />
+      </section>
 
       {/* ── Highlights ── */}
       <section className={styles.sectionspecial}>
@@ -432,7 +430,7 @@ export default function EventUserPage() {
           <h2 className={styles.sectionTitle}>Hoạt động nổi bật</h2>
         </div>
         <div className={styles.highlightList}>
-          {HIGHLIGHTS.map((h) => {
+          {paginate(HIGHLIGHTS, hlPage, HL_PAGE_SIZE).map((h) => {
             const d     = new Date(h.date);
             const month = d.toLocaleString('vi-VN', { month: 'short' }).toUpperCase();
             const day   = d.getDate();
@@ -455,23 +453,26 @@ export default function EventUserPage() {
             );
           })}
         </div>
+        <PaginationControls 
+            current={hlPage} 
+            total={HIGHLIGHTS.length} 
+            pageSize={HL_PAGE_SIZE} 
+            onPageChange={setHlPage} 
+        />
       </section>
 
-      {/* ── Đã kết thúc — KHÔNG có nút đăng ký ── */}
+      {/* ── Section: Đã kết thúc ── */}
       {completed.length > 0 && (
-        <section className={styles.sectionend}>
-          <h2 className={styles.sectionTitle}>Đã kết thúc</h2>
+        <section className={styles.sectionEnd}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Đã kết thúc</h2>
+          </div>
           <div className={styles.cardList}>
-            {completed.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onClick={() => setSelected(event)}
-                hideRegister
-                isAdmin={false}
-              />
+            {paginate(completed, endPage).map((event) => (
+              <EventCard key={event.id} event={event} hideRegister isAdmin={false} />
             ))}
           </div>
+          <PaginationControls current={endPage} total={completed.length} onPageChange={setEndPage} />
         </section>
       )}
 
