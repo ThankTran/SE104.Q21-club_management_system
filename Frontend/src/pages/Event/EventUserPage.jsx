@@ -350,8 +350,7 @@ export default function EventUserPage() {
             và kết nối cộng đồng.
           </p>
           <div className={styles.heroActions}>
-            <button className={styles.heroBtnPrimary}>Xem tất cả</button>
-            <button className={styles.heroBtnSecondary}>Tải lịch</button>
+            <button className={styles.heroBtnPrimary}>Thêm sự kiện đã đăng ký vào lịch</button>
           </div>
         </div>
       </div>
