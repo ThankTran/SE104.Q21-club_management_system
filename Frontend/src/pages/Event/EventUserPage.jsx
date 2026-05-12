@@ -269,14 +269,14 @@ const HIGHLIGHTS = [
   { id: 'h18', date: '2024-12-23', title: 'Community Volunteering', sub: 'Xuất phát 07:00 | Cổng trường' },
   { id: 'h19', date: '2024-12-26', title: 'Award Ceremony CLB', sub: 'Hall A | 17:00 – 19:00' },
   { id: 'h20', date: '2024-12-30', title: 'Countdown Year End Meetup', sub: 'Sân trường | 20:00 – 23:30' },
-  
 ];
 
 export default function EventUserPage() {
   const [activeTag, setActiveTag] = useState('Tất cả');
   const [search, setSearch]       = useState('');
-  const [selected, setSelected]   = useState(null); 
-  const [registeredEvents, setRegisteredEvents] = useState([]);
+  const [selected, setSelected]   = useState(null);
+  // Lưu set các id đã đăng ký
+  const [registeredIds, setRegisteredIds] = useState(new Set());
 
   const filtered = useMemo(() => {
     return MOCK_EVENTS.filter((e) => {
@@ -286,34 +286,28 @@ export default function EventUserPage() {
     });
   }, [activeTag, search]);
 
-  // Phân tách upcoming & completed
   const upcoming  = filtered.filter((e) => e.status === 'upcoming');
   const completed = filtered.filter((e) => e.status === 'completed');
 
-  // Đăng ký sự kiện
+  // Danh sách sự kiện đã đăng ký (giữ đúng thứ tự đăng ký)
+  const registeredEvents = MOCK_EVENTS.filter((e) => registeredIds.has(e.id));
+
+  const isRegistered = (id) => registeredIds.has(id);
+
   const handleRegister = (event) => {
-    const existed = registeredEvents.some((item) => item.id === event.id);
-
-    if (existed) return;
-
-    setRegisteredEvents((prev) => [...prev, event]);
-    alert(`Đăng ký thành công: ${event.title}`);
+    setRegisteredIds((prev) => new Set([...prev, event.id]));
     setSelected(null);
   };
 
-  // Hủy đăng ký
   const handleUnregister = (eventId) => {
-    setRegisteredEvents((prev) =>
-      prev.filter((item) => item.id !== eventId)
-    );
-
-    if (selected?.id === eventId) {
-      setSelected(null);
-    }
+    setRegisteredIds((prev) => {
+      const next = new Set(prev);
+      next.delete(eventId);
+      return next;
+    });
+    // Nếu đang mở modal của event này thì đóng lại
+    if (selected?.id === eventId) setSelected(null);
   };
-
-  const isRegistered = (id) =>
-    registeredEvents.some((item) => item.id === id);
 
   return (
     <div className={styles.page}>
@@ -361,7 +355,8 @@ export default function EventUserPage() {
           ))}
         </div>
       </div>
-      {/* ── Đã đăng ký ── */}
+
+      {/* ── Hoạt động đã đăng ký ── */}
       {registeredEvents.length > 0 && (
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
@@ -370,12 +365,9 @@ export default function EventUserPage() {
 
           <div className={styles.highlightList}>
             {registeredEvents.map((event) => {
-              const d = new Date(event.date);
-              const month = d
-                .toLocaleString('vi-VN', { month: 'short' })
-                .toUpperCase();
-
-              const day = d.getDate();
+              const d     = new Date(event.date);
+              const month = d.toLocaleString('vi-VN', { month: 'short' }).toUpperCase();
+              const day   = d.getDate();
 
               return (
                 <div
@@ -390,19 +382,19 @@ export default function EventUserPage() {
 
                   <div className={styles.hlContent}>
                     <p className={styles.hlTitle}>{event.title}</p>
-                    <p className={styles.hlSub}>
-                      {event.location} | {event.time}
-                    </p>
+                    <p className={styles.hlSub}>{event.location} | {event.time}</p>
                   </div>
 
+                  {/* Single-click để hủy đăng ký */}
                   <button
-                    className={styles.hlBookmark}
-                    onDoubleClick={(e) => {
+                    className={styles.hlUnregisterBtn}
+                    onClick={(e) => {
                       e.stopPropagation();
                       handleUnregister(event.id);
                     }}
+                    title="Hủy đăng ký"
                   >
-                    Đã đăng ký
+                    Hủy đăng ký
                   </button>
                 </div>
               );
@@ -426,7 +418,7 @@ export default function EventUserPage() {
                 onClick={() => setSelected(event)}
                 onRegister={() => handleRegister(event)}
                 onUnregister={() => handleUnregister(event.id)}
-                disabled={isRegistered(event.id)}
+                isRegistered={isRegistered(event.id)}
                 isAdmin={false}
               />
             ))}
@@ -465,11 +457,10 @@ export default function EventUserPage() {
         </div>
       </section>
 
-      {/* ── Đã kết thúc ── */}
+      {/* ── Đã kết thúc — KHÔNG có nút đăng ký ── */}
       {completed.length > 0 && (
         <section className={styles.sectionend}>
           <h2 className={styles.sectionTitle}>Đã kết thúc</h2>
-
           <div className={styles.cardList}>
             {completed.map((event) => (
               <EventCard
@@ -486,62 +477,29 @@ export default function EventUserPage() {
 
       {/* ── Modal chi tiết ── */}
       {selected && (
-        <div
-          className={styles.overlay}
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className={styles.detailBox}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className={styles.closeBtn}
-              onClick={() => setSelected(null)}
-            >
-              ✕
-            </button>
+        <div className={styles.overlay} onClick={() => setSelected(null)}>
+          <div className={styles.detailBox} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setSelected(null)}>✕</button>
 
             <div className={styles.detailDate}>
-              {new Date(selected.date).toLocaleDateString(
-                'vi-VN',
-                {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                }
-              )}
+              {new Date(selected.date).toLocaleDateString('vi-VN', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+              })}
               {selected.time && ` | ${selected.time}`}
             </div>
 
-            <h2 className={styles.detailTitle}>
-              {selected.title}
-            </h2>
-
-            <p className={styles.detailLocation}>
-              📍 {selected.location}
-            </p>
-
-            <p className={styles.detailDesc}>
-              {selected.description}
-            </p>
+            <h2 className={styles.detailTitle}>{selected.title}</h2>
+            <p className={styles.detailLocation}>📍 {selected.location}</p>
+            <p className={styles.detailDesc}>{selected.description}</p>
 
             <div className={styles.detailMeta}>
-              <span>
-                👥 Sức chứa: {selected.capacity} người
-              </span>
-
+              <span>👥 Sức chứa: {selected.capacity} người</span>
               {selected.estimatedCost > 0 && (
-                <span>
-                  💰{' '}
-                  {Number(
-                    selected.estimatedCost
-                  ).toLocaleString('vi-VN')}
-                  ₫
-                </span>
+                <span>💰 {Number(selected.estimatedCost).toLocaleString('vi-VN')}₫</span>
               )}
             </div>
 
+            {/* Nút chỉ hiện khi chưa kết thúc */}
             {selected.status !== 'completed' && (
               <button
                 className={styles.registerFullBtn}
@@ -551,9 +509,7 @@ export default function EventUserPage() {
                     : handleRegister(selected)
                 }
               >
-                {isRegistered(selected.id)
-                  ? 'Hủy đăng ký'
-                  : 'Đăng ký tham gia →'}
+                {isRegistered(selected.id) ? 'Hủy đăng ký' : 'Đăng ký tham gia →'}
               </button>
             )}
           </div>

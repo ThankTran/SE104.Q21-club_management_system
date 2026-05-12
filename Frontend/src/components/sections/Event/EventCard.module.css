@@ -122,6 +122,7 @@
 }
 .card:hover .arrow { color: var(--primary-700); }
 
+/* Nút đăng ký mặc định */
 .registerBtn {
   margin-left: auto;
   padding: 5px 14px;
@@ -139,4 +140,16 @@
   background: var(--primary-700);
   color: var(--white-hard);
   border-color: var(--primary-700);
+}
+
+/* Trạng thái đã đăng ký */
+.registeredBtn {
+  border-color: #fed7d7;
+  background: #fff5f5;
+  color: #e53e3e;
+}
+.registeredBtn:hover {
+  background: #e53e3e;
+  color: var(--white-hard);
+  border-color: #e53e3e;
 }
