@@ -2,15 +2,25 @@ import styles from './EventCard.module.css';
 
 /**
  * Props:
- *   event      – { id, title, location, date, estimatedCost, status, tag }
- *   onClick    – () => void
- *   onRegister – () => void  (user mode)
- *   isAdmin    – boolean
+ *   event        – { id, title, location, date, estimatedCost, status, tag }
+ *   onClick      – () => void
+ *   onRegister   – () => void  (user mode)
+ *   onUnregister – () => void  (user mode)
+ *   isRegistered – boolean
+ *   isAdmin      – boolean
+ *   hideRegister – boolean  (dùng cho completed)
  */
-export default function EventCard({ event, onClick, onRegister, isAdmin = false }) {
+export default function EventCard({
+  event,
+  onClick,
+  onRegister,
+  onUnregister,
+  isRegistered = false,
+  isAdmin = false,
+  hideRegister = false,
+}) {
   const { title, location, date, estimatedCost, status, tag } = event;
 
-  // Parse date thành { month, day }
   const d     = date ? new Date(date) : null;
   const month = d ? d.toLocaleString('vi-VN', { month: 'short' }).toUpperCase() : '--';
   const day   = d ? d.getDate() : '--';
@@ -24,6 +34,15 @@ export default function EventCard({ event, onClick, onRegister, isAdmin = false 
   };
 
   const ss = STATUS_STYLE[status?.toLowerCase()] || STATUS_STYLE.upcoming;
+
+  const handleBtnClick = (e) => {
+    e.stopPropagation();
+    if (isRegistered) {
+      onUnregister?.();
+    } else {
+      onRegister?.();
+    }
+  };
 
   return (
     <div className={styles.card} onClick={onClick}>
@@ -63,17 +82,17 @@ export default function EventCard({ event, onClick, onRegister, isAdmin = false 
             </span>
           )}
 
-          {/* Arrow hoặc Register button */}
+          {/* Arrow (admin) hoặc Register/Unregister button (user) */}
           {isAdmin ? (
             <span className={styles.arrow}>→</span>
-          ) : (
+          ) : !hideRegister ? (
             <button
-              className={styles.registerBtn}
-              onClick={(e) => { e.stopPropagation(); onRegister?.(); }}
+              className={`${styles.registerBtn} ${isRegistered ? styles.registeredBtn : ''}`}
+              onClick={handleBtnClick}
             >
-              Đăng ký →
+              {isRegistered ? 'Hủy đăng ký' : 'Đăng ký →'}
             </button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
