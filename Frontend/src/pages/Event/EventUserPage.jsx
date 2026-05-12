@@ -385,7 +385,7 @@ export default function EventUserPage() {
 
       {/* ── Section: Hoạt động đã đăng ký ── */}
       {registeredEvents.length > 0 && (
-        <section className={styles.sectionSmall}>
+        <div className={styles.sectionSmall}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Hoạt động đã đăng ký ({registeredEvents.length})</h2>
           </div>
@@ -402,11 +402,11 @@ export default function EventUserPage() {
             ))}
           </div>
           <PaginationControls current={regPage} total={registeredEvents.length} onPageChange={setRegPage} />
-        </section>
+        </div>
       )}
 
       {/* ── Section: Sắp diễn ra ── */}
-      <section className={styles.section}>
+      <div className={styles.upcomingsection}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Sắp diễn ra</h2>
         </div>
@@ -422,10 +422,10 @@ export default function EventUserPage() {
           ))}
         </div>
         <PaginationControls current={upPage} total={upcoming.length} onPageChange={setUpPage} />
-      </section>
+      </div>
 
       {/* ── Highlights ── */}
-      <section className={styles.sectionspecial}>
+      <div className={styles.sectionspecial}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Hoạt động nổi bật</h2>
         </div>
@@ -459,11 +459,11 @@ export default function EventUserPage() {
             pageSize={HL_PAGE_SIZE} 
             onPageChange={setHlPage} 
         />
-      </section>
+      </div>
 
       {/* ── Section: Đã kết thúc ── */}
       {completed.length > 0 && (
-        <section className={styles.sectionEnd}>
+        <div className={styles.sectionEnd}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Đã kết thúc</h2>
           </div>
@@ -473,7 +473,7 @@ export default function EventUserPage() {
             ))}
           </div>
           <PaginationControls current={endPage} total={completed.length} onPageChange={setEndPage} />
-        </section>
+        </div>
       )}
 
       {/* ── Modal chi tiết ── */}
