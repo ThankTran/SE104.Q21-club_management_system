@@ -1,8 +1,8 @@
 import React from "react";
-import Navbar from "../components/Navbar"; // Đường dẫn đến file Navbar của bạn
-import Searchbar from "../components/Searchbar";
-import Sidebar from "../components/Sidebar";
-import NavbarFM from "../components/NavbarFM";
+import NavbarLanding from "../components/layout/Navbar/NavbarLanding";
+import Searchbar from "../components/common/SearchBar/Searchbar";
+import Sidebar from "../components/layout/Sidebar/Sidebar";
+import NavbarFM from "../components/layout/Navbar/NavbarFM";
 
 const HomePage = () => {
   return (
