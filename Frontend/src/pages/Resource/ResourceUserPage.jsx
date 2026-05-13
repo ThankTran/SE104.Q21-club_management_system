@@ -4,32 +4,313 @@ import ResourceCard from '../../components/sections/Resource/ResourceCard';
 import ResourceFilter from '../../components/sections/Resource/ResourceFilter';
 import ResourceForm from '../../components/sections/Resource/ResourceForm';
 import ResourceDetailModal from '../../components/sections/Resource/ResourceDetailModal';
+import ResourceFolderView from '../../components/sections/Resource/ResourceFolderView';
 
 import styles from './ResourceUserPage.module.css';
 
 // ── Mock data ─────────────────────────────────────────────────
 // Chỉ hiển thị tài liệu đã duyệt (QĐ8.1), sắp xếp mới nhất trước (QĐ8.3)
 const MOCK_RESOURCES = [
-  { id: 1,  title: 'Giáo trình Lập trình hướng đối tượng',    subject: 'Lập trình hướng đối tượng', type: 'Giáo trình',          format: 'PDF',  source: 'Giảng viên cung cấp', description: 'Tài liệu chính thức môn OOP dùng trong học kỳ 1. Bao gồm lý thuyết và bài tập thực hành.', link: '#', uploadedBy: 'Nguyễn Minh Anh',  createdAt: '2024-12-10', status: 'approved' },
-  { id: 2,  title: 'Slide Cơ sở dữ liệu – Chương 1 đến 5',   subject: 'Cơ sở dữ liệu',            type: 'Slide bài giảng',     format: 'PPT',  source: 'Giảng viên cung cấp', description: 'Slide bài giảng từ chương 1 đến chương 5 môn CSDL, bao gồm ERD và SQL cơ bản.', link: '#', uploadedBy: 'Trần Quốc Bảo',   createdAt: '2024-12-08', status: 'approved' },
-  { id: 3,  title: 'Tài liệu tham khảo Mạng máy tính',        subject: 'Mạng máy tính',             type: 'Tài liệu tham khảo', format: 'PDF',  source: 'Internet',            description: 'Tổng hợp lý thuyết về mô hình OSI, TCP/IP và các giao thức mạng phổ biến.', link: '#', uploadedBy: 'Lê Hoàng Nam',     createdAt: '2024-12-05', status: 'approved' },
-  { id: 4,  title: 'Giáo trình Giải tích 1',                   subject: 'Giải tích 1',               type: 'Giáo trình',          format: 'PDF',  source: 'Giảng viên cung cấp', description: 'Giáo trình chính thức Giải tích 1, bao gồm chuỗi số, hàm nhiều biến và tích phân.', link: '#', uploadedBy: 'Phạm Gia Hân',     createdAt: '2024-12-01', status: 'approved' },
-  { id: 5,  title: 'Slide Kỹ thuật phần mềm – Agile & Scrum', subject: 'Kỹ thuật phần mềm',         type: 'Slide bài giảng',     format: 'PPT',  source: 'Tự biên soạn',        description: 'Tổng hợp phương pháp Agile và Scrum trong phát triển phần mềm hiện đại.', link: '#', uploadedBy: 'Võ Đức Tài',       createdAt: '2024-11-28', status: 'approved' },
-  { id: 6,  title: 'Python cho Data Science – Hướng dẫn',     subject: 'Khoa học dữ liệu',          type: 'Tài liệu tham khảo', format: 'PDF',  source: 'Internet',            description: 'Hướng dẫn thực hành Python với Pandas, NumPy và Matplotlib cho data analysis.', link: '#', uploadedBy: 'Nguyễn Khánh Linh', createdAt: '2024-11-25', status: 'approved' },
-  { id: 7,  title: 'Giáo trình Đại số tuyến tính',             subject: 'Đại số tuyến tính',         type: 'Giáo trình',          format: 'PDF',  source: 'Giảng viên cung cấp', description: 'Ma trận, định thức, không gian véctơ và các áp dụng trong kỹ thuật.', link: '#', uploadedBy: 'Đặng Nhật Quang',  createdAt: '2024-11-22', status: 'approved' },
-  { id: 8,  title: 'Slide An toàn thông tin – Chương 1-4',    subject: 'An toàn thông tin',         type: 'Slide bài giảng',     format: 'PPT',  source: 'Giảng viên cung cấp', description: 'Bảo mật hệ thống, mã hóa và các phương thức tấn công phổ biến.', link: '#', uploadedBy: 'Huỳnh Bảo Trân',   createdAt: '2024-11-20', status: 'approved' },
-  { id: 9,  title: 'Tài liệu Git & GitHub thực hành',          subject: 'Công cụ lập trình',         type: 'Tài liệu tham khảo', format: 'PDF',  source: 'Internet',            description: 'Hướng dẫn sử dụng Git từ cơ bản đến nâng cao, bao gồm branching và merge.', link: '#', uploadedBy: 'Trương Hải Đăng',  createdAt: '2024-11-18', status: 'approved' },
-  { id: 10, title: 'Giáo trình Kiến trúc máy tính',            subject: 'Kiến trúc máy tính',        type: 'Giáo trình',          format: 'PDF',  source: 'Giảng viên cung cấp', description: 'Tổ chức và kiến trúc máy tính, bộ nhớ, CPU và pipeline.', link: '#', uploadedBy: 'Bùi Ngọc Mai',      createdAt: '2024-11-15', status: 'approved' },
-  { id: 11, title: 'React.js – Tài liệu học cơ bản',           subject: 'Lập trình Web',             type: 'Tài liệu tham khảo', format: 'PDF',  source: 'Internet',            description: 'Tổng hợp kiến thức React.js: components, hooks, routing và state management.', link: '#', uploadedBy: 'Lý Tuấn Kiệt',     createdAt: '2024-11-12', status: 'approved' },
-  { id: 12, title: 'Slide Trí tuệ nhân tạo – Giới thiệu AI',  subject: 'Trí tuệ nhân tạo',          type: 'Slide bài giảng',     format: 'PPT',  source: 'Giảng viên cung cấp', description: 'Tổng quan AI, machine learning và deep learning. Bài giảng tuần 1-3.', link: '#', uploadedBy: 'Phan Thảo Vy',     createdAt: '2024-11-10', status: 'approved' },
-  { id: 13, title: 'Tổng hợp đề thi CSDL các năm',            subject: 'Cơ sở dữ liệu',            type: 'Tài liệu tham khảo', format: 'DOCX', source: 'Tự biên soạn',        description: 'Đề thi và đáp án môn CSDL từ năm 2020 đến 2024.', link: '#', uploadedBy: 'Ngô Gia Huy',       createdAt: '2024-11-08', status: 'approved' },
-  { id: 14, title: 'Docker & Container – Hướng dẫn thực tế',  subject: 'DevOps',                    type: 'Tài liệu tham khảo', format: 'PDF',  source: 'Internet',            description: 'Hướng dẫn sử dụng Docker, Docker Compose và deploy ứng dụng thực tế.', link: '#', uploadedBy: 'Mai Thanh Tùng',   createdAt: '2024-11-05', status: 'approved' },
-  { id: 15, title: 'Slide Lập trình Web – HTML CSS JS',        subject: 'Lập trình Web',             type: 'Slide bài giảng',     format: 'PPT',  source: 'Giảng viên cung cấp', description: 'Slide từ tuần 1 đến tuần 8, bao gồm HTML5, CSS3, JavaScript ES6+.', link: '#', uploadedBy: 'Đoàn Yến Nhi',     createdAt: '2024-11-02', status: 'approved' },
-  { id: 16, title: 'Giáo trình Xác suất thống kê',             subject: 'Xác suất thống kê',         type: 'Giáo trình',          format: 'PDF',  source: 'Giảng viên cung cấp', description: 'Lý thuyết xác suất, phân phối chuẩn, kiểm định giả thuyết và hồi quy.', link: '#', uploadedBy: 'Tạ Minh Khoa',     createdAt: '2024-10-28', status: 'approved' },
-  { id: 17, title: 'Node.js – Backend Development Guide',      subject: 'Lập trình Web',             type: 'Tài liệu tham khảo', format: 'PDF',  source: 'Internet',            description: 'Xây dựng REST API với Node.js, Express và kết nối cơ sở dữ liệu.', link: '#', uploadedBy: 'Vũ Thành Công',    createdAt: '2024-10-25', status: 'approved' },
-  { id: 18, title: 'Tổng hợp đề thi Giải tích 1 – 2023',     subject: 'Giải tích 1',               type: 'Tài liệu tham khảo', format: 'DOCX', source: 'Tự biên soạn',        description: 'Đề thi và lời giải chi tiết môn Giải tích 1 học kỳ 1 năm 2023.', link: '#', uploadedBy: 'Châu Bích Ngọc',   createdAt: '2024-10-22', status: 'approved' },
-  { id: 19, title: 'Slide Hệ điều hành – Chương 1-6',         subject: 'Hệ điều hành',              type: 'Slide bài giảng',     format: 'PPT',  source: 'Giảng viên cung cấp', description: 'Process, Thread, Memory management và File system trong hệ điều hành.', link: '#', uploadedBy: 'Nguyễn Quốc Hưng', createdAt: '2024-10-18', status: 'approved' },
-  { id: 20, title: 'Tài liệu UI/UX Design Fundamentals',      subject: 'Thiết kế giao diện',        type: 'Tài liệu tham khảo', format: 'PDF',  source: 'Internet',            description: 'Nguyên tắc thiết kế UX, wireframing và prototyping với Figma.', link: '#', uploadedBy: 'Lâm Gia Linh',     createdAt: '2024-10-15', status: 'approved' },
+  {
+    id: 1,
+    title: 'Giáo trình Lập trình hướng đối tượng',
+    category: 'major',
+    major: 'Công nghệ phần mềm',
+    subject: 'Lập trình hướng đối tượng',
+    type: 'Giáo trình',
+    format: 'PDF',
+    source: 'Giảng viên cung cấp',
+    description: 'Tài liệu chính thức môn OOP dùng trong học kỳ 1. Bao gồm lý thuyết và bài tập thực hành.',
+    link: '#',
+    uploadedBy: 'Nguyễn Minh Anh',
+    createdAt: '2024-12-10',
+    status: 'approved',
+  },
+  {
+    id: 2,
+    title: 'Slide Cơ sở dữ liệu – Chương 1 đến 5',
+    category: 'major',
+    major: 'Hệ thống thông tin',
+    subject: 'Cơ sở dữ liệu',
+    type: 'Slide bài giảng',
+    format: 'PPT',
+    source: 'Giảng viên cung cấp',
+    description: 'Slide bài giảng từ chương 1 đến chương 5 môn CSDL, bao gồm ERD và SQL cơ bản.',
+    link: '#',
+    uploadedBy: 'Trần Quốc Bảo',
+    createdAt: '2024-12-08',
+    status: 'approved',
+  },
+  {
+    id: 3,
+    title: 'Tài liệu tham khảo Mạng máy tính',
+    category: 'major',
+    major: 'Mạng máy tính và truyền thông',
+    subject: 'Mạng máy tính',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    source: 'Internet',
+    description: 'Tổng hợp lý thuyết về mô hình OSI, TCP/IP và các giao thức mạng phổ biến.',
+    link: '#',
+    uploadedBy: 'Lê Hoàng Nam',
+    createdAt: '2024-12-05',
+    status: 'approved',
+  },
+  {
+    id: 4,
+    title: 'Giáo trình Giải tích 1',
+    category: 'general',
+    major: null,
+    subject: 'Giải tích 1',
+    type: 'Giáo trình',
+    format: 'PDF',
+    source: 'Giảng viên cung cấp',
+    description: 'Giáo trình chính thức Giải tích 1, bao gồm chuỗi số, hàm nhiều biến và tích phân.',
+    link: '#',
+    uploadedBy: 'Phạm Gia Hân',
+    createdAt: '2024-12-01',
+    status: 'approved',
+  },
+  {
+    id: 5,
+    title: 'Slide Kỹ thuật phần mềm – Agile & Scrum',
+    category: 'major',
+    major: 'Công nghệ phần mềm',
+    subject: 'Kỹ thuật phần mềm',
+    type: 'Slide bài giảng',
+    format: 'PPT',
+    source: 'Tự biên soạn',
+    description: 'Tổng hợp phương pháp Agile và Scrum trong phát triển phần mềm hiện đại.',
+    link: '#',
+    uploadedBy: 'Võ Đức Tài',
+    createdAt: '2024-11-28',
+    status: 'approved',
+  },
+  {
+    id: 6,
+    title: 'Python cho Data Science – Hướng dẫn',
+    category: 'major',
+    major: 'Khoa học dữ liệu',
+    subject: 'Khoa học dữ liệu',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    source: 'Internet',
+    description: 'Hướng dẫn thực hành Python với Pandas, NumPy và Matplotlib cho data analysis.',
+    link: '#',
+    uploadedBy: 'Nguyễn Khánh Linh',
+    createdAt: '2024-11-25',
+    status: 'approved',
+  },
+  {
+    id: 7,
+    title: 'Giáo trình Đại số tuyến tính',
+    category: 'general',
+    major: null,
+    subject: 'Đại số tuyến tính',
+    type: 'Giáo trình',
+    format: 'PDF',
+    source: 'Giảng viên cung cấp',
+    description: 'Ma trận, định thức, không gian véctơ và các áp dụng trong kỹ thuật.',
+    link: '#',
+    uploadedBy: 'Đặng Nhật Quang',
+    createdAt: '2024-11-22',
+    status: 'approved',
+  },
+  {
+    id: 8,
+    title: 'Slide An toàn thông tin – Chương 1-4',
+    category: 'major',
+    major: 'An toàn thông tin',
+    subject: 'An toàn thông tin',
+    type: 'Slide bài giảng',
+    format: 'PPT',
+    source: 'Giảng viên cung cấp',
+    description: 'Bảo mật hệ thống, mã hóa và các phương thức tấn công phổ biến.',
+    link: '#',
+    uploadedBy: 'Huỳnh Bảo Trân',
+    createdAt: '2024-11-20',
+    status: 'approved',
+  },
+  {
+    id: 9,
+    title: 'Tài liệu Git & GitHub thực hành',
+    category: 'major',
+    major: 'Công nghệ phần mềm',
+    subject: 'Công cụ lập trình',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    source: 'Internet',
+    description: 'Hướng dẫn sử dụng Git từ cơ bản đến nâng cao, bao gồm branching và merge.',
+    link: '#',
+    uploadedBy: 'Trương Hải Đăng',
+    createdAt: '2024-11-18',
+    status: 'approved',
+  },
+  {
+    id: 10,
+    title: 'Giáo trình Kiến trúc máy tính',
+    category: 'major',
+    major: 'Kỹ thuật máy tính',
+    subject: 'Kiến trúc máy tính',
+    type: 'Giáo trình',
+    format: 'PDF',
+    source: 'Giảng viên cung cấp',
+    description: 'Tổ chức và kiến trúc máy tính, bộ nhớ, CPU và pipeline.',
+    link: '#',
+    uploadedBy: 'Bùi Ngọc Mai',
+    createdAt: '2024-11-15',
+    status: 'approved',
+  },
+  {
+    id: 11,
+    title: 'React.js – Tài liệu học cơ bản',
+    category: 'major',
+    major: 'Công nghệ phần mềm',
+    subject: 'Lập trình Web',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    source: 'Internet',
+    description: 'Tổng hợp kiến thức React.js: components, hooks, routing và state management.',
+    link: '#',
+    uploadedBy: 'Lý Tuấn Kiệt',
+    createdAt: '2024-11-12',
+    status: 'approved',
+  },
+  {
+    id: 12,
+    title: 'Slide Trí tuệ nhân tạo – Giới thiệu AI',
+    category: 'major',
+    major: 'Khoa học máy tính',
+    subject: 'Trí tuệ nhân tạo',
+    type: 'Slide bài giảng',
+    format: 'PPT',
+    source: 'Giảng viên cung cấp',
+    description: 'Tổng quan AI, machine learning và deep learning. Bài giảng tuần 1-3.',
+    link: '#',
+    uploadedBy: 'Phan Thảo Vy',
+    createdAt: '2024-11-10',
+    status: 'approved',
+  },
+  {
+    id: 13,
+    title: 'Tổng hợp đề thi CSDL các năm',
+    category: 'major',
+    major: 'Hệ thống thông tin',
+    subject: 'Cơ sở dữ liệu',
+    type: 'Tài liệu tham khảo',
+    format: 'DOCX',
+    source: 'Tự biên soạn',
+    description: 'Đề thi và đáp án môn CSDL từ năm 2020 đến 2024.',
+    link: '#',
+    uploadedBy: 'Ngô Gia Huy',
+    createdAt: '2024-11-08',
+    status: 'approved',
+  },
+  {
+    id: 14,
+    title: 'Docker & Container – Hướng dẫn thực tế',
+    category: 'major',
+    major: 'Công nghệ phần mềm',
+    subject: 'DevOps',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    source: 'Internet',
+    description: 'Hướng dẫn sử dụng Docker, Docker Compose và deploy ứng dụng thực tế.',
+    link: '#',
+    uploadedBy: 'Mai Thanh Tùng',
+    createdAt: '2024-11-05',
+    status: 'approved',
+  },
+  {
+    id: 15,
+    title: 'Slide Lập trình Web – HTML CSS JS',
+    category: 'major',
+    major: 'Thương mại điện tử',
+    subject: 'Lập trình Web',
+    type: 'Slide bài giảng',
+    format: 'PPT',
+    source: 'Giảng viên cung cấp',
+    description: 'Slide từ tuần 1 đến tuần 8, bao gồm HTML5, CSS3, JavaScript ES6+.',
+    link: '#',
+    uploadedBy: 'Đoàn Yến Nhi',
+    createdAt: '2024-11-02',
+    status: 'approved',
+  },
+  {
+    id: 16,
+    title: 'Giáo trình Xác suất thống kê',
+    category: 'general',
+    major: null,
+    subject: 'Xác suất thống kê',
+    type: 'Giáo trình',
+    format: 'PDF',
+    source: 'Giảng viên cung cấp',
+    description: 'Lý thuyết xác suất, phân phối chuẩn, kiểm định giả thuyết và hồi quy.',
+    link: '#',
+    uploadedBy: 'Tạ Minh Khoa',
+    createdAt: '2024-10-28',
+    status: 'approved',
+  },
+  {
+    id: 17,
+    title: 'Node.js – Backend Development Guide',
+    category: 'major',
+    major: 'Công nghệ phần mềm',
+    subject: 'Lập trình Web',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    source: 'Internet',
+    description: 'Xây dựng REST API với Node.js, Express và kết nối cơ sở dữ liệu.',
+    link: '#',
+    uploadedBy: 'Vũ Thành Công',
+    createdAt: '2024-10-25',
+    status: 'approved',
+  },
+  {
+    id: 18,
+    title: 'Tổng hợp đề thi Giải tích 1 – 2023',
+    category: 'general',
+    major: null,
+    subject: 'Giải tích 1',
+    type: 'Tài liệu tham khảo',
+    format: 'DOCX',
+    source: 'Tự biên soạn',
+    description: 'Đề thi và lời giải chi tiết môn Giải tích 1 học kỳ 1 năm 2023.',
+    link: '#',
+    uploadedBy: 'Châu Bích Ngọc',
+    createdAt: '2024-10-22',
+    status: 'approved',
+  },
+  {
+    id: 19,
+    title: 'Slide Hệ điều hành – Chương 1-6',
+    category: 'major',
+    major: 'Khoa học máy tính',
+    subject: 'Hệ điều hành',
+    type: 'Slide bài giảng',
+    format: 'PPT',
+    source: 'Giảng viên cung cấp',
+    description: 'Process, Thread, Memory management và File system trong hệ điều hành.',
+    link: '#',
+    uploadedBy: 'Nguyễn Quốc Hưng',
+    createdAt: '2024-10-18',
+    status: 'approved',
+  },
+  {
+    id: 20,
+    title: 'Tài liệu UI/UX Design Fundamentals',
+    category: 'major',
+    major: 'Thương mại điện tử',
+    subject: 'Thiết kế giao diện',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    source: 'Internet',
+    description: 'Nguyên tắc thiết kế UX, wireframing và prototyping với Figma.',
+    link: '#',
+    uploadedBy: 'Lâm Gia Linh',
+    createdAt: '2024-10-15',
+    status: 'approved', 
+  },
 ];
 
 const PAGE_SIZE = 20; // QĐ8.2: tối đa 20 tài liệu mỗi lần tra cứu
@@ -49,6 +330,11 @@ export default function ResourceUserPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [submitted, setSubmitted]     = useState(false);
 
+  // Selected category trong folder view 
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedMajor, setSelectedMajor] = useState(null);
+  const [selectedSubjectFolder, setSelectedSubjectFolder] = useState(null);
+
   // Danh sách môn học unique
   const subjects = useMemo(
     () => [...new Set(MOCK_RESOURCES.map((r) => r.subject))].sort(),
@@ -67,8 +353,23 @@ export default function ResourceUserPage() {
         const matchSubject = subjectFilter === 'all' || r.subject === subjectFilter;
         return matchSearch && matchType && matchFormat && matchSubject;
       })
+      .filter((r) => {
+        if (selectedCategory === "general") {
+          return r.category === "general";
+        }
+
+        if (selectedCategory === "major" && selectedMajor) {
+          return r.category === "major" && r.major === selectedMajor;
+        }
+
+        if (selectedSubjectFolder) {
+          return r.subject === selectedSubjectFolder;
+        }
+
+        return true;
+      })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // QĐ8.3
-  }, [search, typeFilter, formatFilter, subjectFilter]);
+  }, [search, typeFilter, formatFilter, subjectFilter, selectedCategory, selectedMajor, selectedSubjectFolder]);
 
   // QĐ8.2: tối đa 20 tài liệu
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -131,6 +432,27 @@ export default function ResourceUserPage() {
         <div className={styles.toast}>
           ✅ Đề xuất đã được gửi! Admin sẽ xét duyệt sớm nhất có thể.
         </div>
+      )}
+
+      {/* ── Folder view ── */}
+      {!selectedMajor && !selectedSubjectFolder && (
+        <ResourceFolderView
+          selectedCategory={selectedCategory}
+          onSelectCategory={(category) => {
+            setSelectedCategory(category);
+            setSelectedMajor(null);
+            setSelectedSubjectFolder(null);
+            setPage(1);
+          }}
+          onSelectMajor={(major) => {
+            setSelectedMajor(major);
+            setPage(1);
+          }}
+          onSelectSubject={(subject) => {
+            setSelectedSubjectFolder(subject);
+            setPage(1);
+          }}
+        />
       )}
 
       {/* ── Search + Filter ── */}

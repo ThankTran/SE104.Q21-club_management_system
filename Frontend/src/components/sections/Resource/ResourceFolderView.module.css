@@ -1,0 +1,76 @@
+.folderTable {
+  width: 100%;
+  border-radius: 16px;
+  background: var(--white-hard);
+  border: 1px solid var(--gray-300);
+  overflow: hidden;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 74px 1fr 110px;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--white-soft);
+  border-bottom: 1px solid var(--gray-300);
+  color: var(--gray-700);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 74px 1fr 110px;
+  align-items: center;
+  padding: 18px 20px;
+  border: none;
+  border-bottom: 1px solid #e8edf3;
+  background: var(--white-hard);
+  color: var(--gray-900);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s ease;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: var(--primary-100);
+}
+
+.folderIcon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.action {
+  justify-self: end;
+  font-size: 19px;
+  opacity: 0.75;
+}
+
+@media (max-width: 600px) {
+  .header,
+  .row {
+    grid-template-columns: 52px 1fr 50px;
+    padding: 15px 14px;
+  }
+
+  .header span:last-child {
+    text-align: right;
+  }
+
+  .name {
+    font-size: 13.5px;
+  }
+}
