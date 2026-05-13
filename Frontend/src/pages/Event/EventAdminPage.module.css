@@ -1,0 +1,566 @@
+/* EventAdminPage.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: var(--font-family);
+  position: relative;
+  padding: 30px;
+}
+
+/* ── Header ── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.pageSubtitle {
+  font-size: 13.5px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 9px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+.exportBtn:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 9px;
+  border: none;
+  background: var(--primary-900);
+  color: var(--white-hard);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+.addBtn:hover {
+  background: var(--primary-700);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(29,78,216,0.25);
+}
+
+/* ── Fiscal Performance card ── */
+.fiscalCard {
+  background: var(--white-hard);
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  padding: 24px 28px;
+}
+
+.fiscalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.fiscalTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.fiscalTag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-700);
+  background: var(--primary-100);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.fiscalNumbers {
+  display: flex;
+  align-items: flex-end;
+  gap: 40px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.fiscalLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 0 0 4px;
+}
+
+.fiscalValue {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.fiscalActual { color: var(--primary-700); }
+
+.fiscalMeta { margin-left: auto; }
+
+.fiscalNote {
+  font-size: 12.5px;
+  color: var(--gray-500);
+  margin: 0;
+  max-width: 240px;
+  line-height: 1.5;
+}
+
+.fiscalBar {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.fiscalBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-500), var(--primary-700));
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+/* ── Roster card ── */
+.rosterCard {
+  background: var(--white-hard);
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  overflow: visible;
+}
+
+.rosterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid #f0f4f8;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rosterTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.rosterActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white-soft);
+  border: 1.5px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 36px;
+  min-width: 200px;
+  color: var(--gray-500);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.searchWrap:focus-within {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: var(--gray-900);
+  font-family: var(--font-family);
+}
+.searchInput::placeholder { color: var(--gray-500); }
+
+.publishedBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #276749;
+  background: #e6f4ea;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-family: var(--font-family);
+}
+
+.table thead tr {
+  background: var(--white-soft);
+  border-bottom: 1.5px solid #f0f4f8;
+}
+
+.table thead th {
+  padding: 12px 20px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+
+.row {
+  border-bottom: 1px solid #f5f7fa;
+  transition: background 0.15s;
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: #f8faff; }
+
+.table td {
+  padding: 14px 20px;
+  vertical-align: middle;
+}
+
+.dateHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortBtn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.sortBtn:hover {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.eventName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 3px;
+}
+
+.eventLocation {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.tagBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.dateCell {
+  color: var(--gray-700);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.attendance {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.attBar {
+  height: 4px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.attBarFill {
+  height: 100%;
+  background: var(--primary-500);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ── Action buttons ── */
+.actionBtns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editBtn, .downloadBtn, .deleteBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.editBtn {
+  background: var(--primary-100);
+  color: var(--primary-700);
+  border-color: var(--primary-200);
+}
+.editBtn:hover { background: var(--primary-700); color: white; }
+
+.downloadBtn {
+  background: #f0f4f8;
+  color: var(--gray-700);
+  border-color: #e2e8f0;
+}
+.downloadBtn:hover { background: var(--gray-300); color: var(--gray-900); }
+
+.deleteBtn {
+  background: #fff5f5;
+  color: #e53e3e;
+  border-color: #fed7d7;
+}
+.deleteBtn:hover { background: #e53e3e; color: white; }
+
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid #f0f4f8;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.paginationInfo {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.paginationBtns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-family: var(--font-family);
+}
+.pageBtn:hover:not(:disabled) {
+  border-color: var(--primary-500);
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+.pageBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pageBtnActive {
+  background: var(--primary-900) !important;
+  color: var(--white-hard) !important;
+  border-color: var(--primary-900) !important;
+  font-weight: 700;
+}
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: 32px;
+  right: 22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-900);
+  color: var(--white-hard);
+  border: none;
+  box-shadow: 0 6px 24px rgba(29,78,216,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 100;
+}
+.fab:hover {
+  background: var(--primary-700);
+  transform: scale(1.08);
+  box-shadow: 0 10px 32px rgba(29,78,216,0.4);
+}
+
+/* ── Confirm modal ── */
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.confirmBox {
+  background: var(--white-hard);
+  border-radius: 16px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  text-align: center;
+  animation: popIn 0.2s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.confirmIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.confirmTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 10px;
+}
+
+.confirmMsg {
+  font-size: 14px;
+  color: var(--gray-700);
+  margin: 0 0 24px;
+  line-height: 1.6;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.confirmCancel, .confirmDelete {
+  padding: 9px 24px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+.confirmCancel {
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+}
+.confirmCancel:hover { background: var(--gray-100); }
+.confirmDelete {
+  border: none;
+  background: #e53e3e;
+  color: #fff;
+}
+.confirmDelete:hover { background: #c53030; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fiscalNumbers { gap: 20px; }
+  .fiscalValue { font-size: 20px; }
+  .pageHeader { flex-direction: column; }
+  .headerActions { width: 100%; }
+}

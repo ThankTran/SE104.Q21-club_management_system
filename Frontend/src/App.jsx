@@ -12,6 +12,14 @@ import MemberAdminPage from "./pages/MemberAdminPage";
 import MemberUserPage  from "./pages/MemberUserPage";
 import DashboardPage   from "./pages/DashboardPage";
 
+// Event pages
+import EventUserPage from "./pages/Event/EventUserPage";
+import EventAdminPage from "./pages/Event/EventAdminPage";
+
+// Resource pages
+import ResourceUserPage from "./pages/Resource/ResourceUserPage";
+import ResourceAdminPage from "./pages/Resource/ResourceAdminPage";
+
 // Placeholder cho các trang chưa code
 const Placeholder = ({ title }) => (
   <div style={{ padding: "40px 32px" }}>
@@ -37,8 +45,10 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
-          <Route path="/resources" element={<Placeholder title="Resources" />} />
-          <Route path="/events"    element={<Placeholder title="Events" />} />
+          <Route path="/resourcesuser" element={<ResourceUserPage />} />
+          <Route path="/resourcesadmin" element={<Placeholder title="Resource Admin" />} />
+          <Route path="/eventuser"    element={<EventUserPage />} />
+          <Route path="/eventadmin" element={<EventAdminPage />} />
           <Route path="/finance"   element={<Placeholder title="Finance" />} />
         </Route>
 

@@ -15,8 +15,10 @@ const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: dashboard, path: "/dashboard" },
   { id: "memberuser",   label: "Member User",   icon: members,   path: "/memberuser"   },
   { id: "memberadmin",  label: "Member Admin",  icon: members,   path: "/memberadmin"     },
-  { id: "resources", label: "Resources", icon: resources, path: "/resources" },
-  { id: "events",    label: "Events",    icon: events,    path: "/events"    },
+  { id: "resourcesuser", label: "Resources User", icon: resources, path: "/resourcesuser" },
+  { id: "resourcesadmin", label: "Resources Admin", icon: resources, path: "/resourcesadmin" },
+  { id: "eventuser",  label: "Event User",  icon: events,   path: "/eventuser"     },
+  { id: "eventadmin",  label: "Event Admin",  icon: events,   path: "/eventadmin"     },
   { id: "finance",   label: "Finance",   icon: finance,   path: "/finance"   },
 ];
 
