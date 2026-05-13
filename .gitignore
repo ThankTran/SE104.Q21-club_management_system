@@ -24,4 +24,5 @@ hs_err_pid*
 replay_pid*
 
 check-figma-connection.js
-mcp.jsonnode_modules/ 
+mcp.json
+node_modules 
