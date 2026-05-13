@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./NavbarFM.module.css";
 import logo from "../../../assets/logo/logo_cnpm.png";
-import search from "../../../assets/icons/search.svg";
 import noti from "../../../assets/icons/noti.svg";
 import setting from "../../../assets/icons/setting.svg";
+import Searchbar from "../../common/SearchBar/Searchbar";
 
 const NavbarFM = () => {
+  const [openMenu, setOpenMenu] = useState(false);
   return (
     <nav className={styles.navbar}>
       {/* Left Section - Logo */}
@@ -22,29 +23,32 @@ const NavbarFM = () => {
         </div>
       </div>
 
-      {/* Center Section - Search */}
-      <div className={styles.searchSection}>
-        <input
-          type="text"
-          placeholder="Search archives..."
-          className={styles.searchInput}
-        />
-        <button className={styles.searchBtn}>
-          <img src={search} alt="Search" className={styles.searchIcon} />
-        </button>
-      </div>
-
-      {/* Right Section - Icons */}
+      {/* Right Section - Icons and Search */}
       <div className={styles.actionsSection}>
+        <Searchbar />
         <button className={styles.iconBtn} title="Notifications">
           <img src={noti} alt="Notifications" className={styles.iconImg} />
         </button>
         <button className={styles.iconBtn} title="Settings">
           <img src={setting} alt="Settings" className={styles.iconImg} />
         </button>
-        <button className={styles.profileBtn} title="Profile">
-          <div className={styles.avatar}></div>
-        </button>
+        <div className={styles.profileContainer}>
+          <button className={styles.profileBtn} title="Profile" onClick={() => setOpenMenu(!openMenu)}>
+            <div className={styles.avatar}></div>
+          </button>
+
+          {openMenu && (
+              <div className={styles.dropdownMenu}>
+                <button className={styles.dropdownItem}>
+                  Hồ sơ
+                </button>
+
+                <button className={styles.dropdownItem}>
+                  Đăng xuất
+                </button>
+              </div>
+            )}
+        </div>
       </div>
     </nav>
   );
