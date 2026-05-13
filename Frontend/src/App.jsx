@@ -8,8 +8,8 @@ import LandingPage from "./pages/LandingPage";
 import HomePage    from "./pages/HomePage";
 
 // Member pages
-import MemberAdminPage from "./pages/MemberAdminPage";
-import MemberUserPage  from "./pages/MemberUserPage";
+import MemberAdminPage from "./pages/Member/MemberAdminPage";
+import MemberUserPage  from "./pages/Member/MemberUserPage";
 
 // Event pages
 import EventUserPage from "./pages/Event/EventUserPage";
