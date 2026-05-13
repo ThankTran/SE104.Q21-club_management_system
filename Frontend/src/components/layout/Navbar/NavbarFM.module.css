@@ -149,47 +149,6 @@
   border-radius: 1.5px;
 } */
 
-/* Search Section */
-.searchSection {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  max-width: 320px;
-  margin: 0 32px;
-  background: var(--gray-100);
-  border-radius: 24px;
-  padding: 0 12px;
-  gap: 8px;
-}
-
-.searchInput {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 13px;
-  color: var(--text-header);
-  background: transparent;
-  padding: 8px 0;
-}
-
-.searchInput::placeholder {
-  color: var(--text-light-gray);
-}
-
-.searchBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--text-light-gray);
-  transition: color 0.2s;
-  padding: 4px;
-}
-
-.searchBtn:hover {
-  color: var(--text-dark-gray);
-}
-
 /* Actions Section */
 .actionsSection {
   display: flex;
@@ -232,6 +191,65 @@
   background: var(--text-darkest);
 }
 
+.profileContainer {
+  position: relative;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  min-width: 160px;
+  z-index: 1001;
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-header);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.dropdownItem:last-child {
+  color: #ff4d4f;
+}
+
+.dropdownItem:last-child:hover {
+  background: #fff1f0;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .navbar {
@@ -271,13 +289,6 @@
     margin-left: 0;
     gap: 16px;
     position: center;
-  }
-
-  .searchSection {
-    order: 2;
-    margin: 0;
-    flex: unset;
-    max-width: unset;
   }
 
   .actionsSection {

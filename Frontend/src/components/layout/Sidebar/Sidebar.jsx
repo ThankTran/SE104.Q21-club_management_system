@@ -7,24 +7,21 @@ import resources from "../../../assets/icons/resources.svg";
 import events    from "../../../assets/icons/events.svg";
 import finance   from "../../../assets/icons/finance.svg";
 import help      from "../../../assets/icons/help.svg";
-import logout    from "../../../assets/icons/logout.svg";
 import home      from "../../../assets/icons/home.svg";
 
 const menuItems = [
-  { id: "home",      label: "Home",      icon: home,      path: "/home"      },
-  { id: "dashboard", label: "Dashboard", icon: dashboard, path: "/dashboard" },
-  { id: "memberuser",   label: "Member User",   icon: members,   path: "/memberuser"   },
-  { id: "memberadmin",  label: "Member Admin",  icon: members,   path: "/memberadmin"     },
-  { id: "resourcesuser", label: "Resources User", icon: resources, path: "/resourcesuser" },
-  { id: "resourcesadmin", label: "Resources Admin", icon: resources, path: "/resourcesadmin" },
-  { id: "eventuser",  label: "Event User",  icon: events,   path: "/eventuser"     },
-  { id: "eventadmin",  label: "Event Admin",  icon: events,   path: "/eventadmin"     },
-  { id: "finance",   label: "Finance",   icon: finance,   path: "/finance"   },
+  { id: "home",      label: "Trang chủ",      icon: home,      path: "/home"      },
+  { id: "dashboard", label: "Thống kê", icon: dashboard, path: "/dashboard" },
+  { id: "memberuser",   label: "Thành viên",   icon: members,   path: "/memberuser"   },
+  { id: "memberadmin",  label: "Quản trị viên",  icon: members,   path: "/memberadmin"     },
+  { id: "resources", label: "Tài liệu", icon: resources, path: "/resources" },
+  { id: "eventuser",  label: "Sự kiện",  icon: events,   path: "/eventuser"     },
+  { id: "eventadmin",  label: "Quản lý sự kiện",  icon: events,   path: "/eventadmin"     },
+  { id: "finance",   label: "Thu chi",   icon: finance,   path: "/finance"   },
 ];
 
 const bottomItems = [
-  { id: "help",   label: "Help",   icon: help   },
-  { id: "logout", label: "Logout", icon: logout },
+  { id: "help",   label: "Trợ giúp",   icon: help   },
 ];
 
 const Sidebar = () => {

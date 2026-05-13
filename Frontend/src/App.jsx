@@ -5,7 +5,7 @@ import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
 // Public
 import LandingPage from "./pages/LandingPage";
-import HomePage    from "./pages/HomePage";
+import HomePage    from "./pages/Homepage";
 
 // Member pages
 import MemberAdminPage from "./pages/Member/MemberAdminPage";
@@ -44,6 +44,7 @@ export default function App() {
         <Route path="/home" element={<HomePage />} />
 
         <Route element={<DashboardLayout />}>
+          <Route path="/homee" element={<HomePage  title="Home" />} />
           <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
