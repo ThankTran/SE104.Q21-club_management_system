@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import MemberTable from '../components/sections/Member/MemberTable';
+import MemberTable from '../../components/sections/Member/MemberTable';
 import styles from './MemberUserPage.module.css';
 
 // ── Mock data (same shape, read-only) ───────────────────────

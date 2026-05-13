@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 
-import MemberTable from '../components/sections/Member/MemberTable';
-import MemberForm from '../components/sections/Member/MemberForm';
-import MemberFilter from '../components/sections/Member/MemberFilter';
+import MemberTable from '../../components/sections/Member/MemberTable';
+import MemberForm from '../../components/sections/Member/MemberForm';
+import MemberFilter from '../../components/sections/Member/MemberFilter';
 import styles from './MemberAdminPage.module.css';
 
 // ── Mock data ────────────────────────────────────────────────
