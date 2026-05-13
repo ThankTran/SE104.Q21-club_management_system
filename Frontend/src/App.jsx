@@ -5,7 +5,7 @@ import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
 // Public
 import LandingPage from "./pages/LandingPage";
-import HomePage    from "./pages/HomePage";
+import HomePage    from "./pages/Homepage";
 
 // Member pages
 import MemberAdminPage from "./pages/Member/MemberAdminPage";
