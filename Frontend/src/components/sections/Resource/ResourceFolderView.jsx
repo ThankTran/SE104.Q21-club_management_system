@@ -1,5 +1,7 @@
 import styles from "./ResourceFolderView.module.css";
 
+import { FolderClosed } from "lucide-react";
+
 const GENERAL_SUBJECTS = [
   "Giải tích 1",
   "Đại số tuyến tính",
@@ -30,19 +32,16 @@ export default function ResourceFolderView({
         <div className={styles.header}>
           <span>Loại</span>
           <span>Tên</span>
-          <span>Tùy chọn</span>
         </div>
 
         <button className={styles.row} onClick={() => onSelectCategory("general")}>
-          <span className={styles.folderIcon}>📁</span>
+          <FolderClosed className={styles.folderIcon} />
           <span className={styles.name}>1. Môn đại cương</span>
-          <span className={styles.action}>📋</span>
         </button>
 
         <button className={styles.row} onClick={() => onSelectCategory("major")}>
-          <span className={styles.folderIcon}>📁</span>
+          <FolderClosed className={styles.folderIcon} />
           <span className={styles.name}>2. Môn theo ngành</span>
-          <span className={styles.action}>📋</span>
         </button>
       </div>
     );
@@ -54,7 +53,6 @@ export default function ResourceFolderView({
         <div className={styles.header}>
           <span>Loại</span>
           <span>Tên môn học</span>
-          <span>Tùy chọn</span>
         </div>
 
         {GENERAL_SUBJECTS.map((subject, index) => (
@@ -63,9 +61,8 @@ export default function ResourceFolderView({
             className={styles.row}
             onClick={() => onSelectSubject(subject)}
           >
-            <span className={styles.folderIcon}>📁</span>
+            <FolderClosed className={styles.folderIcon} />
             <span className={styles.name}>{index + 1}. {subject}</span>
-            <span className={styles.action}>📋</span>
           </button>
         ))}
       </div>
@@ -86,9 +83,8 @@ export default function ResourceFolderView({
           className={styles.row}
           onClick={() => onSelectMajor(major)}
         >
-          <span className={styles.folderIcon}>📁</span>
+          <FolderClosed className={styles.folderIcon} />          
           <span className={styles.name}>{index + 1}. {major}</span>
-          <span className={styles.action}>📋</span>
         </button>
       ))}
     </div>
