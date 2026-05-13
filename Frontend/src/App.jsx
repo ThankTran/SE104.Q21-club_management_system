@@ -10,6 +10,7 @@ import HomePage    from "./pages/HomePage";
 // Member pages
 import MemberAdminPage from "./pages/MemberAdminPage";
 import MemberUserPage  from "./pages/MemberUserPage";
+import DashboardPage   from "./pages/DashboardPage";
 
 // Placeholder cho các trang chưa code
 const Placeholder = ({ title }) => (
@@ -33,7 +34,7 @@ export default function App() {
         <Route path="/home" element={<HomePage />} />
 
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
           <Route path="/resources" element={<Placeholder title="Resources" />} />
