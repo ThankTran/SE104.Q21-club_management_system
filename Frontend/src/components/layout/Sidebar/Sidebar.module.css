@@ -2,15 +2,18 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  justify-content: space-between;
-  height: 90vh;  width: 180px;
-  background: linear-gradient(135deg, var(--bg-sidebar-start) 30%, var(--bg-sidebar-end) 100%);  border-right: 1px solid var(--border-subtle);
+  width: 180px;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, var(--bg-sidebar-start) 30%, var(--bg-sidebar-end) 100%);
+  border-right: 1px solid var(--border-subtle);
   padding: 24px 16px;
   box-shadow: 2px 0 8px rgba(226, 240, 255, 0.05);
   overflow-y: auto;
   position: fixed;
+  top: 60px;
+  left: 0;
   padding-bottom: 16px;
-
+  z-index: 900;
 }
 
 .header {
@@ -41,6 +44,7 @@
   flex-direction: column;
   gap: 8px;
   margin-bottom: 32px;
+  margin-top: 16px;
 }
 
 .menuItem {
