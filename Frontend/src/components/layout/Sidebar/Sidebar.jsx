@@ -23,8 +23,7 @@ const menuItems = [
 ];
 
 const bottomItems = [
-  { id: "help",   label: "Help",   icon: help   },
-  { id: "logout", label: "Logout", icon: logout },
+  { id: "help",   label: "Trợ giúp",   icon: help   },
 ];
 
 const Sidebar = () => {

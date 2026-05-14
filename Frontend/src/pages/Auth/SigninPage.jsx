@@ -1,5 +1,5 @@
 import React from "react";
-import AuthLayout from "../components/layout/Navigation/AuthLayout";
+import AuthLayout from "../../components/layout/Navigation/AuthLayout";
 import styles from "./SignupPage.module.css";
 
 const LoginPage = () => {

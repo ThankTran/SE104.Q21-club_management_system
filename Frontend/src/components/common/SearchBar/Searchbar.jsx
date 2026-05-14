@@ -13,18 +13,16 @@ const Searchbar = ({ onSearch }) => {
   };
 
   return (
-    <div className={styles["searchbar-container"]}>
-      <input
-        type="text"
-        placeholder="Search..."
-        value={query}
-        onChange={handleInputChange}
-        className={styles["search-input"]}
-      />
-      <button onClick={handleSearch} className={styles["search-button"]}>
-        <img src={search} alt="Search" className={styles["search-icon"]} />
-      </button>
-    </div>
+      <div className={styles.searchSection}>
+        <input
+          type="text"
+          placeholder="Search archives..."
+          className={styles.searchInput}
+        />
+        <button className={styles.searchBtn}>
+          <img src={search} alt="Search" className={styles.searchIcon} />
+        </button>
+      </div>
   );
 };
 export default Searchbar;

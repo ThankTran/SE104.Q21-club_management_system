@@ -5,12 +5,11 @@ import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
 // Public
 import LandingPage from "./pages/LandingPage";
-import HomePage    from "./pages/HomePage";
+import HomePage    from "./pages/Homepage";
 
 // Member pages
-import MemberAdminPage from "./pages/MemberAdminPage";
-import MemberUserPage  from "./pages/MemberUserPage";
-import DashboardPage   from "./pages/DashboardPage";
+import MemberAdminPage from "./pages/Member/MemberAdminPage";
+import MemberUserPage  from "./pages/Member/MemberUserPage";
 
 // Event pages
 import EventUserPage from "./pages/Event/EventUserPage";
@@ -19,6 +18,9 @@ import EventAdminPage from "./pages/Event/EventAdminPage";
 // Resource pages
 import ResourceUserPage from "./pages/Resource/ResourceUserPage";
 import ResourceAdminPage from "./pages/Resource/ResourceAdminPage";
+
+// Finance page 
+import FinancePage from "./pages/Finance/FinancePage";
 
 // Placeholder cho các trang chưa code
 const Placeholder = ({ title }) => (
@@ -46,10 +48,10 @@ export default function App() {
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
           <Route path="/resourcesuser" element={<ResourceUserPage />} />
-          <Route path="/resourcesadmin" element={<Placeholder title="Resource Admin" />} />
+          <Route path="/resourcesadmin" element={<ResourceAdminPage />} />      
           <Route path="/eventuser"    element={<EventUserPage />} />
           <Route path="/eventadmin" element={<EventAdminPage />} />
-          <Route path="/finance"   element={<Placeholder title="Finance" />} />
+          <Route path="/finance"   element={<FinancePage />} />
         </Route>
 
         {/* ── Fallback ── */}
