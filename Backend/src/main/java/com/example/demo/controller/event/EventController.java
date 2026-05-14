@@ -1,0 +1,63 @@
+package com.example.demo.controller.event;
+
+import com.example.demo.application.dto.request.event.EventRequest;
+import com.example.demo.application.dto.response.event.EventResponse;
+import com.example.demo.application.service.interfaces.event.EventService;
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/events")
+public class EventController {
+
+    private final EventService eventService;
+
+    public EventController(EventService eventService) {
+        this.eventService = eventService;
+    }
+
+    @PostMapping
+    public ResponseEntity<?> create(@RequestBody EventRequest request) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(eventService.create(request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<EventResponse>> getAll() {
+        return ResponseEntity.ok(eventService.getAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(eventService.getById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<EventResponse>> search(@RequestParam String name) {
+        return ResponseEntity.ok(eventService.searchByName(name));
+    }
+
+    @GetMapping("/by-date-range")
+    public ResponseEntity<List<EventResponse>> byDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(eventService.getByDateRange(from, to));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        eventService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
