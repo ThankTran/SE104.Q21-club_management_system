@@ -1,17 +1,18 @@
 package com.example.demo.domain.enums;
 
-import lombok.*;
-
-public enum ApprovalStatus {
+public enum ApprovalStatusEnum {
     PENDING("Chờ duyệt"),
     APPROVED("Đã duyệt"),
     REJECTED("Bị từ chối"),
-
     REQUESTED_CHANGES("Yêu cầu chỉnh sửa");
 
     private final String value;
 
-    ApprovalStatus(String value) {
+    ApprovalStatusEnum(String value) {
         this.value = value;
+    }
+
+    public String getValue() {
+        return value;
     }
 }

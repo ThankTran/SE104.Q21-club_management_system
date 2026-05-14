@@ -1,18 +1,12 @@
 package com.example.demo.domain.repository.department;
 
 import com.example.demo.domain.model.department.Department;
+import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
-import org.springframework.stereotype.Repository;
-importt java.util.List;
 
-@Repository
-public interface DepartmentRepository {
-    Department save(Department department);
+public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-    Optional<Department> findById(Long departmentId);
+    Optional<Department> findByDepartmentName(String departmentName);
 
-    Optional<Department> findByName(String name);
-
-    List<Department> findAll();
-
+    boolean existsByDepartmentNameIgnoreCase(String departmentName);
 }

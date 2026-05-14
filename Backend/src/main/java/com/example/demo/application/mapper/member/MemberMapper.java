@@ -2,14 +2,12 @@ package com.example.demo.application.mapper.member;
 
 import com.example.demo.application.dto.request.member.CreateMemberRequest;
 import com.example.demo.application.dto.request.member.JoinClubRequest;
-import com.example.demo.application.dto.response.member.MemberApprovalResponse;
 import com.example.demo.application.dto.response.member.MemberResponse;
 import com.example.demo.application.dto.response.member.MemberSearchResponse;
 import com.example.demo.application.dto.response.department.DepartmentResponse;
 
 import com.example.demo.domain.model.department.Department;
 import com.example.demo.domain.model.member.Member;
-import com.example.demo.domain.model.member.MemberApproval;
 
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
@@ -85,28 +83,6 @@ public class MemberMapper {
                         ? member.getReqStatus().name() : null)
                 .graduatedStatus(member.getGraduatedStatus() != null
                         ? member.getGraduatedStatus().name() : null)
-                .build();
-    }
-
-    public MemberApprovalResponse toApprovalResponse(MemberApproval approval) {
-        if (approval == null) return null;
-        return MemberApprovalResponse.builder()
-                .approvalId(approval.getApprovalId())
-                .status(approval.getStatus() != null
-                        ? approval.getStatus().name() : null)
-                .memberId(approval.getMember() != null
-                        ? approval.getMember().getMemberId() : null)
-                .studentId(approval.getMember() != null
-                        ? approval.getMember().getStudentId() : null)
-                .fullName(approval.getMember() != null
-                        ? approval.getMember().getFullName() : null)
-                .approvedById(approval.getApprover() != null
-                        ? approval.getApprover().getMemberId() : null)
-                .approvedByName(approval.getApprover() != null
-                        ? approval.getApprover().getFullName() : null)
-                .approvalDate(approval.getApprovalDate())
-                .approvedAt(approval.getApprovedAt())
-                .note(approval.getNote())
                 .build();
     }
 

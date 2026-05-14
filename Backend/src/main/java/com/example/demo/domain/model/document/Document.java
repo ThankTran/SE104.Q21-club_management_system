@@ -1,5 +1,7 @@
 package com.example.demo.domain.model.document;
 
+import com.example.demo.domain.enums.ApprovalStatusEnum;
+import com.example.demo.domain.enums.DocumentStatus;
 import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.model.subject.Subject;
 import jakarta.persistence.Column;
@@ -21,8 +23,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "documents")
@@ -32,7 +35,7 @@ import org.hibernate.annotations.Where;
 @AllArgsConstructor
 @Builder
 @DynamicUpdate
-@Where(clause = "deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL")
 public class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

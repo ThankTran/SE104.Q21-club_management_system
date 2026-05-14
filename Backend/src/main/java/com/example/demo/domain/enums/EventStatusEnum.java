@@ -1,0 +1,18 @@
+package com.example.demo.domain.enums;
+
+public enum EventStatusEnum {
+    NotStarted("Chưa bắt đầu"),
+    InProgress("Đang diễn ra"),
+    Finished("Đã hoàn thành"),
+    Cancelled("Đã hủy");
+
+    private final String description;
+
+    EventStatusEnum(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}
