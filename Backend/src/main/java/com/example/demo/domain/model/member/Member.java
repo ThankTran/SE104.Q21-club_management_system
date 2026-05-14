@@ -8,7 +8,7 @@ import com.example.demo.domain.enums.GraduatedStatusEnum;
 import com.example.demo.domain.enums.DocumentStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.DynamicInsert;
@@ -24,9 +24,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @AllArgsConstructor
 @Builder
 @DynamicUpdate
-@Where(clause = "deleted_at IS NULL")
-
-
+@SQLRestriction("deleted_at IS NULL")
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
