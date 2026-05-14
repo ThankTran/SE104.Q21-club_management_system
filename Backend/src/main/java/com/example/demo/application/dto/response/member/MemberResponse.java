@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class MemberResponse {
     private Long memberId;
     private String studentId;
@@ -20,7 +19,7 @@ public class MemberResponse {
     private String gender;
     private LocalDate dateOfBirth;
     private String roleName;
-    private String reqstatus;
+    private String reqStatus;
     private String graduatedStatus;
     private LocalDateTime createdAt;
 }
