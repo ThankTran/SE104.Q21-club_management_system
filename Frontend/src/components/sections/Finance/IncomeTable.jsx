@@ -1,0 +1,89 @@
+import { useState } from 'react';
+import styles from '../../../pages/Finance/FinancePage.module.css';
+import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
+import FinanceFilter from './FinanceFilter';
+
+export default function IncomeTable({
+  thuList,
+  filteredThu,
+  searchThu,
+  setSearchThu,
+  onOpenThu,
+  onEditThu,
+  setDeleteTarget,
+  sortThu,
+  setSortThu,
+  filters,
+  setFilters,
+}) {
+  const [filterOpen, setFilterOpen] = useState(false);
+  return (
+    <div className={styles.tableSection}>
+      <div className={styles.tableHeader}>
+        
+        <h3 className={styles.tableTitle}>Danh sách phiếu thu <span className={styles.tableBadgeThu}>{thuList.length} phiếu</span></h3>
+        <div className={styles.tableActions}>
+          <div className={styles.searchWrap}>
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input className={styles.searchInput} placeholder="Tìm phiếu thu..." value={searchThu} onChange={e => setSearchThu(e.target.value)} />
+          </div>
+          <FinanceFilter
+            open={filterOpen}
+            setOpen={setFilterOpen}
+            type="income"
+            filters={filters}
+            setFilters={setFilters}
+          />
+          <button className={styles.btnThu} onClick={onOpenThu}>+ Lập phiếu thu</button>
+        </div>
+      </div>
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>MÃ PHIẾU</th>
+              <th>NGƯỜI NỘP</th>
+              <th>LÝ DO</th>
+              <th>HÌNH THỨC</th>
+              <th>
+                <button
+                  className={styles.sortBtn}
+                  onClick={() => setSortThu(sortThu === 'asc' ? 'desc' : 'asc')}
+                >
+                  NGÀY THU {sortThu === 'asc' ? '↑' : '↓'}
+                </button>
+              </th>
+              <th>SỐ TIỀN</th>
+              <th>MÃ SỰ KIỆN</th>
+              <th>THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredThu.map(r => (
+              <tr key={r.id} className={styles.row}>
+                <td><span className={styles.idBadge}>{r.id}</span></td>
+                <td className={styles.nameCell}>{r.nguoiNop}</td>
+                <td>{r.lyDo}</td>
+                <td><span className={styles.hinhThucBadge}>{r.hinhThuc}</span></td>
+                <td className={styles.dateCell}>{fmtDate(r.ngayThu)}</td>
+                <td><span className={styles.amtThu}>{fmtMoney(r.soTien)}</span></td>
+                <td>{r.maSuKien ? <span className={styles.skBadge}>{r.maSuKien}</span> : <span className={styles.naBadge}>—</span>}</td>
+                <td>
+                  <div className={styles.rowActions}>
+                    <button className={styles.editBtn} onClick={() => onEditThu(r)}>Sửa</button>
+                    <button className={styles.deleteBtn} onClick={() => setDeleteTarget(r)}>Xoá</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filteredThu.length === 0 && <div className={styles.empty}>Không tìm thấy phiếu thu nào</div>}
+      </div>
+      <div className={styles.tableFoot}>
+        <span>Tổng {filteredThu.length} phiếu</span>
+        <span className={styles.totalThu}>Tổng thu: {fmtMoney(filteredThu.reduce((s, r) => s + r.soTien, 0))}</span>
+      </div>
+    </div>
+  );
+}

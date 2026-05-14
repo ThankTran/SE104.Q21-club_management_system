@@ -1,0 +1,131 @@
+/* MemberUserPage.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  font-family: var(--font-family);
+  padding: 30px;
+}
+
+/* ── Header ── */
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.pageSubtitle {
+  font-size: 13.5px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.totalBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.totalNum {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary-700);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: var(--gray-500);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Filter bar ── */
+.filterBar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white-hard);
+  border: 1.5px solid var(--gray-300);
+  border-radius: 9px;
+  padding: 0 14px;
+  height: 40px;
+  max-width: 360px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.searchWrap:focus-within {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.searchIcon { color: var(--gray-500); flex-shrink: 0; }
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--gray-900);
+  font-family: var(--font-family);
+}
+.searchInput::placeholder { color: var(--gray-500); }
+
+/* ── Department tabs ── */
+.deptTabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.deptTab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.deptTab:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+}
+
+.deptTabActive {
+  background: var(--primary-100);
+  border-color: var(--primary-500);
+  color: var(--primary-700);
+  font-weight: 700;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .pageHeader { flex-direction: column; align-items: flex-start; }
+  .searchWrap { max-width: 100%; width: 100%; }
+}

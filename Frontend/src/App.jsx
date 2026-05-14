@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+// Layout hiện tại của bạn
+import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
+// Public
+import LandingPage from "./pages/LandingPage";
+import HomePage    from "./pages/Homepage";
+
+import DashboardPage from "./pages/DashboardPage";;
+
+// Member pages
+import MemberAdminPage from "./pages/Member/MemberAdminPage";
+import MemberUserPage  from "./pages/Member/MemberUserPage";
+
+// Event pages
+import EventUserPage from "./pages/Event/EventUserPage";
+import EventAdminPage from "./pages/Event/EventAdminPage";
+
+// Resource pages
+import ResourceUserPage from "./pages/Resource/ResourceUserPage";
+import ResourceAdminPage from "./pages/Resource/ResourceAdminPage";
+
+// Finance page 
+import FinancePage from "./pages/Finance/FinancePage";
+
+// Placeholder cho các trang chưa code
+const Placeholder = ({ title }) => (
+  <div style={{ padding: "40px 32px" }}>
+    <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1e293b", marginBottom: 8 }}>
+      {title}
+    </h1>
+    <p style={{ color: "#6b7280", fontSize: 14 }}>
+      Trang này đang được phát triển...
+    </p>
+  </div>
+);
+
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <BrowserRouter>
+      <Routes>
 
-export default App
+        {/* ── Public ── */}
+        <Route path="/"     element={<LandingPage />} />
+        <Route path="/home" element={<HomePage />} />
+
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/memberuser"   element={<MemberUserPage />} />
+          <Route path="/memberadmin"  element={<MemberAdminPage />} />
+          <Route path="/resourcesuser" element={<ResourceUserPage />} />
+          <Route path="/resourcesadmin" element={<ResourceAdminPage />} />      
+          <Route path="/eventuser"    element={<EventUserPage />} />
+          <Route path="/eventadmin" element={<EventAdminPage />} />
+          <Route path="/finance"   element={<FinancePage />} />
+        </Route>
+
+        {/* ── Fallback ── */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
+    </BrowserRouter>
+  );
+}

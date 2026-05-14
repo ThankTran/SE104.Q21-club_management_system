@@ -1,0 +1,328 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: linear-gradient(to right, var(--white-hard), var(--bg-navbar-end));
+  border-bottom: 1px solid var(--border-soft);
+  height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* Logo Section */
+.logoSection {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none; /* Remove underline from logo link */
+  transition: transform 0.2s ease;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-left: 20px;
+}
+
+.logoSection:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.logoSection:hover {
+  transform: translateY(-1px);
+}
+
+.logoImg {
+  margin-left: -30px;
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  transform: translateY(-3px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: filter 0.2s ease;
+}
+
+.logoImg:hover {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 60px;
+  gap: 0;
+}
+
+.logoTitle {
+  margin: 0;
+  margin-left: 36px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--brand-logo);
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--brand-logo), #1a2a5c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: logoFadeIn 0.8s ease-out;
+}
+
+@keyframes logoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logoSubtitle {
+  margin: 0;
+  margin-left: 25px;
+  margin-top: -2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-secondary-logo);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  animation: logoFadeIn 0.8s ease-out 0.2s both;
+}
+
+.logoSlogan {
+  margin: 0;
+  font-size: 8px;
+  font-weight: 500;
+  color: var(--brand-logo);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+  margin-top: 1px;
+  animation: logoFadeIn 0.8s ease-out 0.4s both;
+}
+
+
+/* Tabs Section */
+.tabsSection {
+  display: flex;
+  gap: 24px;
+  margin-left: 32px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  font-size: 16px; /* Increased from 18px */
+  color: var(--text-dark-gray);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  position: relative;
+  transition: color 0.2s;
+  text-decoration: none !important; /* Force remove underline */
+}
+
+.tab:hover {
+  color: var(--text-header);
+}
+
+.tab.active {
+  color: var(--brand-secondary);
+  font-weight: 600;
+}
+
+/* .tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #0066cc;
+  border-radius: 1.5px;
+} */
+
+/* Actions Section */
+.actionsSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  transition: opacity 0.2s;
+}
+
+.iconBtn:hover {
+  opacity: 0.7;
+}
+
+.profileBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--text-header);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.avatar:hover {
+  background: var(--text-darkest);
+}
+
+.profileContainer {
+  position: relative;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  min-width: 160px;
+  z-index: 1001;
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-header);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.dropdownItem:last-child {
+  color: #ff4d4f;
+}
+
+.dropdownItem:last-child:hover {
+  background: #fff1f0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px 16px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .logoSection {
+    order: 1;
+    flex-basis: 100%;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .logoImg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .logoTitle {
+    font-size: 24px;
+  }
+
+  .logoSubtitle {
+    font-size: 10px;
+  }
+
+  .logoSlogan {
+    font-size: 7px;
+  }
+
+  .tabsSection {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+    gap: 16px;
+    position: center;
+  }
+
+  .actionsSection {
+    order: 4;
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
+}
+.signin {
+  background-color: var(--brand-primary);
+  color: rgb(253, 253, 253);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px 16px;
+  font-size: 18px; /* Increased from 14px */
+  text-decoration: none; /* Remove underline */
+  display: inline-block;
+}
+.signin:hover {
+  background-color: var(--brand-primary-dark);
+  cursor: pointer;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .logoTitle,
+  .logoSubtitle,
+  .logoSlogan {
+    animation: none;
+  }
+
+  .logoSection,
+  .logoImg {
+    transition: none;
+  }
+}

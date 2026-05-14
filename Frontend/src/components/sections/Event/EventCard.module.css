@@ -1,0 +1,155 @@
+/* EventCard.module.css */
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--white-hard);
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* ── Date badge ── */
+.dateBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 52px;
+  border-radius: 10px;
+  background: var(--primary-100);
+  flex-shrink: 0;
+}
+
+.dateMonth {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--primary-700);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dateDay {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary-900);
+  line-height: 1.1;
+}
+
+/* ── Content ── */
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--primary-700);
+  background: var(--primary-100);
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+/* ── Bottom row ── */
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.cost {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-700);
+  background: var(--primary-100);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.arrow {
+  margin-left: auto;
+  color: var(--gray-500);
+  font-size: 16px;
+  transition: color 0.2s;
+}
+.card:hover .arrow { color: var(--primary-700); }
+
+/* Nút đăng ký mặc định */
+.registerBtn {
+  margin-left: auto;
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--primary-300);
+  background: transparent;
+  color: var(--primary-700);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+.registerBtn:hover {
+  background: var(--primary-700);
+  color: var(--white-hard);
+  border-color: var(--primary-700);
+}
+
+/* Trạng thái đã đăng ký */
+.registeredBtn {
+  border-color: #fed7d7;
+  background: #fff5f5;
+  color: #e53e3e;
+}
+.registeredBtn:hover {
+  background: #e53e3e;
+  color: var(--white-hard);
+  border-color: #e53e3e;
+}

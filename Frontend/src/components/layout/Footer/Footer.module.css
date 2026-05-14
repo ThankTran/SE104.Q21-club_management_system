@@ -1,0 +1,203 @@
+.footer {
+  position: relative;
+  padding: 40px 80px 20px;
+  color: var(--white-hard);
+  overflow: hidden;
+
+  /* Gradient nền */
+  background: linear-gradient(
+    135deg,
+    var(--primary-900),
+    var(--primary-700),
+    var(--primary-900)
+  );
+
+  background-size: 250% 250%;
+  animation: gradientMove 5s ease-in-out infinite alternate;
+}
+
+/* animation */
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+
+/* ===== BODY ===== */
+.body {
+  position: relative;
+  z-index: 1;
+
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 24px;
+}
+
+/* ===== COL ===== */
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===== LEFT INFO ===== */
+.clubName {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white-hard);
+}
+
+.tagline {
+  font-size: 14px;
+  color: var(--primary-300);
+  line-height: 1.6;
+}
+
+/* ===== GROUP (QUICK + SUPPORT) ===== */
+.colGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* title */
+.colTitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--primary-300);
+}
+
+/* list reset */
+.colGroup ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* link */
+.colLink {
+  font-size: 14px;
+  color: var(--gray-300);
+  text-decoration: none;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.colLink::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: 0%;
+  height: 1px;
+  background: var(--primary-300);
+  transform: translateX(-50%);
+  transition: 0.25s ease;
+}
+
+.colLink:hover {
+  color: var(--white-hard);
+}
+
+.colLink:hover::after {
+  width: 100%;
+}
+
+/* ===== SOCIAL ===== */
+.socialRow {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 30px;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 1;
+}
+
+.socialIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--primary-300);
+
+  transition: all 0.3s ease;
+}
+
+.socialIcon:hover {
+  background: var(--primary-500);
+  color: var(--white-hard);
+  transform: translateY(-3px) scale(1.1);
+}
+
+/* ===== BOTTOM ===== */
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+
+  font-size: 12px;
+  color: #cbd5f5;
+}
+
+.legalLinks {
+  display: flex;
+  gap: 16px;
+}
+
+.legalLink {
+  color: #cbd5f5;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.legalLink:hover {
+  color: white;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 20px;
+  }
+
+  .body {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    text-align: center;
+  }
+
+  .colGroup {
+    align-items: center;
+  }
+
+  .bottom {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .socialRow {
+    justify-content: center;
+  }
+}
