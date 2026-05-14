@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import styles from '../../../pages/Finance/FinancePage.module.css';
 import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
+import FinanceFilter from './FinanceFilter';
 
 export default function IncomeTable({
   thuList,
@@ -11,16 +13,27 @@ export default function IncomeTable({
   setDeleteTarget,
   sortThu,
   setSortThu,
+  filters,
+  setFilters,
 }) {
+  const [filterOpen, setFilterOpen] = useState(false);
   return (
     <div className={styles.tableSection}>
       <div className={styles.tableHeader}>
+        
         <h3 className={styles.tableTitle}>Danh sách phiếu thu <span className={styles.tableBadgeThu}>{thuList.length} phiếu</span></h3>
         <div className={styles.tableActions}>
           <div className={styles.searchWrap}>
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input className={styles.searchInput} placeholder="Tìm phiếu thu..." value={searchThu} onChange={e => setSearchThu(e.target.value)} />
           </div>
+          <FinanceFilter
+            open={filterOpen}
+            setOpen={setFilterOpen}
+            type="income"
+            filters={filters}
+            setFilters={setFilters}
+          />
           <button className={styles.btnThu} onClick={onOpenThu}>+ Lập phiếu thu</button>
         </div>
       </div>
@@ -37,7 +50,7 @@ export default function IncomeTable({
                   className={styles.sortBtn}
                   onClick={() => setSortThu(sortThu === 'asc' ? 'desc' : 'asc')}
                 >
-                  Ngày thu {sortThu === 'asc' ? '↑' : '↓'}
+                  NGÀY THU {sortThu === 'asc' ? '↑' : '↓'}
                 </button>
               </th>
               <th>SỐ TIỀN</th>

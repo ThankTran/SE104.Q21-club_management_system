@@ -60,25 +60,60 @@ export default function PhieuChiModal({ open, onClose, onSubmit, initial, loadin
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.row2}>
-            <Field label="Người nhận tiền *" error={errors.nguoiNhan}>
+            <Field 
+              label={
+                <>
+                  Người nhận tiền <span className={styles.required}>*</span>
+                </>
+              }
+              error={errors.nguoiNhan}
+            >
               <input className={`${styles.input} ${errors.nguoiNhan ? styles.inputErr : ''}`}
                 placeholder="Họ tên / Ban / Nhóm" value={form.nguoiNhan} onChange={set('nguoiNhan')} />
             </Field>
-            <Field label="Mã sự kiện" error={errors.maSuKien}>
+            <Field 
+              label={
+                <>
+                  Mã sự kiện
+                </>
+              }
+              error={errors.maSuKien}
+            >
               <input className={`${styles.input} ${errors.maSuKien ? styles.inputErr : ''}`}
                 placeholder="VD: SK001 (bỏ trống nếu không có)" value={form.maSuKien} onChange={set('maSuKien')} />
             </Field>
           </div>
-          <Field label="Nội dung chi *" error={errors.noiDung}>
+          <Field 
+            label={
+              <>
+                Nội dung chi <span className={styles.required}>*</span>
+              </>
+            }
+            error={errors.noiDung}
+          >
             <input className={`${styles.input} ${errors.noiDung ? styles.inputErr : ''}`}
               placeholder="VD: Thuê hội trường, in ấn tài liệu..." value={form.noiDung} onChange={set('noiDung')} />
           </Field>
           <div className={styles.row2}>
-            <Field label="Ngày lập *" error={errors.ngayLap}>
+            <Field 
+              label={
+                <>
+                  Ngày lập <span className={styles.required}>*</span>
+                </>
+              }
+              error={errors.ngayLap}
+            >
               <input type="date" className={`${styles.input} ${errors.ngayLap ? styles.inputErr : ''}`}
                 value={form.ngayLap} onChange={set('ngayLap')} />
             </Field>
-            <Field label="Số tiền (₫) *" error={errors.soTien}>
+            <Field 
+              label={
+                <>
+                  Số tiền (₫) <span className={styles.required}>*</span>
+                </>
+              }
+              error={errors.soTien}
+            >
               <input type="number" className={`${styles.input} ${errors.soTien ? styles.inputErr : ''}`}
                 placeholder="100000" min="1" value={form.soTien} onChange={set('soTien')} />
             </Field>
