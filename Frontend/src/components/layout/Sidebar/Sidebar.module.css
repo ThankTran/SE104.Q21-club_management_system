@@ -2,10 +2,9 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 90vh;
-  width: 180px;
-  background: linear-gradient(135deg, var(--bg-sidebar-start) 30%, var(--bg-sidebar-end) 100%);
-  border-right: 1px solid var(--border-subtle);
+  justify-content: space-between;
+  height: 90vh;  width: 180px;
+  background: linear-gradient(135deg, var(--bg-sidebar-start) 30%, var(--bg-sidebar-end) 100%);  border-right: 1px solid var(--border-subtle);
   padding: 24px 16px;
   box-shadow: 2px 0 8px rgba(226, 240, 255, 0.05);
   overflow-y: auto;
@@ -16,6 +15,7 @@
 
 .header {
   margin-bottom: 32px;
+  justify-content: center;
   text-align: left;
   padding-bottom: 16px;
   border-bottom: 2px solid var(--border-subtle);
