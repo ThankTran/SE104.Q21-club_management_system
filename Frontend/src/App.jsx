@@ -7,6 +7,8 @@ import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 import LandingPage from "./pages/LandingPage";
 import HomePage    from "./pages/Homepage";
 
+import DashboardPage from "./pages/DashboardPage";;
+
 // Member pages
 import MemberAdminPage from "./pages/Member/MemberAdminPage";
 import MemberUserPage  from "./pages/Member/MemberUserPage";
@@ -44,7 +46,7 @@ export default function App() {
         <Route path="/home" element={<HomePage />} />
 
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
           <Route path="/resourcesuser" element={<ResourceUserPage />} />
