@@ -1,21 +1,25 @@
-package com.example.demo.application.service.Implementation.member;
+package com.example.demo.application.service.implement.member;
 
 import com.example.demo.application.dto.request.member.JoinClubRequest;
 import com.example.demo.application.dto.request.member.ApprovalRequest;
 import com.example.demo.application.dto.request.member.MemberSearchRequest;
 import com.example.demo.application.dto.response.member.MemberResponse;
 import com.example.demo.application.mapper.member.MemberMapper;
-import com.example.demo.application.service.Interface.member.MemberUseCase;
 import com.example.demo.domain.model.member.Member;
-import com.example.demo.domain.model.member.MemberApproval;
 import com.example.demo.domain.model.department.Department;
 import com.example.demo.domain.repository.member.MemberRepository;
-import com.example.demo.domain.repository.member.MemberApprovalRepository;
 import com.example.demo.domain.repository.department.DepartmentRepository;
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
 import com.example.demo.domain.service.member.MemberDomainService;
 
+import java.util.concurrent.CompletableFuture;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,21 +29,19 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class MemberService implements MemberUseCase {
+@CacheConfig(cacheNames = "members")
+public class MemberServiceImpl implements com.example.demo.application.service.interfaces.member.MemberService {
 
     private final MemberRepository memberRepository;
-    private final MemberApprovalRepository memberApprovalRepository;
     private final DepartmentRepository departmentRepository;
     private final MemberMapper memberMapper;
     private final MemberDomainService memberDomainService; 
 
-    public MemberService(MemberRepository memberRepository,
-                         MemberApprovalRepository memberApprovalRepository,
-                         DepartmentRepository departmentRepository,
-                         MemberMapper memberMapper,
-                         MemberDomainService memberDomainService) {
+    public MemberServiceImpl(MemberRepository memberRepository,
+                             DepartmentRepository departmentRepository,
+                             MemberMapper memberMapper,
+                             MemberDomainService memberDomainService) {
         this.memberRepository = memberRepository;
-        this.memberApprovalRepository = memberApprovalRepository;
         this.departmentRepository = departmentRepository;
         this.memberMapper = memberMapper;
         this.memberDomainService = memberDomainService;
@@ -47,6 +49,7 @@ public class MemberService implements MemberUseCase {
 
     // ==================== BM1: Tạo phiếu đăng ký ====================
     @Override
+    @CacheEvict(allEntries = true)
     public MemberResponse registerMember(JoinClubRequest request) {
 
         // Validate format — domain service lo
@@ -71,24 +74,18 @@ public class MemberService implements MemberUseCase {
         member.setDepartment(department);
         member.setReqStatus(ApprovalStatusEnum.PENDING);
         member.setCreatedAt(LocalDateTime.now());
+        member.setUpdatedAt(LocalDateTime.now());
 
         // QĐ1.5: Validate trạng thái mặc định
         memberDomainService.validateDefaultStatus(member.getReqStatus());
 
         Member savedMember = memberRepository.save(member);
-
-        // Tạo phiếu xét duyệt
-        MemberApproval approval = MemberApproval.builder()
-                .member(savedMember)
-                .status(ApprovalStatusEnum.PENDING)
-                .build();
-        memberApprovalRepository.save(approval);
-
         return memberMapper.toResponse(savedMember);
     }
 
     // ==================== BM2: Xét duyệt ====================
     @Override
+    @CacheEvict(allEntries = true)
     public MemberResponse approveMember(ApprovalRequest request) {
 
         // Validate request cơ bản
@@ -109,12 +106,8 @@ public class MemberService implements MemberUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người xét duyệt"));
         memberDomainService.validateApproverPermission(approver);
 
-        // QĐ2.2: Lấy phiếu xét duyệt
-        MemberApproval approval = memberApprovalRepository.findByMember(member)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu xét duyệt"));
-
         // QĐ2.3: Không duyệt lại
-        memberDomainService.validateApprovalNotFinalized(approval);
+        memberDomainService.validateApprovalNotFinalized(member);
 
         // QĐ2.5: Validate ngày
         memberDomainService.validateApprovalDate(member);
@@ -123,15 +116,7 @@ public class MemberService implements MemberUseCase {
         if (request.getNote() != null && request.getNote().length() > 500)
             throw new IllegalArgumentException("Ghi chú không được vượt quá 500 ký tự");
 
-        memberDomainService.applyApproval(
-                approval,
-                request.getStatus(),
-                approver,
-                request.getNote()
-        );
-        memberApprovalRepository.save(approval);
-
-        member.setReqStatus(request.getStatus());
+        memberDomainService.applyApproval(member, request.getStatus(), approver, request.getNote());
         Member updatedMember = memberRepository.save(member);
 
         return memberMapper.toResponse(updatedMember);
@@ -139,25 +124,31 @@ public class MemberService implements MemberUseCase {
 
     // ==================== BM3: Tra cứu ====================
     @Override
-    public List<MemberResponse> searchMembers(MemberSearchRequest request) {
-        return memberRepository.findAll().stream()
-                .filter(m -> request.getFullName() == null || request.getFullName().isBlank()
-                        || m.getFullName().toLowerCase()
-                                .contains(request.getFullName().toLowerCase()))
-                .filter(m -> request.getStudentId() == null || request.getStudentId().isBlank()
-                        || m.getStudentId().equalsIgnoreCase(request.getStudentId()))
-                .filter(m -> request.getDepartmentId() == null
-                        || (m.getDepartment() != null &&
-                                m.getDepartment().getDepartmentId().equals(request.getDepartmentId())))
-                .filter(m -> request.getReqStatus() == null
-                        || m.getReqStatus() == request.getReqStatus())
-                .filter(m -> request.getGraduatedStatus() == null
-                        || m.getGraduatedStatus() == request.getGraduatedStatus())
-                .map(memberMapper::toResponse)
-                .collect(Collectors.toList());
+    @Cacheable(key = "'search:' + (#request?.studentId ?: '') + '|' + (#request?.fullName ?: '') + '|' + (#request?.departmentId ?: '') + '|' + (#request?.reqStatus ?: '') + '|' + (#request?.graduatedStatus ?: '') + '|p:' + #pageable.pageNumber + '|s:' + #pageable.pageSize + '|sort:' + #pageable.sort.toString()")
+    public Page<MemberResponse> searchMembers(MemberSearchRequest request, Pageable pageable) {
+        MemberSearchRequest safeRequest = request == null ? MemberSearchRequest.builder().build() : request;
+        return filterMembers(safeRequest, pageable).map(memberMapper::toResponse);
+    }
+
+    private Page<Member> filterMembers(MemberSearchRequest request, Pageable pageable) {
+        String studentId = normalizeSearchText(request.getStudentId());
+        String fullName = normalizeSearchText(request.getFullName());
+
+        return memberRepository.searchMembers(
+                studentId,
+                fullName,
+                request.getDepartmentId(),
+                request.getReqStatus(),
+                request.getGraduatedStatus(),
+                pageable);
+    }
+
+    private String normalizeSearchText(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
     @Override
+    @Cacheable(key = "'all'")
     public List<MemberResponse> getAllMembers() {
         return memberRepository.findAll().stream()
                 .map(memberMapper::toResponse)
@@ -165,6 +156,7 @@ public class MemberService implements MemberUseCase {
     }
 
     @Override
+    @Cacheable(key = "'id:' + #memberId")
     public MemberResponse getMemberById(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -173,6 +165,7 @@ public class MemberService implements MemberUseCase {
     }
 
     @Override
+    @CacheEvict(allEntries = true)
     public MemberResponse updateMember(Long memberId, JoinClubRequest request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -199,7 +192,33 @@ public class MemberService implements MemberUseCase {
         member.setDateOfBirth(request.getDateOfBirth());
         member.setDepartment(department);
         member.setGraduatedStatus(request.getGraduatedStatus());
+        member.setUpdatedAt(LocalDateTime.now());
+        member.setApprovalNote("Thông tin được chỉnh sửa, chờ xét duyệt lại");
+
+        if (member.getRole() != null && member.getRole().getPriority() != null
+                && member.getRole().getPriority() == 1) {
+            member.setReqStatus(ApprovalStatusEnum.APPROVED);
+            member.setApprovalDate(LocalDateTime.now());
+        } else {
+            member.setReqStatus(ApprovalStatusEnum.PENDING);
+            member.setApprovalDate(null);
+        }
 
         return memberMapper.toResponse(memberRepository.save(member));
+    }
+
+    @Async("applicationTaskExecutor")
+    public CompletableFuture<Page<MemberResponse>> searchMembersAsync(MemberSearchRequest request, Pageable pageable) {
+        return CompletableFuture.completedFuture(searchMembers(request, pageable));
+    }
+
+    @Async("applicationTaskExecutor")
+    public CompletableFuture<List<MemberResponse>> getAllMembersAsync() {
+        return CompletableFuture.completedFuture(getAllMembers());
+    }
+
+    @Async("applicationTaskExecutor")
+    public CompletableFuture<MemberResponse> getMemberByIdAsync(Long memberId) {
+        return CompletableFuture.completedFuture(getMemberById(memberId));
     }
 }
