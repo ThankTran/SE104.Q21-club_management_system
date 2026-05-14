@@ -1,0 +1,188 @@
+import styles from './FinanceFilter.module.css';
+
+const HINH_THUC_OPTIONS = ['Tiền mặt', 'Chuyển khoản', 'Ví điện tử'];
+
+export default function FinanceFilter({
+  open,
+  setOpen,
+  type,
+  filters,
+  setFilters,
+}) {
+  const isIncome = type === 'income';
+
+    const hasFilter = Object.values(filters).some(value => value !== '');
+
+  const updateFilter = (field, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleReset = () => {
+    if (isIncome) {
+        setFilters({
+        lyDo: '',
+        hinhThuc: '',  
+        dateType: '',   
+        month: '',     
+        quarter: '',   
+        year: '',
+        });
+    } else {
+        setFilters({
+        noiDung: '',
+        nguoiNhan: '',
+        dateType: '',
+        month: '',
+        quarter: '',
+        year: '',
+        });
+    }
+    };
+
+  return (
+    <div className={styles.wrap}>
+      <button
+        type="button"
+        className={`${styles.filterBtn} ${hasFilter ? styles.filterBtnActive : ''}`}
+        onClick={() => setOpen(!open)}
+      >
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+        </svg>
+        Bộ lọc
+        {hasFilter && <span className={styles.dot} />}
+      </button>
+
+      {open && (
+        <div className={styles.dropdown}>
+          <p className={styles.dropdownTitle}>
+            {isIncome ? 'Lọc phiếu thu' : 'Lọc phiếu chi'}
+          </p>
+
+          {isIncome ? (
+            <>
+              <div className={styles.group}>
+                <label className={styles.groupLabel}>Lý do</label>
+                <input
+                  className={styles.input}
+                  placeholder="Nhập lý do..."
+                  value={filters.lyDo}
+                  onChange={(e) => updateFilter('lyDo', e.target.value)}
+                />
+              </div>
+
+              <div className={styles.group}>
+                <label className={styles.groupLabel}>Hình thức</label>
+                <select
+                  className={styles.select}
+                  value={filters.hinhThuc}
+                  onChange={(e) => updateFilter('hinhThuc', e.target.value)}
+                >
+                  <option value="">Tất cả</option>
+                  {HINH_THUC_OPTIONS.map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={styles.group}>
+                <label className={styles.groupLabel}>Nội dung chi</label>
+                <input
+                  className={styles.input}
+                  placeholder="Nhập nội dung chi..."
+                  value={filters.noiDung}
+                  onChange={(e) => updateFilter('noiDung', e.target.value)}
+                />
+              </div>
+
+              <div className={styles.group}>
+                <label className={styles.groupLabel}>Người nhận</label>
+                <input
+                  className={styles.input}
+                  placeholder="Nhập người nhận..."
+                  value={filters.nguoiNhan}
+                  onChange={(e) => updateFilter('nguoiNhan', e.target.value)}
+                />
+              </div>
+            </>
+          )}
+
+          <div className={styles.group}>
+            <label className={styles.groupLabel}>Thời gian</label>
+            <select
+              className={styles.select}
+              value={filters.dateType}
+              onChange={(e) => updateFilter('dateType', e.target.value)}
+            >
+              <option value="">Tất cả</option>
+              <option value="month">Theo tháng</option>
+              <option value="quarter">Theo quý</option>
+              <option value="year">Theo năm</option>
+            </select>
+          </div>
+
+          {filters.dateType === 'month' && (
+            <div className={styles.group}>
+              <label className={styles.groupLabel}>Tháng</label>
+              <select
+                className={styles.select}
+                value={filters.month}
+                onChange={(e) => updateFilter('month', e.target.value)}
+              >
+                <option value="">Tất cả</option>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={String(i + 1)}>
+                    Tháng {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {filters.dateType === 'quarter' && (
+            <div className={styles.group}>
+              <label className={styles.groupLabel}>Quý</label>
+              <select
+                className={styles.select}
+                value={filters.quarter}
+                onChange={(e) => updateFilter('quarter', e.target.value)}
+              >
+                <option value="">Tất cả</option>
+                <option value="1">Quý 1</option>
+                <option value="2">Quý 2</option>
+                <option value="3">Quý 3</option>
+                <option value="4">Quý 4</option>
+              </select>
+            </div>
+          )}
+
+          {filters.dateType === 'year' && (
+            <div className={styles.group}>
+              <label className={styles.groupLabel}>Năm</label>
+              <input
+                className={styles.input}
+                placeholder="VD: 2024"
+                value={filters.year}
+                onChange={(e) => updateFilter('year', e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.resetBtn} onClick={handleReset}>
+              Đặt lại
+            </button>
+            <button type="button" className={styles.applyBtn} onClick={() => setOpen(false)}>
+              Áp dụng
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

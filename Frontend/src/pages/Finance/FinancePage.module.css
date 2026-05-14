@@ -267,7 +267,8 @@
   background: var(--white-hard);
   border: 1px solid #e8edf3;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
 }
 
 .tableHeader {
@@ -349,6 +350,7 @@
 /* ── Table ── */
 .tableWrap {
   overflow-x: auto;
+  overflow-y: visible;
 }
 
 .table {
@@ -902,4 +904,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.required {
+  color: #dc2626;
+  font-weight: 700;
 }

@@ -19,6 +19,24 @@ export default function FinancePage() {
   const [thuList, setThuList] = useState(MOCK_THU);
   const [chiList, setChiList] = useState(MOCK_CHI);
 
+  const [thuFilters, setThuFilters] = useState({
+    lyDo: '',
+    hinhThuc: '',
+    dateType: '',
+    month: '',
+    quarter: '',
+    year: '',
+  });
+
+  const [chiFilters, setChiFilters] = useState({
+    noiDung: '',
+    nguoiNhan: '',
+    dateType: '',
+    month: '',
+    quarter: '',
+    year: '',
+  });
+
   const [tab, setTab] = useState('overview');
 
   const [thuOpen, setThuOpen]       = useState(false);
@@ -45,43 +63,86 @@ export default function FinancePage() {
   const bcTongChi = bcChi.reduce((s, r) => s + r.soTien, 0);
   const bcSoDu    = bcTongThu - bcTongChi;
 
+  // Lọc ngày
+  const matchDateFilter = (dateStr, filters) => {
+    if (!filters.dateType || filters.dateType === '') return true;  // ← thêm check rỗng
+    
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const quarter = Math.ceil(month / 3);
+
+    if (filters.dateType === 'month') {
+      return !filters.month || month === Number(filters.month);
+    }
+    if (filters.dateType === 'quarter') {
+      return !filters.quarter || quarter === Number(filters.quarter);
+    }
+    if (filters.dateType === 'year') {
+      return !filters.year || year === Number(filters.year);
+    }
+    return true;
+  };
+
   const filteredThu = useMemo(() => {
     const q = searchThu.toLowerCase();
 
-    const filtered = thuList.filter(
-      r =>
+    const filtered = thuList.filter(r => {
+      const matchSearch =
         !q ||
         r.nguoiNop.toLowerCase().includes(q) ||
         r.lyDo.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q)
-    );
+        r.id.toLowerCase().includes(q);
+
+      const matchLyDo =
+        !thuFilters.lyDo ||
+        r.lyDo.toLowerCase().includes(thuFilters.lyDo.toLowerCase());
+
+      const matchHinhThuc =
+        !thuFilters.hinhThuc ||
+        r.hinhThuc === thuFilters.hinhThuc;
+
+      const matchDate = matchDateFilter(r.ngayThu, thuFilters);
+
+      return matchSearch && matchLyDo && matchHinhThuc && matchDate;
+    });
 
     return filtered.sort((a, b) => {
       const da = new Date(a.ngayThu);
       const db = new Date(b.ngayThu);
-
       return sortThu === 'asc' ? da - db : db - da;
     });
-  }, [thuList, searchThu, sortThu]);
+  }, [thuList, searchThu, thuFilters, sortThu]);
 
   const filteredChi = useMemo(() => {
     const q = searchChi.toLowerCase();
 
-    const filtered = chiList.filter(
-      r =>
+    const filtered = chiList.filter(r => {
+      const matchSearch =
         !q ||
         r.nguoiNhan.toLowerCase().includes(q) ||
         r.noiDung.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q)
-    );
+        r.id.toLowerCase().includes(q);
+
+      const matchNoiDung =
+        !chiFilters.noiDung ||
+        r.noiDung.toLowerCase().includes(chiFilters.noiDung.toLowerCase());
+
+      const matchNguoiNhan =
+        !chiFilters.nguoiNhan ||
+        r.nguoiNhan.toLowerCase().includes(chiFilters.nguoiNhan.toLowerCase());
+
+      const matchDate = matchDateFilter(r.ngayLap, chiFilters);
+
+      return matchSearch && matchNoiDung && matchNguoiNhan && matchDate;
+    });
 
     return filtered.sort((a, b) => {
       const da = new Date(a.ngayLap);
       const db = new Date(b.ngayLap);
-
       return sortChi === 'asc' ? da - db : db - da;
     });
-  }, [chiList, searchChi, sortChi]);
+  }, [chiList, searchChi, chiFilters, sortChi]);
 
   const openThuModal = () => { setEditThu(null); setThuOpen(true); };
   const openChiModal = () => { setEditChi(null); setChiOpen(true); };
@@ -127,8 +188,14 @@ export default function FinancePage() {
 
   return (
     <div className={styles.page}>
-      <FinanceHeader onOpenThu={openThuModal} onOpenChi={openChiModal} />
-
+      <FinanceHeader
+        onOpenThu={openThuModal}
+        onOpenChi={openChiModal}
+        thuList={thuList}
+        chiList={chiList}
+        bcThu={bcThu}
+        bcChi={bcChi}
+      />
       <FinanceStats
         tongThu={tongThu}
         tongChi={tongChi}
@@ -159,7 +226,9 @@ export default function FinancePage() {
           onEditThu={openEditThuModal}
           setDeleteTarget={setDeleteTarget}
           sortThu={sortThu}
-          setSortThu={setSortThu} 
+          setSortThu={setSortThu}
+          filters={thuFilters}
+          setFilters={setThuFilters}
         />
       )}
 
@@ -174,6 +243,8 @@ export default function FinancePage() {
           setDeleteTarget={setDeleteTarget}
           sortChi={sortChi}
           setSortChi={setSortChi}
+          filters={chiFilters}
+          setFilters={setChiFilters}
         />
       )}
 

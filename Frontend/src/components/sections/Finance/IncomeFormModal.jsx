@@ -69,11 +69,25 @@ export default function IncomeFormModal({ open, onClose, onSubmit, initial, load
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.row2}>
-            <Field label="Người nộp tiền *" error={errors.nguoiNop}>
-              <input className={`${styles.input} ${errors.nguoiNop ? styles.inputErr : ''}`}
+            <Field
+              label={
+                <>
+                  Người nộp tiền <span className={styles.required}>*</span>
+                </>
+              }
+              error={errors.nguoiNop}
+            >              
+            <input className={`${styles.input} ${errors.nguoiNop ? styles.inputErr : ''}`}
                 placeholder="Họ và tên" value={form.nguoiNop} onChange={set('nguoiNop')} />
             </Field>
-            <Field label="Hình thức *" error={errors.hinhThuc}>
+            <Field 
+              label={
+                  <>
+                    Hình thức <span className={styles.required}>*</span>
+                  </>
+                }
+                error={errors.hinhThuc}
+              >
               <select className={`${styles.select} ${errors.hinhThuc ? styles.inputErr : ''}`}
                 value={form.hinhThuc} onChange={set('hinhThuc')}>
                 <option value="">-- Chọn --</option>
@@ -81,21 +95,48 @@ export default function IncomeFormModal({ open, onClose, onSubmit, initial, load
               </select>
             </Field>
           </div>
-          <Field label="Lý do *" error={errors.lyDo}>
+          <Field 
+            label={
+              <>
+                Lý do <span className={styles.required}>*</span>
+              </>
+            }
+            error={errors.lyDo}
+          >
             <input className={`${styles.input} ${errors.lyDo ? styles.inputErr : ''}`}
               placeholder="VD: Đóng quỹ tháng 1, Phí tham gia sự kiện..." value={form.lyDo} onChange={set('lyDo')} />
           </Field>
           <div className={styles.row2}>
-            <Field label="Ngày thu *" error={errors.ngayThu}>
+            <Field 
+              label={
+                <>
+                  Ngày thu <span className={styles.required}>*</span>
+                </>
+              }
+              error={errors.ngayThu}
+            >
               <input type="date" className={`${styles.input} ${errors.ngayThu ? styles.inputErr : ''}`}
                 value={form.ngayThu} onChange={set('ngayThu')} />
             </Field>
-            <Field label="Số tiền (₫) *" error={errors.soTien}>
+            <Field 
+              label={
+                <>
+                  Số tiền (₫) <span className={styles.required}>*</span>
+                </>
+              }
+              error={errors.soTien}
+            >
               <input type="number" className={`${styles.input} ${errors.soTien ? styles.inputErr : ''}`}
                 placeholder="75000" min="1" value={form.soTien} onChange={set('soTien')} />
             </Field>
           </div>
-          <Field label="Mã sự kiện (nếu có)">
+          <Field 
+            label={
+              <>
+                Mã sự kiện (nếu có)
+              </>
+            }
+          >
             <input className={styles.input} placeholder="VD: SK001" value={form.maSuKien} onChange={set('maSuKien')} />
           </Field>
 
