@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import ResourceCard from '../../components/sections/Resource/ResourceCard';
 import ResourceForm from '../../components/sections/Resource/ResourceForm';
-import ResourceDetailModal from '../../components/sections/Resource/ResourceDetailModal';
 import ResourceFolderView from '../../components/sections/Resource/ResourceFolderView';
+import { RESOURCE_LEAF_FOLDERS } from '../../components/sections/Resource/resourceFolderData';
 
 import styles from './ResourceUserPage.module.css';
 
@@ -30,9 +30,9 @@ const MOCK_RESOURCES = [
   { id: 20, title: 'Tài liệu UI/UX Design Fundamentals', category: 'major', major: 'Thương mại điện tử', subject: 'Thiết kế giao diện', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'Wireframe và prototype.', link: '#', uploadedBy: 'Lâm Gia Linh', createdAt: '2024-10-15', status: 'approved' },
 ];
 
-const TYPE_TABS = ['Tất cả', 'Giáo trình', 'Slide bài giảng', 'Tài liệu tham khảo'];
-const FORMAT_OPTIONS = ['Tất cả', 'PDF', 'DOCX', 'PPT'];
-const SOURCE_OPTIONS = ['Tất cả', 'Giảng viên cung cấp', 'Tự biên soạn', 'Internet'];
+const TYPE_TABS = ['Tất cả', 'Giáo trình', 'Slide bài giảng', 'Tài liệu tham khảo', 'Đề thi', 'Bài tập', 'Khác'];
+const FORMAT_OPTIONS = ['Tất cả', 'PDF', 'DOCX', 'PPT', 'ZIP', 'PNG', 'Khác'];
+const SOURCE_OPTIONS = ['Tất cả', 'Giảng viên cung cấp', 'Tự biên soạn', 'Internet', 'Sinh viên khóa trước', 'Khác'];
 
 const PAGE_SIZE = 12;
 
@@ -46,11 +46,11 @@ export default function ResourceUserPage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMajor, setSelectedMajor] = useState(null);
   const [selectedSubjectFolder, setSelectedSubjectFolder] = useState(null);
+  const [selectedFolderId, setSelectedFolderId] = useState(null);
 
   // UI state
   const [viewMode, setViewMode]   = useState('list'); // 'list' | 'grid'
   const [page, setPage]           = useState(1);
-  const [selected, setSelected]   = useState(null);
   const [formOpen, setFormOpen]   = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -63,25 +63,16 @@ export default function ResourceUserPage() {
     []
   );
 
+  const selectedFolder = RESOURCE_LEAF_FOLDERS.find((folder) => folder.id === selectedFolderId);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
 
     return MOCK_RESOURCES
       .filter((r) => r.status === "approved")
       .filter((r) => {
-        if (!selectedCategory) return false;
-
-        if (selectedCategory === "general") {
-          if (!selectedSubjectFolder) return false;
-          return r.category === "general" && r.subject === selectedSubjectFolder;
-        }
-
-        if (selectedCategory === "major") {
-          if (!selectedMajor) return false;
-          return r.category === "major" && r.major === selectedMajor;
-        }
-
-        return true;
+        if (!selectedFolderId) return false;
+        return resolveUserFolderId(r) === selectedFolderId;
       })
       .filter((r) => {
         const matchSearch =
@@ -105,9 +96,7 @@ export default function ResourceUserPage() {
     activeFormat,
     activeSource,
     activeSubject,
-    selectedCategory,
-    selectedMajor,
-    selectedSubjectFolder,
+    selectedFolderId,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -274,19 +263,12 @@ export default function ResourceUserPage() {
 
         {/* ── CONTENT ── */}
         <main className={styles.content}>
-          {selectedCategory && (
+          {selectedFolder && (
                         <div className={styles.breadcrumbBar}>
               <button
                 className={styles.backBtn}
                 onClick={() => {
-                  if (selectedMajor) {
-                    setSelectedMajor(null);
-                  } else if (selectedSubjectFolder) {
-                    setSelectedSubjectFolder(null);
-                  } else if (selectedCategory) {
-                    setSelectedCategory(null);
-                  }
-
+                  setSelectedFolderId(null);
                   setPage(1);
                 }}
               >
@@ -297,13 +279,20 @@ export default function ResourceUserPage() {
                 <button
                   className={styles.breadcrumbLink}
                   onClick={() => {
-                    setSelectedCategory(null);
-                    setSelectedMajor(null);
-                    setSelectedSubjectFolder(null);
+                    setSelectedFolderId(null);
                   }}
                 >
                   Kho tài liệu
                 </button>
+
+                {selectedFolder && (
+                  <>
+                    <span className={styles.breadcrumbSep}>/</span>
+                    <button className={`${styles.breadcrumbLink} ${styles.breadcrumbCurrent}`}>
+                      {selectedFolder.pathLabel}
+                    </button>
+                  </>
+                )}
 
                 {selectedCategory && (
                   <>
@@ -350,30 +339,17 @@ export default function ResourceUserPage() {
             </div>
           )}
           {/* Folder view (chỉ hiện khi chưa chọn category hoặc major/subject) */}
-          {(!selectedCategory ||
-            (selectedCategory === "general" && !selectedSubjectFolder) ||
-            (selectedCategory === "major" && !selectedMajor)) && (
+          {!selectedFolderId && (
             <ResourceFolderView
-              selectedCategory={selectedCategory}
-              onSelectCategory={(category) => {
-                setSelectedCategory(category);
-                setSelectedMajor(null);
-                setSelectedSubjectFolder(null);
-                setPage(1);
-              }}
-              onSelectMajor={(major) => {
-                setSelectedMajor(major);
-                setPage(1);
-              }}
-              onSelectSubject={(subject) => {
-                setSelectedSubjectFolder(subject);
+              selectedFolderId={selectedFolderId}
+              onSelectFolder={(folderId) => {
+                setSelectedFolderId(folderId);
                 setPage(1);
               }}
             />
           )}
 
-          {((selectedCategory === "general" && selectedSubjectFolder) ||
-            (selectedCategory === "major" && selectedMajor)) && (
+          {selectedFolderId && (
           <>
             {/* Toolbar: kết quả + view toggle */}
             <div className={styles.toolbar}>
@@ -439,7 +415,6 @@ export default function ResourceUserPage() {
                     key={r.id}
                     resource={r}
                     viewMode={viewMode}
-                    onClick={() => setSelected(r)}
                   />
                 ))}
               </div>
@@ -484,12 +459,6 @@ export default function ResourceUserPage() {
       </div>
 
       {/* ══ MODALS ══ */}
-      <ResourceDetailModal
-        resource={selected}
-        onClose={() => setSelected(null)}
-        isAdmin={false}
-      />
-
       <ResourceForm
         open={formOpen}
         onClose={() => setFormOpen(false)}
@@ -502,6 +471,36 @@ export default function ResourceUserPage() {
 }
 
 /* ── Sub-components ── */
+function resolveUserFolderId(resource) {
+  const text = `${resource.major || ''} ${resource.subject || ''} ${resource.title || ''}`.toLowerCase();
+  const directMatch = RESOURCE_LEAF_FOLDERS.find((folder) => text.includes(folder.label.toLowerCase()));
+  if (directMatch) return directMatch.id;
+
+  const rules = [
+    ['pháp luật', 'phap-luat-dai-cuong'],
+    ['triết học', 'triet-hoc-mac-lenin'],
+    ['giải tích', 'giai-tich'],
+    ['đại số', 'dai-so-tuyen-tinh'],
+    ['xác suất', 'xac-suat-thong-ke'],
+    ['lập trình hướng đối tượng', 'cong-nghe-phan-mem'],
+    ['công nghệ phần mềm', 'cong-nghe-phan-mem'],
+    ['cơ sở dữ liệu', 'he-thong-thong-tin'],
+    ['hệ thống thông tin', 'he-thong-thong-tin'],
+    ['trí tuệ nhân tạo', 'khoa-hoc-may-tinh'],
+    ['hệ điều hành', 'khoa-hoc-may-tinh'],
+    ['khoa học máy tính', 'khoa-hoc-may-tinh'],
+    ['kiến trúc máy tính', 'ky-thuat-may-tinh'],
+    ['kỹ thuật máy tính', 'ky-thuat-may-tinh'],
+    ['mạng máy tính', 'mang-may-tinh'],
+    ['an toàn thông tin', 'an-toan-thong-tin'],
+    ['thương mại điện tử', 'thuong-mai-dien-tu'],
+    ['web', 'cong-nghe-phan-mem'],
+    ['ui/ux', 'thuong-mai-dien-tu'],
+  ];
+
+  return rules.find(([keyword]) => text.includes(keyword))?.[1] || 'nhap-mon-lap-trinh';
+}
+
 function StatPill({ icon, value, label }) {
   return (
     <div className={styles.statPill}>

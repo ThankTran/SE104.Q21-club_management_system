@@ -9,8 +9,38 @@
 }
 
 /* ── Table ── */
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tableScrollVertical {
+  max-height: 430px;
+  overflow-y: auto;
+}
+
+.tableScroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tableScrollVertical::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tableScroll::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 999px;
+}
+
+.tableScroll::-webkit-scrollbar-track {
+  background: var(--white-soft);
+}
+
 .table {
   width: 100%;
+  min-width: 1040px;
   border-collapse: collapse;
   font-family: var(--font-family);
   font-size: 13.5px;
@@ -136,6 +166,33 @@
   font-size: 12.5px;
   color: var(--gray-500);
   white-space: nowrap;
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border: 1.5px solid var(--primary-300);
+  border-radius: 7px;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.linkBtn:hover {
+  background: var(--primary-700);
+  color: var(--white-hard);
+  border-color: var(--primary-700);
+}
+
+.noLink {
+  color: var(--gray-400);
+  font-size: 13px;
 }
 
 /* ── Action buttons ── */

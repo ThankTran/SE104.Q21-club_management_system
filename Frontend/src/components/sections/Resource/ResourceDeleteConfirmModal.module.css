@@ -1,0 +1,77 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.box {
+  width: min(400px, 100%);
+  padding: 30px 28px;
+  background: var(--white-hard);
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.title {
+  margin: 0 0 10px;
+  color: var(--gray-900);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.message {
+  margin: 0 0 22px;
+  color: var(--gray-700);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cancelBtn,
+.deleteBtn {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 9px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+}
+
+.deleteBtn {
+  border: none;
+  background: #b91c1c;
+  color: var(--white-hard);
+}
