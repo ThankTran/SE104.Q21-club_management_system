@@ -1,7 +1,11 @@
 .overviewGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+  grid-template-areas:
+    "income expense"
+    "chart dues";
   gap: 20px;
+  align-items: start;
 }
 
 .overviewPanel {
@@ -9,6 +13,30 @@
   border: 1px solid #e8edf3;
   border-radius: 14px;
   padding: 20px;
+}
+
+.incomePanel {
+  grid-area: income;
+}
+
+.expensePanel {
+  grid-area: expense;
+}
+
+.chartPanel {
+  grid-area: chart;
+  min-width: 0;
+}
+
+.duesPanel {
+  grid-area: dues;
+  min-width: 0;
+  align-self: start;
+}
+
+.chartPanel > *,
+.duesPanel > * {
+  height: auto;
 }
 
 .panelHead {
@@ -96,5 +124,10 @@
 @media (max-width: 768px) {
   .overviewGrid {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "income"
+      "expense"
+      "chart"
+      "dues";
   }
 }
