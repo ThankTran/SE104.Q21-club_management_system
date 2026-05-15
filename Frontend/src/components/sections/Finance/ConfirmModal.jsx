@@ -1,4 +1,4 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './ConfirmModal.module.css';
 
 export default function ConfirmModal({ item, onConfirm, onCancel }) {
   if (!item) return null;

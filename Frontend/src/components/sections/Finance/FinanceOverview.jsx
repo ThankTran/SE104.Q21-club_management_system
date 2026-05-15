@@ -1,5 +1,6 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './FinanceOverview.module.css';
 import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
+import FinanceCharts from './FinanceCharts';
 
 export default function OverviewPanel({ thuList, chiList, setTab }) {
   return (
@@ -36,6 +37,7 @@ export default function OverviewPanel({ thuList, chiList, setTab }) {
           </div>
         ))}
       </div>
+      <FinanceCharts thuList={thuList} chiList={chiList} />
     </div>
   );
 }

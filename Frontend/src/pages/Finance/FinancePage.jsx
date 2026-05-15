@@ -277,5 +277,7 @@ export default function FinancePage() {
       />
       <ConfirmModal item={deleteTarget} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
     </div>
+
+    
   );
 }

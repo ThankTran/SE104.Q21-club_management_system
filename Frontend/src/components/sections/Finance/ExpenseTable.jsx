@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './ExpenseTable.module.css';
 import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
 import FinanceFilter from './FinanceFilter';
 

@@ -1,0 +1,43 @@
+.tabBar {
+  display: flex;
+  gap: 4px;
+  background: var(--white-soft);
+  border: 1.5px solid var(--gray-300);
+  border-radius: 12px;
+  padding: 5px;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--gray-700);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.tabBtn:hover {
+  background: var(--white-hard);
+}
+
+.tabActive {
+  background: var(--white-hard);
+  color: var(--primary-700);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 768px) {
+  .tabBtn span:first-child {
+    display: none;
+  }
+}

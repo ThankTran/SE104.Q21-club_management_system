@@ -1,4 +1,4 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './FinanceReport.module.css';
 import { THANG_OPTIONS } from '../Finance/financeConstants';
 import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
 

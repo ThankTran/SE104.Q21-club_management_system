@@ -1,0 +1,79 @@
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.pageSub {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.headerBtns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btnThu {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 9px;
+  border: none;
+  background: #15803d;
+  color: var(--white-hard);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.btnThu:hover {
+  background: #166534;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(21,128,61,0.28);
+}
+
+.btnChi {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 9px;
+  border: none;
+  background: #b91c1c;
+  color: var(--white-hard);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.btnChi:hover {
+  background: #991b1b;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(185,28,28,0.28);
+}
+
+@media (max-width: 768px) {
+  .pageHeader {
+    flex-direction: column;
+  }
+}

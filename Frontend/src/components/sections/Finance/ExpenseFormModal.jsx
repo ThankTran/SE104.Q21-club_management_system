@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './ExpenseFormModal.module.css';
 import Field from '../Finance/FormField';
 import { EMPTY_CHI } from '../Finance/financeConstants';
 
