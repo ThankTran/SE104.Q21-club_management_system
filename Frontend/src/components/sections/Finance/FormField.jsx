@@ -1,4 +1,4 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './FormField.module.css';
 
 export default function Field({ label, error, children }) {
   return (

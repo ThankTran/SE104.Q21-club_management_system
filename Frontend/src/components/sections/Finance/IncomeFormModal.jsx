@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './IncomeFormModal.module.css';
 import Field from '../Finance/FormField';
 import { EMPTY_THU, HINH_THUC_OPTIONS } from '../Finance/financeConstants';
 

@@ -1,4 +1,4 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './FinanceStats.module.css';
 import { fmtMoney } from '../../../utils/Finance/financeUtils';
 
 export default function SummaryCards({ tongThu, tongChi, soDu, thuCount, chiCount, bcThu, baocaoThang }) {

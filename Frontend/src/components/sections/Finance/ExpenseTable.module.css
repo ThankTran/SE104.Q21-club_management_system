@@ -1,0 +1,273 @@
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--white-hard);
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  overflow: visible;
+  position: relative;
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #f0f4f8;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--white-soft);
+}
+
+.tableTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tableBadgeChi {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.tableActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white-hard);
+  border: 1.5px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 36px;
+  min-width: 200px;
+  color: var(--gray-500);
+  transition: border-color 0.2s;
+}
+
+.searchWrap:focus-within {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: var(--gray-900);
+  font-family: var(--font-family);
+}
+
+.searchInput::placeholder {
+  color: var(--gray-500);
+}
+
+.btnChi {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 9px;
+  border: none;
+  background: #b91c1c;
+  color: var(--white-hard);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.btnChi:hover {
+  background: #991b1b;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(185,28,28,0.28);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-family: var(--font-family);
+}
+
+.table thead tr {
+  background: var(--white-soft);
+  border-bottom: 1.5px solid #f0f4f8;
+}
+
+.table thead th {
+  padding: 12px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.row {
+  border-bottom: 1px solid #f5f7fa;
+  transition: background 0.15s;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: #f8faff;
+}
+
+.table td {
+  padding: 13px 18px;
+  vertical-align: middle;
+  color: var(--gray-900);
+}
+
+.idBadgeChi {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #991b1b;
+  letter-spacing: 0.3px;
+  font-family: monospace;
+}
+
+.nameCell {
+  font-weight: 600;
+}
+
+.dateCell {
+  color: var(--gray-700);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.amtChi {
+  font-size: 14px;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.skBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-family: monospace;
+}
+
+.naBadge {
+  color: var(--gray-400);
+  font-size: 13px;
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.editBtn {
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: 1.5px solid var(--primary-300);
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.editBtn:hover {
+  background: var(--primary-700);
+  color: white;
+  border-color: var(--primary-700);
+}
+
+.deleteBtn {
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: 1.5px solid #fca5a5;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.deleteBtn:hover {
+  background: #b91c1c;
+  color: white;
+  border-color: #b91c1c;
+}
+
+.tableFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 22px;
+  border-top: 1px solid #f0f4f8;
+  background: var(--white-soft);
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.totalChi {
+  font-weight: 700;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px;
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+.sortBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

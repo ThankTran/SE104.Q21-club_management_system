@@ -1,4 +1,4 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './FinanceHeader.module.css';
 import FinanceExportButton from './FinanceExportButton';
 
 export default function FinanceHeader({
