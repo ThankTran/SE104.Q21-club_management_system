@@ -1,0 +1,138 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(6px);
+}
+
+.box {
+  width: min(520px, 100%);
+  padding: 28px;
+  border: 1px solid #fee2e2;
+  border-radius: 16px;
+  background: var(--white-hard);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.title {
+  margin: 0 0 8px;
+  color: var(--gray-900);
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.message {
+  margin: 0 0 18px;
+  color: var(--gray-700);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  color: var(--gray-700);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 118px;
+  padding: 12px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 10px;
+  background: var(--white-hard);
+  color: var(--gray-900);
+  font-family: var(--font-family);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.error {
+  margin: 8px 0 0;
+  color: #b91c1c;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.cancelBtn,
+.rejectBtn {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 9px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+}
+
+.cancelBtn:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.rejectBtn {
+  border: none;
+  background: #b91c1c;
+  color: var(--white-hard);
+}
+
+.rejectBtn:hover {
+  background: #991b1b;
+}
+
+@media (max-width: 560px) {
+  .box {
+    padding: 24px 20px;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancelBtn,
+  .rejectBtn {
+    width: 100%;
+  }
+}

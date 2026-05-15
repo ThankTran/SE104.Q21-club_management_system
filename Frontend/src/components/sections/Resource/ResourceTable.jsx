@@ -40,6 +40,11 @@ export default function ResourceTable({
   onDelete,
   onApprove,
   onReject,
+  showActions = true,
+  showPagination = true,
+  verticalScroll = false,
+  dateLabel = 'NGÀY LẬP',
+  dateKey = 'createdAt',
   loading = false,
 }) {
   if (loading) {
@@ -76,68 +81,76 @@ export default function ResourceTable({
 
   return (
     <div className={styles.wrapper}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>TÀI LIỆU</th>
-            <th>CHỦ ĐỀ</th>
-            <th>LOẠI</th>
-            <th>TRẠNG THÁI</th>
-            <th>NGƯỜI ĐỀ XUẤT</th>
-            <th>NGÀY LẬP</th>
-            <th>THAO TÁC</th>
-          </tr>
-        </thead>
-        <tbody>
-          {resources.map((r) => {
-            const fmt = FORMAT_ICON[r.format] || FORMAT_ICON['Khác'];
-            const ss  = STATUS_STYLE[r.status] || STATUS_STYLE.pending;
-            const date = r.createdAt
-              ? new Date(r.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' })
-              : '—';
+      <div className={`${styles.tableScroll} ${verticalScroll ? styles.tableScrollVertical : ''}`}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>TÀI LIỆU</th>
+              <th>CHỦ ĐỀ</th>
+              <th>LOẠI</th>
+              <th>TRẠNG THÁI</th>
+              <th>{dateLabel}</th>
+              <th>LINK</th>
+              {showActions && <th>THAO TÁC</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {resources.map((r) => {
+              const fmt = FORMAT_ICON[r.format] || FORMAT_ICON['Khác'];
+              const ss  = STATUS_STYLE[r.status] || STATUS_STYLE.pending;
+              const displayDate = r[dateKey] || r.createdAt;
+              const date = displayDate
+                ? new Date(displayDate).toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' })
+                : '—';
 
-            return (
-              <tr key={r.id} className={styles.row} onClick={() => onView?.(r)}>
-                {/* Tài liệu */}
-                <td>
-                  <div className={styles.docCell}>
-                    <div className={styles.docIcon} style={{ background: fmt.bg }}>
-                      <span>{fmt.icon}</span>
-                      <span className={styles.docFmt} style={{ color: fmt.color }}>{r.format}</span>
+              return (
+                <tr key={r.id} className={styles.row} onClick={() => onView?.(r)}>
+                  <td>
+                    <div className={styles.docCell}>
+                      <div className={styles.docIcon} style={{ background: fmt.bg }}>
+                        <span>{fmt.icon}</span>
+                        <span className={styles.docFmt} style={{ color: fmt.color }}>{r.format}</span>
+                      </div>
+                      <div>
+                        <p className={styles.docTitle}>{r.title}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className={styles.docTitle}>{r.title}</p>
-                    </div>
-                  </div>
-                </td>
+                  </td>
 
-                {/* Chủ đề */}
-                <td className={styles.subjectCell}>{r.subject}</td>
+                  <td className={styles.subjectCell}>{r.subject}</td>
 
-                {/* Loại */}
-                <td>
-                  <span className={styles.typeBadge}>{r.type}</span>
-                </td>
+                  <td>
+                    <span className={styles.typeBadge}>{r.type}</span>
+                  </td>
 
-                {/* Trạng thái */}
-                <td>
-                  <span className={styles.statusBadge} style={{ background: ss.bg, color: ss.color }}>
-                    <span className={styles.statusDot} style={{ background: ss.dot }} />
-                    {ss.label}
-                  </span>
-                </td>
+                  <td>
+                    <span className={styles.statusBadge} style={{ background: ss.bg, color: ss.color }}>
+                      <span className={styles.statusDot} style={{ background: ss.dot }} />
+                      {ss.label}
+                    </span>
+                  </td>
 
-                {/* Người đề xuất */}
-                <td className={styles.uploaderCell}>{r.uploadedBy || '—'}</td>
+                  <td className={styles.dateCell}>{date}</td>
 
-                {/* Ngày */}
-                <td className={styles.dateCell}>{date}</td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    {r.link ? (
+                      <a
+                        className={styles.linkBtn}
+                        href={r.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Mở tài liệu"
+                      >
+                        Mở link
+                      </a>
+                    ) : (
+                      <span className={styles.noLink}>—</span>
+                    )}
+                  </td>
 
-                {/* Thao tác */}
-                <td onClick={(e) => e.stopPropagation()}>
-                  <div className={styles.actionBtns}>
-                    {r.status === 'pending' && (
-                      <>
+                  {showActions && (
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className={styles.actionBtns}>
                         <button
                           className={styles.approveBtn}
                           onClick={() => onApprove?.(r.id)}
@@ -152,36 +165,36 @@ export default function ResourceTable({
                         >
                           ✕
                         </button>
-                      </>
-                    )}
-                    <button
-                      className={styles.editBtn}
-                      onClick={() => onEdit?.(r)}
-                      title="Chỉnh sửa"
-                    >
-                      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
-                    </button>
-                    <button
-                      className={styles.deleteBtn}
-                      onClick={() => onDelete?.(r)}
-                      title="Xoá"
-                    >
-                      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => onEdit?.(r)}
+                          title="Chỉnh sửa"
+                        >
+                          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        </button>
+                        <button
+                          className={styles.deleteBtn}
+                          onClick={() => onDelete?.(r)}
+                          title="Xoá"
+                        >
+                          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Pagination */}
-      <div className={styles.pagination}>
+      {showPagination && (
+        <div className={styles.pagination}>
         <span className={styles.paginationInfo}>
           Hiển thị {start}–{end} trong tổng số {total.toLocaleString()} tài liệu
         </span>
@@ -212,7 +225,8 @@ export default function ResourceTable({
             disabled={page === totalPages}
           >›</button>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

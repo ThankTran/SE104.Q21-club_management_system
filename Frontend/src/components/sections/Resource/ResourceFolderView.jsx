@@ -1,91 +1,87 @@
-import styles from "./ResourceFolderView.module.css";
+import { useState } from 'react';
+import { FolderClosed } from 'lucide-react';
+import { RESOURCE_FOLDER_TREE } from './resourceFolderData';
+import styles from './ResourceFolderView.module.css';
 
-import { FolderClosed } from "lucide-react";
+export default function ResourceFolderView({ selectedFolderId, onSelectFolder }) {
+  const [openFolderIds, setOpenFolderIds] = useState(() => new Set(RESOURCE_FOLDER_TREE.map((node) => node.id)));
 
-const GENERAL_SUBJECTS = [
-  "Giải tích 1",
-  "Đại số tuyến tính",
-  "Xác suất thống kê",
-  "Chính trị và xã hội",
-];
-
-const UIT_MAJORS = [
-  "Công nghệ phần mềm",
-  "Hệ thống thông tin",
-  "Khoa học máy tính",
-  "Kỹ thuật máy tính",
-  "Mạng máy tính và truyền thông",
-  "Khoa học dữ liệu",
-  "An toàn thông tin",
-  "Thương mại điện tử",
-];
-
-export default function ResourceFolderView({
-  selectedCategory,
-  onSelectCategory,
-  onSelectMajor,
-  onSelectSubject,
-}) {
-  if (!selectedCategory) {
-    return (
-      <div className={styles.folderTable}>
-        <div className={styles.header}>
-          <span>Loại</span>
-          <span>Tên</span>
-        </div>
-
-        <button className={styles.row} onClick={() => onSelectCategory("general")}>
-          <FolderClosed className={styles.folderIcon} />
-          <span className={styles.name}>1. Môn đại cương</span>
-        </button>
-
-        <button className={styles.row} onClick={() => onSelectCategory("major")}>
-          <FolderClosed className={styles.folderIcon} />
-          <span className={styles.name}>2. Môn theo ngành</span>
-        </button>
-      </div>
-    );
-  }
-
-  if (selectedCategory === "general") {
-    return (
-      <div className={styles.folderTable}>
-        <div className={styles.header}>
-          <span>Loại</span>
-          <span>Tên môn học</span>
-        </div>
-
-        {GENERAL_SUBJECTS.map((subject, index) => (
-          <button
-            key={subject}
-            className={styles.row}
-            onClick={() => onSelectSubject(subject)}
-          >
-            <FolderClosed className={styles.folderIcon} />
-            <span className={styles.name}>{index + 1}. {subject}</span>
-          </button>
-        ))}
-      </div>
-    );
-  }
+  const toggleFolder = (folderId) => {
+    setOpenFolderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderId)) {
+        next.delete(folderId);
+      } else {
+        next.add(folderId);
+      }
+      return next;
+    });
+  };
 
   return (
     <div className={styles.folderTable}>
       <div className={styles.header}>
-        <span>Loại</span>
-        <span>Tên ngành</span>
-        <span>Tùy chọn</span>
+        <span>Thư mục</span>
       </div>
 
-      {UIT_MAJORS.map((major, index) => (
-        <button
-          key={major}
-          className={styles.row}
-          onClick={() => onSelectMajor(major)}
-        >
-          <FolderClosed className={styles.folderIcon} />          
-          <span className={styles.name}>{index + 1}. {major}</span>
-        </button>
+      <div className={styles.tree}>
+        {RESOURCE_FOLDER_TREE.map((node) => (
+          <FolderNode
+            key={node.id}
+            node={node}
+            depth={0}
+            selectedFolderId={selectedFolderId}
+            openFolderIds={openFolderIds}
+            onToggle={toggleFolder}
+            onSelectFolder={onSelectFolder}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FolderNode({ node, depth, selectedFolderId, openFolderIds, onToggle, onSelectFolder }) {
+  const isLeaf = !node.children?.length;
+  const open = openFolderIds.has(node.id);
+  const selected = selectedFolderId === node.id;
+
+  if (isLeaf) {
+    return (
+      <button
+        type="button"
+        className={`${styles.row} ${styles.leafRow} ${selected ? styles.rowActive : ''}`}
+        style={{ paddingLeft: `${20 + depth * 24}px` }}
+        onClick={() => onSelectFolder(node.id)}
+      >
+        <FolderClosed className={styles.folderIcon} />
+        <span className={styles.name}>{node.label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className={styles.group}>
+      <button
+        type="button"
+        className={styles.row}
+        style={{ paddingLeft: `${20 + depth * 24}px` }}
+        onClick={() => onToggle(node.id)}
+      >
+        <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>›</span>
+        <span className={styles.name}>{node.label}</span>
+      </button>
+
+      {open && node.children.map((child) => (
+        <FolderNode
+          key={child.id}
+          node={child}
+          depth={depth + 1}
+          selectedFolderId={selectedFolderId}
+          openFolderIds={openFolderIds}
+          onToggle={onToggle}
+          onSelectFolder={onSelectFolder}
+        />
       ))}
     </div>
   );

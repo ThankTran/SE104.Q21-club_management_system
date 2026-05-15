@@ -20,8 +20,8 @@ const TYPE_CONFIG = {
  *   onClick     – () => void
  *   viewMode    – 'grid' | 'list'
  */
-export default function ResourceCard({ resource, onClick, viewMode = 'list' }) {
-  const { title, subject, type, format, description, uploadedBy, createdAt, source } = resource;
+export default function ResourceCard({ resource, viewMode = 'list' }) {
+  const { title, subject, type, format, description, createdAt, source, link } = resource;
 
   const fmt = FORMAT_CONFIG[format] || FORMAT_CONFIG['Khác'];
   const ts  = TYPE_CONFIG[type]     || { bg: '#f3f4f6', color: '#374151' };
@@ -33,7 +33,7 @@ export default function ResourceCard({ resource, onClick, viewMode = 'list' }) {
   /* ─── GRID CARD ─── */
   if (viewMode === 'grid') {
     return (
-      <div className={styles.gridCard} onClick={onClick}>
+      <div className={styles.gridCard}>
         <div className={styles.gridAccent} style={{ background: fmt.accent }} />
 
         <div className={styles.gridFmtWrap} style={{ background: fmt.bg }}>
@@ -53,16 +53,14 @@ export default function ResourceCard({ resource, onClick, viewMode = 'list' }) {
           <span className={styles.gridDate}>{dateStr}</span>
         </div>
 
-        <div className={styles.gridOverlay}>
-          <span>Xem chi tiết →</span>
-        </div>
+        <ResourceLink link={link} />
       </div>
     );
   }
 
   /* ─── LIST ROW ─── */
   return (
-    <div className={styles.listCard} onClick={onClick}>
+    <div className={styles.listCard}>
       {/* Left: format */}
       <div className={styles.listFmt} style={{ background: fmt.bg }}>
         <span className={styles.listFmtIcon}>{fmt.icon}</span>
@@ -89,18 +87,34 @@ export default function ResourceCard({ resource, onClick, viewMode = 'list' }) {
 
         <div className={styles.listMeta}>
           {source && <MetaTag icon="link">{source}</MetaTag>}
-          {uploadedBy && <MetaTag icon="user">{uploadedBy}</MetaTag>}
           <span className={styles.listDate}>{dateStr}</span>
         </div>
       </div>
 
       {/* Right */}
-      <div className={styles.listArrow}>
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
-      </div>
+      <ResourceLink link={link} compact />
     </div>
+  );
+}
+
+function ResourceLink({ link, compact = false }) {
+  if (!link) {
+    return (
+      <span className={`${styles.resourceLink} ${compact ? styles.resourceLinkCompact : ''} ${styles.resourceLinkDisabled}`}>
+        Chưa có link
+      </span>
+    );
+  }
+
+  return (
+    <a
+      className={`${styles.resourceLink} ${compact ? styles.resourceLinkCompact : ''}`}
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Xem / tải tài liệu
+    </a>
   );
 }
 
