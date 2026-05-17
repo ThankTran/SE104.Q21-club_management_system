@@ -1,11 +1,14 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import styles from './EventForm.module.css';
 
 const EMPTY_FORM = {
+  eventCode: '',
   // Step 1 — Fundamentals
   title: '',
   date: '',
   time: '',
+  endTime: '',
   location: '',
   estimatedCost: '',
   description: '',
@@ -26,7 +29,7 @@ const STEPS = ['Thông tin cơ bản', 'Chi tiết tổ chức', 'Xác nhận'];
  *   initial  – event object (edit) | null (add)
  *   loading  – boolean
  */
-export default function EventForm({ open, onClose, onSubmit, initial = null, loading = false }) {
+export default function EventForm({ open, onClose, onSubmit, initial = null, loading = false, existingEvents = [] }) {
   const isEdit = !!initial;
   const [step, setStep]     = useState(0);
   const [form, setForm]     = useState(EMPTY_FORM);
@@ -57,12 +60,37 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
   const validateStep = (s) => {
     const errs = {};
     if (s === 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = form.date ? new Date(form.date) : null;
+      const duplicateCode = existingEvents.some((event) =>
+        event.id !== initial?.id &&
+        event.eventCode &&
+        form.eventCode.trim() &&
+        event.eventCode.toLowerCase() === form.eventCode.trim().toLowerCase()
+      );
+      const duplicateTitle = existingEvents.some((event) =>
+        event.id !== initial?.id &&
+        event.title.toLowerCase() === form.title.trim().toLowerCase()
+      );
+
+      if (!form.eventCode.trim()) errs.eventCode = 'Vui lòng nhập mã sự kiện';
+      if (duplicateCode) errs.eventCode = 'Mã sự kiện đã tồn tại';
+      if (duplicateTitle) errs.title = 'Tên sự kiện không được trùng';
+      if (selectedDate && selectedDate < today) errs.date = 'Ngày tổ chức phải lớn hơn hoặc bằng ngày hiện tại';
+      if (!form.time) errs.time = 'Vui lòng chọn thời gian bắt đầu';
+      if (!form.endTime) errs.endTime = 'Vui lòng chọn thời gian kết thúc';
+      if (form.time && form.endTime && form.endTime <= form.time) {
+        errs.endTime = 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu';
+      }
       if (!form.title.trim())    errs.title    = 'Vui lòng nhập tên sự kiện';
       if (!form.date)            errs.date     = 'Vui lòng chọn ngày';
       if (!form.location.trim()) errs.location = 'Vui lòng nhập địa điểm';
     }
     if (s === 1) {
       if (!form.capacity) errs.capacity = 'Vui lòng nhập sức chứa';
+      if (Number(form.capacity) <= 0) errs.capacity = 'Sức chứa phải lớn hơn 0';
+      if (!form.organizer.trim()) errs.organizer = 'Vui lòng nhập ban tổ chức';
     }
     return errs;
   };
@@ -126,6 +154,16 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
           {/* Step 1 — Thông tin cơ bản */}
           {step === 0 && (
             <div className={styles.fields}>
+              <Field label="Mã sự kiện *" error={errors.eventCode}>
+                <input
+                  className={`${styles.input} ${errors.eventCode ? styles.inputError : ''}`}
+                  type="text"
+                  placeholder="VD: SK001"
+                  value={form.eventCode}
+                  onChange={handleChange('eventCode')}
+                />
+              </Field>
+
               <Field label="Tên sự kiện *" error={errors.title}>
                 <input
                   className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
@@ -145,15 +183,24 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
                     onChange={handleChange('date')}
                   />
                 </Field>
-                <Field label="Giờ">
+                <Field label="Giờ bắt đầu *" error={errors.time}>
                   <input
-                    className={styles.input}
+                    className={`${styles.input} ${errors.time ? styles.inputError : ''}`}
                     type="time"
                     value={form.time}
                     onChange={handleChange('time')}
                   />
                 </Field>
               </div>
+
+              <Field label="Giờ kết thúc *" error={errors.endTime}>
+                <input
+                  className={`${styles.input} ${errors.endTime ? styles.inputError : ''}`}
+                  type="time"
+                  value={form.endTime}
+                  onChange={handleChange('endTime')}
+                />
+              </Field>
 
               <Field label="Địa điểm *" error={errors.location}>
                 <input
@@ -203,9 +250,9 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
                 />
               </Field>
 
-              <Field label="Ban tổ chức / Người phụ trách">
+              <Field label="Ban tổ chức / Người phụ trách *" error={errors.organizer}>
                 <input
-                  className={styles.input}
+                  className={`${styles.input} ${errors.organizer ? styles.inputError : ''}`}
                   type="text"
                   placeholder="VD: Ban học thuật"
                   value={form.organizer}
@@ -227,6 +274,7 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
                   <option value="OTHER">Khác</option>
                 </select>
               </Field>
+
             </div>
           )}
 
@@ -236,9 +284,11 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
               <p className={styles.reviewTitle}>Xác nhận thông tin sự kiện</p>
 
               <div className={styles.reviewGrid}>
+                <ReviewRow label="Mã sự kiện"    value={form.eventCode} />
                 <ReviewRow label="Tên sự kiện"   value={form.title}    />
                 <ReviewRow label="Ngày"           value={form.date}     />
-                <ReviewRow label="Giờ"            value={form.time || '—'} />
+                <ReviewRow label="Giờ bắt đầu"    value={form.time || '—'} />
+                <ReviewRow label="Giờ kết thúc"   value={form.endTime || '—'} />
                 <ReviewRow label="Địa điểm"       value={form.location} />
                 <ReviewRow
                   label="Ngân sách"
