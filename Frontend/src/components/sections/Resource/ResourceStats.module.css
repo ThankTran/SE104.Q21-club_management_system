@@ -1,14 +1,24 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .card {
+  position: relative;
+  overflow: hidden;
   background: var(--white-hard);
-  border: 1.5px solid;
+  border: 1px solid;
   border-radius: 14px;
-  padding: 18px;
+  padding: 16px 18px;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #3b82f6;
 }
 
 .blue {
@@ -21,15 +31,28 @@
   background: #fffbeb;
 }
 
+.amber::before {
+  background: #f59e0b;
+}
+
 .green {
   border-color: #86efac;
   background: #f0fdf4;
+}
+
+.green::before {
+  background: #22c55e;
 }
 
 .red {
   border-color: #fca5a5;
   background: #fff1f2;
 }
+
+.red::before {
+  background: #ef4444;
+}
+
 
 .label {
   margin: 0 0 8px;

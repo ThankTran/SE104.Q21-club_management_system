@@ -12,6 +12,11 @@
   color: var(--gray-700);
 }
 
+.required {
+  color: #dc2626;
+  font-weight: 800;
+}
+
 .errorMsg {
   font-size: 12px;
   color: #b91c1c;

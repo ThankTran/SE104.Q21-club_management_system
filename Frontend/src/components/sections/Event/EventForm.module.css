@@ -168,6 +168,11 @@
   color: var(--gray-700);
 }
 
+.required {
+  color: #dc2626;
+  font-weight: 800;
+}
+
 .input, .select, .textarea {
   width: 100%;
   padding: 10px 14px;

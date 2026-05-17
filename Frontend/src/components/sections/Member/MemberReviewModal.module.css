@@ -1,0 +1,158 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2100;
+  padding: 20px;
+}
+
+.reviewModal {
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--white-hard);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  padding: 26px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  color: var(--gray-900);
+  font-size: 22px;
+  letter-spacing: -0.3px;
+}
+
+.modalEyebrow {
+  margin: 0 0 4px;
+  color: var(--primary-700);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.iconBtn:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+
+.reviewIntro {
+  margin: -8px 0 18px;
+  color: var(--gray-700);
+  font-size: 14px;
+}
+
+.reviewField {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: var(--gray-700);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.reviewField input,
+.reviewField textarea {
+  width: 100%;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 10px;
+  background: var(--white-soft);
+  color: var(--gray-900);
+  font-family: var(--font-family);
+  font-size: 14px;
+  padding: 11px 13px;
+  box-sizing: border-box;
+  outline: none;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.reviewField textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.reviewField input:focus,
+.reviewField textarea:focus {
+  border-color: var(--primary-500);
+  background: var(--white-hard);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.reviewError {
+  margin: 0 0 14px;
+  color: #c53030;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--gray-300);
+}
+
+.secondaryBtn,
+.primaryBtn,
+.dangerBtn {
+  border-radius: 9px;
+  padding: 10px 18px;
+  font-family: var(--font-family);
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+}
+
+.secondaryBtn {
+  background: var(--white-hard);
+  border-color: var(--gray-300);
+  color: var(--gray-700);
+}
+
+.primaryBtn {
+  background: #2f855a;
+  color: #fff;
+}
+
+.dangerBtn {
+  background: #c2410c;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .modalActions {
+    flex-direction: column;
+  }
+}
