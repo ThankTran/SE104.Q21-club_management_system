@@ -198,45 +198,47 @@ export default function ResourceAdminPage() {
 
       <ResourceStats stats={stats} />
 
-      <ResourceAdminTabs
-        activeTab={activeTab}
-        approvedCount={stats.approved}
-        onChange={setActiveTab}
-      />
+      <div className={styles.workflowPanel}>
+        <ResourceAdminTabs
+          activeTab={activeTab}
+          approvedCount={stats.approved}
+          onChange={setActiveTab}
+        />
 
-      <div className={styles.controlRow}>
-        <div className={styles.searchBox}>
-          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Tìm theo tên tài liệu, môn học, người đề xuất..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          {search && (
-            <button type="button" className={styles.clearSearch} onClick={() => setSearch('')}>×</button>
+        <div className={styles.controlRow}>
+          <div className={styles.searchBox}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Tìm theo tên tài liệu, môn học, người đề xuất..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            {search && (
+              <button type="button" className={styles.clearSearch} onClick={() => setSearch('')}>×</button>
+            )}
+          </div>
+
+          {activeTab === 'review' && (
+            <ResourceFilter
+              open={filterOpen}
+              setOpen={setFilterOpen}
+              typeFilter={typeFilter}
+              setTypeFilter={setTypeFilter}
+              formatFilter={formatFilter}
+              setFormatFilter={setFormatFilter}
+              subjectFilter={subjectFilter}
+              setSubjectFilter={setSubjectFilter}
+              subjects={subjects}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              showStatus={false}
+            />
           )}
         </div>
-
-        {activeTab === 'review' && (
-          <ResourceFilter
-            open={filterOpen}
-            setOpen={setFilterOpen}
-            typeFilter={typeFilter}
-            setTypeFilter={setTypeFilter}
-            formatFilter={formatFilter}
-            setFormatFilter={setFormatFilter}
-            subjectFilter={subjectFilter}
-            setSubjectFilter={setSubjectFilter}
-            subjects={subjects}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            showStatus={false}
-          />
-        )}
       </div>
 
       {activeTab === 'review' && (

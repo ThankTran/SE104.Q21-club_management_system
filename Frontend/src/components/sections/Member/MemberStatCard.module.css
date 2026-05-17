@@ -1,0 +1,94 @@
+.statCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--gray-300);
+  background: var(--white-hard);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow 0.2s;
+  min-width: 0;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--primary-500);
+}
+
+.statCard:hover {
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+}
+
+.statCard_dark {
+  background: var(--primary-900);
+  border-color: var(--primary-900);
+}
+
+.statCard_dark .statLabel {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.statCard_dark .statValue {
+  color: var(--white-hard);
+}
+
+.statCard_dark .statSub {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.statCard_warning {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+
+.statCard_warning::before {
+  background: #f59e0b;
+}
+
+.statCard_success {
+  border-color: #c6f6d5;
+  background: #f0fff4;
+}
+
+.statCard_success::before {
+  background: #22c55e;
+}
+
+.statCard_danger {
+  border-color: #fed7d7;
+  background: #fff5f5;
+}
+
+.statCard_danger::before {
+  background: #ef4444;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.statValue {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.statSub {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin: 0;
+  font-weight: 500;
+}

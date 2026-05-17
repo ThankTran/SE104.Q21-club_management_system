@@ -1,283 +1,191 @@
-import { useState, useMemo } from 'react';
+﻿import { useMemo, useState } from 'react';
 
 import MemberTable from '../../components/sections/Member/MemberTable';
-import MemberForm from '../../components/sections/Member/MemberForm';
+import MemberForm, { DEPARTMENTS } from '../../components/sections/Member/MemberForm';
 import MemberFilter from '../../components/sections/Member/MemberFilter';
+import MemberStatCard from '../../components/sections/Member/MemberStatCard';
+import MemberDetailModal from '../../components/sections/Member/MemberDetailModal';
+import MemberHistoryModal from '../../components/sections/Member/MemberHistoryModal';
+import MemberReviewModal from '../../components/sections/Member/MemberReviewModal';
+import MemberDeleteConfirmModal from '../../components/sections/Member/MemberDeleteConfirmModal';
+import { MOCK_MEMBERS } from '../../components/sections/Member/memberMockData';
 import styles from './MemberAdminPage.module.css';
 
-// ── Mock data ────────────────────────────────────────────────
-const MOCK_MEMBERS = [
-  { id: '2410001', name: 'Nguyễn Minh Anh',      department: 'Khoa Khoa học máy tính',               role: 'Chủ nhiệm',                status: 'Active',   avatar: 'NA' },
-  { id: '2410002', name: 'Trần Quốc Bảo',        department: 'Khoa Công nghệ phần mềm',             role: 'Phó chủ nhiệm',            status: 'Active',   avatar: 'TB' },
-  { id: '2410003', name: 'Lê Hoàng Nam',         department: 'Khoa Kỹ thuật máy tính',              role: 'Trưởng ban học thuật',     status: 'Active',   avatar: 'LN' },
-  { id: '2410004', name: 'Phạm Gia Hân',         department: 'Khoa Hệ thống thông tin',             role: 'Trưởng ban truyền thông',  status: 'Active',   avatar: 'PH' },
-  { id: '2410005', name: 'Võ Đức Tài',           department: 'Khoa Mạng máy tính & Truyền thông',   role: 'Thành viên',               status: 'Active',   avatar: 'VT' },
-  { id: '2410006', name: 'Nguyễn Khánh Linh',    department: 'Khoa Khoa học & Kỹ thuật thông tin',  role: 'Thành viên',               status: 'On Leave', avatar: 'NL' },
-  { id: '2410007', name: 'Đặng Nhật Quang',      department: 'Khoa Công nghệ phần mềm',             role: 'Thành viên',               status: 'Active',   avatar: 'DQ' },
-  { id: '2410008', name: 'Huỳnh Bảo Trân',       department: 'Khoa Khoa học máy tính',              role: 'Thành viên',               status: 'Inactive', avatar: 'HT' },
-  { id: '2410009', name: 'Trương Hải Đăng',      department: 'Khoa Kỹ thuật máy tính',              role: 'Thành viên',               status: 'Active',   avatar: 'TD' },
-  { id: '2410010', name: 'Bùi Ngọc Mai',         department: 'Khoa Hệ thống thông tin',             role: 'Thành viên',               status: 'Active',   avatar: 'BM' },
-  { id: '2410011', name: 'Lý Tuấn Kiệt',         department: 'Khoa Công nghệ phần mềm',             role: 'Thành viên',               status: 'Active',   avatar: 'LK' },
-  { id: '2410012', name: 'Phan Thảo Vy',         department: 'Khoa Khoa học máy tính',              role: 'Thành viên',               status: 'Active',   avatar: 'PV' },
-  { id: '2410013', name: 'Ngô Gia Huy',          department: 'Khoa Mạng máy tính & Truyền thông',   role: 'Thành viên',               status: 'On Leave', avatar: 'NH' },
-  { id: '2410014', name: 'Mai Thanh Tùng',       department: 'Khoa Kỹ thuật máy tính',              role: 'Thành viên',               status: 'Active',   avatar: 'MT' },
-  { id: '2410015', name: 'Đoàn Yến Nhi',         department: 'Khoa Hệ thống thông tin',             role: 'Thành viên',               status: 'Active',   avatar: 'DN' },
-  { id: '2410016', name: 'Tạ Minh Khoa',         department: 'Khoa Khoa học & Kỹ thuật thông tin',  role: 'Thành viên',               status: 'Inactive', avatar: 'TK' },
-  { id: '2410017', name: 'Vũ Thành Công',        department: 'Khoa Công nghệ phần mềm',             role: 'Thành viên',               status: 'Active',   avatar: 'VC' },
-  { id: '2410018', name: 'Châu Bích Ngọc',       department: 'Khoa Khoa học máy tính',              role: 'Thành viên',               status: 'Active',   avatar: 'CN' },
-  { id: '2410019', name: 'Nguyễn Quốc Hưng',     department: 'Khoa Kỹ thuật máy tính',              role: 'Thành viên',               status: 'Active',   avatar: 'NH' },
-  { id: '2410020', name: 'Lâm Gia Linh',         department: 'Khoa Hệ thống thông tin',             role: 'Thành viên',               status: 'On Leave', avatar: 'LL' },
-];
+const PAGE_SIZE = 8;
 
-const PAGE_SIZE = 10;
-
-// ── Stat card ────────────────────────────────────────────────
-function StatCard({ stat }) {
-  const { label, value, sub, subColor, variant, barColor, barPct } = stat;
-
-  return (
-    <div className={`${styles.statCard} ${styles[`statCard_${variant}`]}`}>
-      <p className={styles.statLabel}>{label}</p>
-      <p className={styles.statValue}>{value}</p>
-
-      {sub && (
-        <p
-          className={styles.statSub}
-          style={subColor ? { color: subColor } : {}}
-        >
-          {sub}
-        </p>
-      )}
-
-      {barColor && (
-        <div className={styles.statBar}>
-          <div
-            className={styles.statBarFill}
-            style={{
-              width: `${barPct}%`,
-              background: barColor,
-            }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-// ── Main ─────────────────────────────────────────────────────
 export default function MemberAdminPage() {
-  const [members, setMembers]         = useState(MOCK_MEMBERS);
-  const [search, setSearch]           = useState('');
-  const [page, setPage]               = useState(1);
-  const [formOpen, setFormOpen]       = useState(false);
-  const [editTarget, setEditTarget]   = useState(null);
+  const [members, setMembers] = useState(MOCK_MEMBERS);
+  const [activeTab, setActiveTab] = useState('review');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-
+  const [detailTarget, setDetailTarget] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewType, setReviewType] = useState('approve');
   const [filterOpen, setFilterOpen] = useState(false);
-
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-// ── THỐNG KÊ ĐỘNG ──────────────────────────────────────────
-  const STATS = useMemo(() => {
+
+  const statuses = useMemo(() => [...new Set(members.map((m) => m.requestStatus))], [members]);
+  const roles = useMemo(() => [...new Set(members.map((m) => m.role))], [members]);
+
+  const stats = useMemo(() => {
     const total = members.length;
-
-    const countByDepartment = (name) =>
-      members.filter((m) => m.department === name).length;
-
-    const activeCount = members.filter(
-      (m) => m.status === 'Active'
-    ).length;
-
-    const createDeptStat = (
-      label,
-      department,
-      variant,
-      color
-    ) => {
-      const count = countByDepartment(department);
-
-      return {
-        label,
-        value: count.toString(),
-        sub: null,
-        variant,
-        barColor: color,
-        barPct: total ? Math.round((count / total) * 100) : 0,
-      };
-    };
-
-    return [
-      {
-        label: 'TỔNG THÀNH VIÊN',
-        value: total.toString(),
-        sub: null,
-        variant: 'default',
-      },
-
-      createDeptStat(
-        'KHOA KỸ THUẬT MÁY TÍNH',
-        'Khoa Kỹ thuật máy tính',
-        'teal',
-        '#0bc5ea'
-      ),
-
-      createDeptStat(
-        'KHOA KHOA HỌC MÁY TÍNH',
-        'Khoa Khoa học máy tính',
-        'purple',
-        '#805ad5'
-      ),
-
-      createDeptStat(
-        'KHOA CÔNG NGHỆ PHẦN MỀM',
-        'Khoa Công nghệ phần mềm',
-        'blue',
-        '#3182ce'
-      ),
-
-      createDeptStat(
-        'KHOA HỆ THỐNG THÔNG TIN',
-        'Khoa Hệ thống thông tin',
-        'orange',
-        '#dd6b20'
-      ),
-
-      createDeptStat(
-        'KHOA MẠNG MÁY TÍNH & TRUYỀN THÔNG',
-        'Khoa Mạng máy tính & Truyền thông',
-        'pink',
-        '#d53f8c'
-      ),
-
-      createDeptStat(
-        'KHOA KHOA HỌC & KỸ THUẬT THÔNG TIN',
-        'Khoa Khoa học & Kỹ thuật thông tin',
-        'green',
-        '#38a169'
-      ),
-
-      {
-        label: 'ĐANG HOẠT ĐỘNG',
-        value: activeCount.toString(),
-        sub: `${Math.round((activeCount / total) * 100)}% thành viên`,
-        variant: 'dark',
-      },
-    ];
+    const pending = members.filter((m) => m.requestStatus === 'Đang xét duyệt').length;
+    const approved = members.filter((m) => m.requestStatus === 'Đã duyệt').length;
+    const rejected = members.filter((m) => m.requestStatus === 'Từ chối').length;
+    return { total, pending, approved, rejected };
   }, [members]);
 
-  const departments = useMemo(
-  () => [...new Set(members.map((m) => m.department))],
-  [members]
-  );
-
-  const statuses = useMemo(
-    () => [...new Set(members.map((m) => m.status))],
-    [members]
-  );
-
-  const roles = useMemo(
-    () => [...new Set(members.map((m) => m.role))],
-    [members]
-  );
-
-  // ── Filter + paginate ──────────────────────────────────────
   const filtered = useMemo(() => {
-  const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
+    return members
+      .filter((m) => {
+        const matchSearch = !q ||
+          m.name.toLowerCase().includes(q) ||
+          m.id.includes(q) ||
+          m.email.toLowerCase().includes(q) ||
+          m.department.toLowerCase().includes(q);
+        const matchDepartment = !departmentFilter || m.department === departmentFilter;
+        const matchesTab =
+          activeTab === 'review'
+            ? m.requestStatus === 'Đang xét duyệt'
+            : m.requestStatus === 'Đã duyệt';
+        const matchStatus = activeTab === 'review' || activeTab === 'lookup' || !statusFilter || m.requestStatus === statusFilter;
+        const matchRole = !roleFilter || m.role === roleFilter;
+        return matchesTab && matchSearch && matchDepartment && matchStatus && matchRole;
+      })
+      .sort((a, b) =>
+        activeTab === 'review'
+          ? new Date(a.registeredAt) - new Date(b.registeredAt)
+          : a.name.localeCompare(b.name, 'vi')
+      );
+  }, [members, search, departmentFilter, statusFilter, roleFilter, activeTab]);
 
-  return members.filter((m) => {
-    const matchSearch =
-      m.name.toLowerCase().includes(q) ||
-      m.id.includes(q) ||
-      m.department.toLowerCase().includes(q) ||
-      m.role.toLowerCase().includes(q);
-
-    const matchDepartment =
-      !departmentFilter ||
-      m.department === departmentFilter;
-
-    const matchStatus =
-      !statusFilter ||
-      m.status === statusFilter;
-
-    const matchRole =
-      !roleFilter ||
-      m.role === roleFilter;
-
-    return (
-      matchSearch &&
-      matchDepartment &&
-      matchStatus &&
-      matchRole
-    );
-  });
-  }, [
-    members,
-    search,
-    departmentFilter,
-    statusFilter,
-    roleFilter,
-  ]);
+  const historyMembers = useMemo(
+    () => members
+      .filter((member) => member.requestStatus === 'Đã duyệt' || member.requestStatus === 'Từ chối')
+      .sort((a, b) => new Date(b.reviewedAt || b.registeredAt) - new Date(a.reviewedAt || a.registeredAt)),
+    [members],
+  );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // ── Handlers ──────────────────────────────────────────────
-  const openAdd  = () => { setEditTarget(null); setFormOpen(true); };
-  const openEdit = (member) => { setEditTarget(member); setFormOpen(true); };
+  const openAdd = () => {
+    setEditTarget(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (member) => {
+    setEditTarget(member);
+    setFormOpen(true);
+  };
 
   const handleSubmit = (formData) => {
     setFormLoading(true);
     setTimeout(() => {
       if (editTarget) {
-        setMembers((prev) =>
-          prev.map((m) => (m.id === editTarget.id ? { ...m, ...formData } : m)),
-        );
+        setMembers((prev) => prev.map((m) => (m.id === editTarget.id ? { ...m, ...formData } : m)));
       } else {
-        const newId = String(Math.floor(Math.random() * 90000) + 10000);
         setMembers((prev) => [
-          { ...formData, id: newId, avatar: formData.name.slice(0, 2).toUpperCase() },
+          { ...formData, avatar: formData.name.slice(0, 2).toUpperCase(), reviewedBy: '', reviewedAt: '', reviewNote: '' },
           ...prev,
         ]);
       }
       setFormLoading(false);
       setFormOpen(false);
       setPage(1);
-    }, 800);
+    }, 300);
   };
 
-  const handleDelete  = (member) => setDeleteConfirm(member);
+  const openReview = (member, type) => {
+    setReviewTarget(member);
+    setReviewType(type);
+  };
+
+  const confirmReview = (member, reviewData) => {
+    setMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, ...reviewData } : m)));
+    setReviewTarget(null);
+  };
+
   const confirmDelete = () => {
     setMembers((prev) => prev.filter((m) => m.id !== deleteConfirm.id));
     setDeleteConfirm(null);
   };
-  const handlePageChange = (p) => {
-    if (p >= 1 && p <= totalPages) setPage(p);
-  };
 
   return (
     <div className={styles.page}>
-
-      {/* ── Tiêu đề trang ── */}
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Danh sách thành viên</h1>
+          <h1 className={styles.pageTitle}>Quản lý thành viên</h1>
           <p className={styles.pageSubtitle}>
-            Quản lý và theo dõi thành viên ban chủ nhiệm và thành viên câu lạc bộ.
+            Tiếp nhận hồ sơ đăng ký, kiểm tra điều kiện và xét duyệt thành viên câu lạc bộ.
           </p>
         </div>
 
-        {/* Tìm kiếm + Lọc + Thêm */}
         <div className={styles.headerActions}>
+          <button
+            type="button"
+            className={`${styles.historyBtn} ${historyOpen ? styles.historyBtnActive : ''}`}
+            onClick={() => setHistoryOpen(true)}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 3-6.7" />
+              <path d="M3 4v5h5" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            Lịch sử
+          </button>
+
+          <button className={styles.addBtn} onClick={openAdd}>
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Thêm hồ sơ
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.statsRow}>
+        <MemberStatCard label="Tổng hồ sơ" value={stats.total} sub="Tất cả phiếu đăng ký" />
+        <MemberStatCard label="Chờ xét duyệt" value={stats.pending} sub="Cần xử lý" variant="warning" />
+        <MemberStatCard label="Đã duyệt" value={stats.approved} sub="Thành viên hợp lệ" variant="success" />
+        <MemberStatCard label="Từ chối" value={stats.rejected} sub="Hồ sơ không đạt" variant="danger" />
+      </div>
+
+      <div className={styles.workflowPanel}>
+        <div className={styles.tabs}>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${activeTab === 'review' ? styles.tabActive : ''}`}
+            onClick={() => { setActiveTab('review'); setPage(1); }}
+          >
+            Chờ xét duyệt thành viên
+          </button>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${activeTab === 'lookup' ? styles.tabActive : ''}`}
+            onClick={() => { setActiveTab('lookup'); setPage(1); }}
+          >
+            Tra cứu thành viên
+            <span>{stats.approved}</span>
+          </button>
+        </div>
+
+        <div className={styles.tabControls}>
           <div className={styles.searchWrap}>
             <svg className={styles.searchIcon} width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
             </svg>
             <input
               className={styles.searchInput}
-              placeholder="Tìm theo tên hoặc mã số..."
+              placeholder="Tìm theo tên, MSSV, email..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
@@ -286,92 +194,89 @@ export default function MemberAdminPage() {
           <MemberFilter
             open={filterOpen}
             setOpen={setFilterOpen}
-
             departmentFilter={departmentFilter}
             setDepartmentFilter={setDepartmentFilter}
-
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
-
             roleFilter={roleFilter}
             setRoleFilter={setRoleFilter}
-
-            departments={departments}
+            departments={DEPARTMENTS}
             statuses={statuses}
             roles={roles}
+            showStatus={false}
           />
-
-          <button className={styles.addBtn} onClick={openAdd}>
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 5v14M5 12h14"/>
-            </svg>
-            Thêm thành viên
-          </button>
         </div>
       </div>
 
-      {/* ── Thống kê ── */}
-      <div className={styles.statsRow}>
-        {STATS.map((s) => <StatCard key={s.label} stat={s} />)}
+      <div className={styles.tableSection}>
+        <div className={styles.tableHeader}>
+          <div>
+            <h2 className={styles.tableTitle}>
+              {activeTab === 'review' ? 'Phiếu thành viên chờ xét duyệt' : 'Danh sách thành viên đã duyệt'}
+            </h2>
+            <p className={styles.tableSubtitle}>
+              {activeTab === 'review'
+                ? 'Hồ sơ được xếp theo ngày đăng ký sớm nhất để xử lý trước.'
+                : 'Tra cứu các thành viên hợp lệ trong câu lạc bộ.'}
+            </p>
+          </div>
+          <span className={styles.tableCount}>{filtered.length} hồ sơ</span>
+        </div>
+
+        <MemberTable
+          members={paginated}
+          total={filtered.length}
+          page={page}
+          totalPages={totalPages}
+          pageSize={PAGE_SIZE}
+          onPageChange={(p) => { if (p >= 1 && p <= totalPages) setPage(p); }}
+          onEdit={openEdit}
+          onDelete={setDeleteConfirm}
+          onView={setDetailTarget}
+          onApprove={(member) => openReview(member, 'approve')}
+          onReject={(member) => openReview(member, 'reject')}
+          isAdmin
+          showActions
+          showViewAction={false}
+          showReviewActions={activeTab === 'review'}
+          showContact={activeTab !== 'review'}
+          showRegisteredAt={activeTab === 'review'}
+        />
       </div>
 
-      {/* ── Bảng danh sách ── */}
-      <MemberTable
-        members={paginated}
-        total={filtered.length}
-        page={page}
-        totalPages={totalPages}
-        pageSize={PAGE_SIZE}
-        onPageChange={handlePageChange}
-        onEdit={openEdit}
-        onDelete={handleDelete}
-        isAdmin
-      />
-
-      {/* ── Nút thêm nhanh góc phải ── */}
-      <button className={styles.fab} onClick={openAdd} title="Thêm thành viên">
+      <button className={styles.fab} onClick={openAdd} title="Thêm hồ sơ">
         <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path d="M12 5v14M5 12h14"/>
+          <path d="M12 5v14M5 12h14" />
         </svg>
       </button>
 
-      {/* ── Modal thêm / chỉnh sửa ── */}
       <MemberForm
         open={formOpen}
         onClose={() => setFormOpen(false)}
         onSubmit={handleSubmit}
         initial={editTarget}
         loading={formLoading}
+        existingMembers={members}
       />
 
-      {/* ── Modal xác nhận xoá ── */}
-      {deleteConfirm && (
-        <div className={styles.confirmOverlay} onClick={() => setDeleteConfirm(null)}>
-          <div className={styles.confirmBox} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.confirmIcon}>
-              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#e53e3e" strokeWidth="1.8">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            </div>
-            <h3 className={styles.confirmTitle}>Xoá thành viên?</h3>
-            <p className={styles.confirmMsg}>
-              Bạn có chắc muốn xoá <strong>{deleteConfirm.name}</strong>?
-              Hành động này không thể hoàn tác.
-            </p>
-            <div className={styles.confirmActions}>
-              <button className={styles.confirmCancel} onClick={() => setDeleteConfirm(null)}>
-                Huỷ
-              </button>
-              <button className={styles.confirmDelete} onClick={confirmDelete}>
-                Xoá
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <MemberDetailModal member={detailTarget} onClose={() => setDetailTarget(null)} />
+      <MemberHistoryModal
+        open={historyOpen}
+        members={historyMembers}
+        onClose={() => setHistoryOpen(false)}
+        onView={setDetailTarget}
+      />
+      <MemberReviewModal
+        member={reviewTarget}
+        type={reviewType}
+        onClose={() => setReviewTarget(null)}
+        onConfirm={confirmReview}
+      />
+      <MemberDeleteConfirmModal
+        member={deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

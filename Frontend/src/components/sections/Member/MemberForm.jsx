@@ -1,40 +1,59 @@
-import { useState, useEffect } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import styles from './MemberForm.module.css';
 
-const DEPARTMENTS = [
-  'Astrophysics', 'Data Science', 'Molecular Biology',
-  'Quantum Physics', 'Computer Science', 'Biochemistry',
-  'Mathematics', 'Physics', 'Chemistry',
+export const DEPARTMENTS = [
+  'Khoa Công nghệ phần mềm',
+  'Khoa Hệ thống thông tin',
+  'Khoa Khoa học máy tính',
+  'Khoa Kỹ thuật máy tính',
+  'Khoa Mạng máy tính & Truyền thông',
+  'Khoa Khoa học & Kỹ thuật thông tin',
 ];
 
-const ROLES = ['Head of Research', 'Senior Fellow', 'Researcher', 'Admin'];
+export const ROLES = [
+  'Chủ nhiệm',
+  'Phó chủ nhiệm',
+  'Trưởng ban học thuật',
+  'Trưởng ban truyền thông',
+  'Thành viên',
+];
 
-const STATUSES = ['Active', 'On Leave', 'Inactive'];
+export const GRADUATION_STATUSES = ['Chưa tốt nghiệp', 'Đã tốt nghiệp'];
+export const GENDERS = ['Nam', 'Nữ'];
+export const REQUEST_STATUSES = ['Đang xét duyệt', 'Đã duyệt', 'Từ chối'];
 
 const EMPTY_FORM = {
+  id: '',
   name: '',
   email: '',
   department: '',
-  role: '',
-  status: 'Active',
+  course: '',
+  dateOfBirth: '',
+  gender: '',
+  graduationStatus: 'Chưa tốt nghiệp',
+  requestStatus: 'Đang xét duyệt',
+  role: 'Thành viên',
   phone: '',
-  joinDate: '',
+  registeredAt: '',
 };
 
-/**
- * Props:
- *   open       – boolean
- *   onClose    – () => void
- *   onSubmit   – (formData) => void
- *   initial    – member object (edit mode) or null (add mode)
- *   loading    – boolean (submit in progress)
- */
-export default function MemberForm({ open, onClose, onSubmit, initial = null, loading = false }) {
+export default function MemberForm({
+  open,
+  onClose,
+  onSubmit,
+  initial = null,
+  loading = false,
+  existingMembers = [],
+}) {
   const isEdit = !!initial;
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
-  // Populate form when editing
+  const existingLookup = useMemo(() => {
+    const currentId = initial?.id || '';
+    return existingMembers.filter((m) => m.id !== currentId);
+  }, [existingMembers, initial]);
+
   useEffect(() => {
     if (open) {
       setForm(initial ? { ...EMPTY_FORM, ...initial } : EMPTY_FORM);
@@ -42,32 +61,62 @@ export default function MemberForm({ open, onClose, onSubmit, initial = null, lo
     }
   }, [open, initial]);
 
-  // Close on Escape
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
     if (open) window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
   if (!open) return null;
 
-  // ── Validation ───────────────────────────────────────────
   const validate = () => {
     const errs = {};
-    if (!form.name.trim())       errs.name       = 'Vui lòng nhập họ tên';
-    if (!form.email.trim())      errs.email      = 'Vui lòng nhập email';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-                                 errs.email      = 'Email không hợp lệ';
-    if (!form.department)        errs.department = 'Vui lòng chọn bộ môn';
-    if (!form.role)              errs.role       = 'Vui lòng chọn vai trò';
+    const studentId = form.id.trim();
+    const email = form.email.trim().toLowerCase();
+
+    if (!studentId) errs.id = 'Vui lòng nhập MSSV';
+    else if (!/^\d{6,12}$/.test(studentId)) errs.id = 'MSSV phải là dãy số hợp lệ';
+    else if (existingLookup.some((m) => m.id === studentId)) errs.id = 'MSSV đã tồn tại';
+
+    if (!form.name.trim()) errs.name = 'Vui lòng nhập họ tên';
+    if (!email) errs.email = 'Vui lòng nhập email';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Email không hợp lệ';
+    else if (existingLookup.some((m) => m.email?.toLowerCase() === email)) errs.email = 'Email đã tồn tại';
+
+    if (!form.department) errs.department = 'Vui lòng chọn khoa';
+    if (!form.course.trim()) errs.course = 'Vui lòng nhập khóa';
+    if (!form.dateOfBirth) errs.dateOfBirth = 'Vui lòng chọn ngày sinh';
+    if (!GENDERS.includes(form.gender)) errs.gender = 'Giới tính chỉ được là Nam hoặc Nữ';
+    if (!GRADUATION_STATUSES.includes(form.graduationStatus)) {
+      errs.graduationStatus = 'Tình trạng tốt nghiệp không hợp lệ';
+    } else if (form.graduationStatus !== 'Chưa tốt nghiệp') {
+      errs.graduationStatus = 'Thành viên phải là sinh viên chưa tốt nghiệp';
+    }
+    if (!REQUEST_STATUSES.includes(form.requestStatus)) errs.requestStatus = 'Trạng thái hồ sơ không hợp lệ';
+    if (!form.role) errs.role = 'Vui lòng chọn vai trò';
+
     return errs;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-    onSubmit(form);
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
+
+    onSubmit({
+      ...form,
+      id: form.id.trim(),
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      course: form.course.trim(),
+      registeredAt: form.registeredAt || new Date().toISOString().slice(0, 10),
+    });
   };
 
   const handleChange = (field) => (e) => {
@@ -78,127 +127,100 @@ export default function MemberForm({ open, onClose, onSubmit, initial = null, lo
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>
-              {isEdit ? 'Chỉnh sửa thành viên' : 'Thêm thành viên mới'}
+              {isEdit ? 'Chỉnh sửa hồ sơ thành viên' : 'Tạo phiếu đăng ký thành viên'}
             </h2>
             <p className={styles.subtitle}>
-              {isEdit
-                ? 'Cập nhật thông tin thành viên trong hệ thống'
-                : 'Điền thông tin để thêm thành viên vào hệ thống'}
+              Hồ sơ cần đủ thông tin sinh viên trước khi đưa vào luồng xét duyệt.
             </p>
           </div>
-          <button className={styles.closeBtn} onClick={onClose}>
+          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Đóng">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12"/>
+              <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Form */}
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          {/* Row 1: Name + Email */}
+          <div className={styles.sectionTitle}>Thông tin hồ sơ</div>
+          <div className={styles.row2}>
+            <Field label="MSSV *" error={errors.id}>
+              <input className={`${styles.input} ${errors.id ? styles.inputError : ''}`} value={form.id} onChange={handleChange('id')} placeholder="2410001" disabled={isEdit} />
+            </Field>
+            <Field label="Ngày đăng ký">
+              <input className={styles.input} type="date" value={form.registeredAt} onChange={handleChange('registeredAt')} />
+            </Field>
+          </div>
+
           <div className={styles.row2}>
             <Field label="Họ và tên *" error={errors.name}>
-              <input
-                className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
-                type="text"
-                placeholder="Nguyễn Văn A"
-                value={form.name}
-                onChange={handleChange('name')}
-              />
+              <input className={`${styles.input} ${errors.name ? styles.inputError : ''}`} value={form.name} onChange={handleChange('name')} placeholder="Nguyễn Văn A" />
             </Field>
             <Field label="Email *" error={errors.email}>
-              <input
-                className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
-                type="email"
-                placeholder="example@gmail.com"
-                value={form.email}
-                onChange={handleChange('email')}
-              />
+              <input className={`${styles.input} ${errors.email ? styles.inputError : ''}`} type="email" value={form.email} onChange={handleChange('email')} placeholder="example@student.edu.vn" />
             </Field>
           </div>
 
-          {/* Row 2: Department + Role */}
           <div className={styles.row2}>
-            <Field label="Bộ môn *" error={errors.department}>
-              <select
-                className={`${styles.select} ${errors.department ? styles.inputError : ''}`}
-                value={form.department}
-                onChange={handleChange('department')}
-              >
-                <option value="">-- Chọn bộ môn --</option>
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+            <Field label="Số điện thoại">
+              <input className={styles.input} type="tel" value={form.phone} onChange={handleChange('phone')} placeholder="0912 345 678" />
             </Field>
-            <Field label="Vai trò *" error={errors.role}>
-              <select
-                className={`${styles.select} ${errors.role ? styles.inputError : ''}`}
-                value={form.role}
-                onChange={handleChange('role')}
-              >
-                <option value="">-- Chọn vai trò --</option>
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
+            <Field label="Khóa *" error={errors.course}>
+              <input className={`${styles.input} ${errors.course ? styles.inputError : ''}`} value={form.course} onChange={handleChange('course')} placeholder="K24" />
+            </Field>
+          </div>
+
+          <div className={styles.row2}>
+            <Field label="Ngày sinh *" error={errors.dateOfBirth}>
+              <input className={`${styles.input} ${errors.dateOfBirth ? styles.inputError : ''}`} type="date" value={form.dateOfBirth} onChange={handleChange('dateOfBirth')} />
+            </Field>
+            <Field label="Giới tính *" error={errors.gender}>
+              <select className={`${styles.select} ${errors.gender ? styles.inputError : ''}`} value={form.gender} onChange={handleChange('gender')}>
+                <option value="">-- Chọn giới tính --</option>
+                {GENDERS.map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
             </Field>
           </div>
 
-          {/* Row 3: Status + Phone */}
-          <div className={styles.row2}>
-            <Field label="Trạng thái" error={errors.status}>
-              <div className={styles.statusGroup}>
-                {STATUSES.map((s) => (
-                  <label key={s} className={`${styles.statusOption} ${form.status === s ? styles.statusSelected : ''}`}>
-                    <input
-                      type="radio"
-                      name="status"
-                      value={s}
-                      checked={form.status === s}
-                      onChange={handleChange('status')}
-                      className={styles.radioHidden}
-                    />
-                    <span className={styles.statusDot} data-status={s} />
-                    {s}
-                  </label>
-                ))}
-              </div>
-            </Field>
-            <Field label="Số điện thoại" error={errors.phone}>
-              <input
-                className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
-                type="tel"
-                placeholder="0912 345 678"
-                value={form.phone}
-                onChange={handleChange('phone')}
-              />
-            </Field>
-          </div>
-
-          {/* Row 4: Join date */}
-          <Field label="Ngày gia nhập">
-            <input
-              className={styles.input}
-              type="date"
-              value={form.joinDate}
-              onChange={handleChange('joinDate')}
-            />
+          <Field label="Khoa *" error={errors.department}>
+            <select className={`${styles.select} ${errors.department ? styles.inputError : ''}`} value={form.department} onChange={handleChange('department')}>
+              <option value="">-- Chọn khoa --</option>
+              {DEPARTMENTS.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
           </Field>
 
-          {/* Actions */}
+          <div className={styles.sectionTitle}>Phân quyền và trạng thái</div>
+          <div className={styles.row2}>
+            <Field label="Vai trò *" error={errors.role}>
+              <select className={`${styles.select} ${errors.role ? styles.inputError : ''}`} value={form.role} onChange={handleChange('role')}>
+                {ROLES.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </Field>
+            <Field label="Tình trạng tốt nghiệp *" error={errors.graduationStatus}>
+              <select className={`${styles.select} ${errors.graduationStatus ? styles.inputError : ''}`} value={form.graduationStatus} onChange={handleChange('graduationStatus')}>
+                {GRADUATION_STATUSES.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <Field label="Trạng thái hồ sơ" error={errors.requestStatus}>
+            <div className={styles.statusGroup}>
+              {REQUEST_STATUSES.map((item) => (
+                <label key={item} className={`${styles.statusOption} ${form.requestStatus === item ? styles.statusSelected : ''}`}>
+                  <input type="radio" name="requestStatus" value={item} checked={form.requestStatus === item} onChange={handleChange('requestStatus')} className={styles.radioHidden} />
+                  <span className={styles.statusDot} data-status={item} />
+                  {item}
+                </label>
+              ))}
+            </div>
+          </Field>
+
           <div className={styles.actions}>
-            <button type="button" className={styles.cancelBtn} onClick={onClose}>
-              Hủy
-            </button>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Hủy</button>
             <button type="submit" className={styles.submitBtn} disabled={loading}>
-              {loading
-                ? 'Đang lưu...'
-                : isEdit ? 'Lưu thay đổi' : 'Thêm thành viên'}
+              {loading ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Tạo hồ sơ'}
             </button>
           </div>
         </form>
@@ -207,11 +229,18 @@ export default function MemberForm({ open, onClose, onSubmit, initial = null, lo
   );
 }
 
-// ── Field wrapper ────────────────────────────────────────────
 function Field({ label, error, children }) {
+  const labelContent = typeof label === 'string' && label.trimEnd().endsWith('*')
+    ? (
+      <>
+        {label.replace(/\s*\*$/, '')} <span className={styles.required}>*</span>
+      </>
+    )
+    : label;
+
   return (
     <div className={styles.field}>
-      <label className={styles.label}>{label}</label>
+      <label className={styles.label}>{labelContent}</label>
       {children}
       {error && <p className={styles.errorMsg}>{error}</p>}
     </div>

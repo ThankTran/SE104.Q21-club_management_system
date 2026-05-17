@@ -8,9 +8,15 @@
   overflow: hidden;
 }
 
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
 /* ── Table ── */
 .table {
   width: 100%;
+  min-width: 980px;
   border-collapse: collapse;
   font-family: var(--font-family);
   font-size: 13.5px;
@@ -41,10 +47,15 @@
 .row:last-child { border-bottom: none; }
 .row:hover { background: #f5f8ff; }
 
+.clickableRow {
+  cursor: pointer;
+}
+
 .table td {
   padding: 15px 20px;
   vertical-align: middle;
   color: var(--gray-900);
+  white-space: nowrap;
 }
 
 /* ── Member cell ── */
@@ -74,6 +85,7 @@
   color: var(--gray-900);
   margin: 0 0 2px;
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 .memberId {
@@ -86,6 +98,31 @@
 .dept {
   color: var(--gray-700);
   font-weight: 500;
+}
+
+.dept,
+.contactCell {
+  line-height: 1.4;
+}
+
+.dept small,
+.contactCell small {
+  display: block;
+  margin-top: 3px;
+  color: var(--gray-500);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.contactCell span {
+  color: var(--gray-900);
+  font-weight: 600;
+}
+
+.dateCell {
+  color: var(--gray-800);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* ── Role badge ── */
@@ -117,18 +154,57 @@
 /* ── Action buttons ── */
 .actionBtns {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
 }
 
-.editBtn, .deleteBtn {
-  padding: 5px 12px;
+.viewBtn, .approveBtn, .rejectBtn, .editBtn, .deleteBtn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border-radius: 7px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
   font-family: var(--font-family);
   border: 1.5px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewBtn {
+  background: var(--white-soft);
+  color: var(--gray-700);
+  border-color: var(--gray-300);
+}
+.viewBtn:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.approveBtn {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.approveBtn:hover {
+  background: #15803d;
+  color: white;
+  border-color: #15803d;
+}
+
+.rejectBtn {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.rejectBtn:hover {
+  background: #b91c1c;
+  color: white;
+  border-color: #b91c1c;
 }
 
 .editBtn {
@@ -138,7 +214,7 @@
 }
 .editBtn:hover {
   background: var(--primary-700);
-  color: var(--white-hard);
+  color: white;
   border-color: var(--primary-700);
 }
 
@@ -149,7 +225,7 @@
 }
 .deleteBtn:hover {
   background: #e53e3e;
-  color: var(--white-hard);
+  color: white;
   border-color: #e53e3e;
 }
 

@@ -1,10 +1,10 @@
 .tabs {
   display: flex;
-  gap: 4px;
-  padding: 5px;
+  gap: 6px;
+  padding: 4px;
   background: var(--white-soft);
-  border: 1.5px solid var(--gray-300);
-  border-radius: 12px;
+  border: 1px solid #e5eaf0;
+  border-radius: 10px;
 }
 
 .tabBtn {
@@ -13,7 +13,8 @@
   justify-content: center;
   gap: 8px;
   flex: 1;
-  padding: 10px 16px;
+  min-height: 40px;
+  padding: 0 16px;
   border: none;
   border-radius: 9px;
   background: transparent;
@@ -29,7 +30,7 @@
 .active {
   background: var(--white-hard);
   color: var(--primary-700);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 .badge {
