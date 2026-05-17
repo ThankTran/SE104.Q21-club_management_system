@@ -275,6 +275,18 @@ const PAGE_SIZE = 5;
 
 const HL_PAGE_SIZE = 4;
 
+function PaginationControls({ current, total, pageSize = PAGE_SIZE, onPageChange }) {
+  const totalPages = Math.ceil(total / pageSize);
+  if (totalPages <= 1) return null;
+  return (
+    <div className={styles.pagination}>
+      <button disabled={current === 1} onClick={() => onPageChange(current - 1)}>‹</button>
+      <span>Trang {current} / {totalPages}</span>
+      <button disabled={current === totalPages} onClick={() => onPageChange(current + 1)}>›</button>
+    </div>
+  );
+}
+
 export default function EventUserPage() {
   const [activeTag, setActiveTag] = useState('Tất cả');
   const [search, setSearch]       = useState('');
@@ -321,19 +333,6 @@ export default function EventUserPage() {
     });
     // Nếu đang mở modal của event này thì đóng lại
     if (selected?.id === eventId) setSelected(null);
-  };
-
-  // Component phụ trợ cho Pagination
-  const PaginationControls = ({ current, total, onPageChange }) => {
-    const totalPages = Math.ceil(total / PAGE_SIZE);
-    if (totalPages <= 1) return null;
-    return (
-      <div className={styles.pagination}>
-        <button disabled={current === 1} onClick={() => onPageChange(current - 1)}>‹</button>
-        <span>Trang {current} / {totalPages}</span>
-        <button disabled={current === totalPages} onClick={() => onPageChange(current + 1)}>›</button>
-      </div>
-    );
   };
 
   return (

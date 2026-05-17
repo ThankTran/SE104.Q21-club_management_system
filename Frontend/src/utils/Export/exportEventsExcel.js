@@ -38,15 +38,17 @@ const TAG_LABEL = {
 };
 
 const EVENT_COLUMNS = [
-  { header: 'ID', width: 8 },
+  { header: 'Mã sự kiện', width: 12 },
   { header: 'Tên sự kiện', width: 34 },
   { header: 'Địa điểm', width: 26 },
   { header: 'Ngày', width: 14 },
-  { header: 'Giờ', width: 10 },
+  { header: 'Giờ bắt đầu', width: 12 },
+  { header: 'Giờ kết thúc', width: 12 },
   { header: 'Loại', width: 16 },
   { header: 'Trạng thái', width: 18 },
   { header: 'Sức chứa', width: 12 },
   { header: 'Đăng ký', width: 12 },
+  { header: 'Ban tổ chức', width: 20 },
   { header: 'Ngân sách', width: 18 },
 ];
 
@@ -216,7 +218,10 @@ export default async function exportEventsExcelPro(events = []) {
   }
 
   async function createEventSheet() {
-    const ws = createBaseSheet('Danh sách sự kiện', 'BÁO CÁO QUẢN LÝ SỰ KIỆN');
+    const ws = createBaseSheet('Danh sách sự kiện', 'BÁO CÁO QUẢN LÝ SỰ KIỆN', {
+      titleRange: 'B1:L1',
+      subtitleRange: 'B2:L2',
+    });
 
     await addLogo(ws);
 
@@ -230,30 +235,32 @@ export default async function exportEventsExcelPro(events = []) {
 
     events.forEach((event, index) => {
       const row = ws.addRow([
-        event.id,
+        event.eventCode || event.id,
         event.title,
         event.location,
         viDate(event.date),
         event.time || '',
+        event.endTime || '',
         TAG_LABEL[event.tag] || event.tag,
         STATUS_LABEL[event.status] || event.status,
         Number(event.capacity || 0),
         Number(event.attendance || 0),
+        event.organizer || '',
         money(event.estimatedCost),
       ]);
 
       styleDataRow(row, index);
 
-      [1, 4, 5, 8, 9].forEach((col) => {
+      [1, 4, 5, 6, 9, 10].forEach((col) => {
         row.getCell(col).alignment = {
           horizontal: 'center',
           vertical: 'middle',
         };
       });
 
-      row.getCell(10).numFmt = '#,##0" ₫"';
+      row.getCell(12).numFmt = '#,##0" ₫"';
 
-      row.getCell(7).font = {
+      row.getCell(8).font = {
         bold: true,
         color: {
           argb: STATUS_COLOR[event.status] || COLORS.text,
@@ -265,7 +272,7 @@ export default async function exportEventsExcelPro(events = []) {
 
     ws.autoFilter = {
       from: 'A4',
-      to: 'J4',
+      to: 'L4',
     };
 
     ws.footerFooter = '&LClub Management&RTrang &P / &N';

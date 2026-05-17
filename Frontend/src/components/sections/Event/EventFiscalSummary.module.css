@@ -1,0 +1,84 @@
+.fiscalCard {
+  background: var(--white-hard);
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  padding: 24px 28px;
+}
+
+.fiscalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.fiscalTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.fiscalTag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-700);
+  background: var(--primary-100);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.fiscalNumbers {
+  display: flex;
+  align-items: flex-end;
+  gap: 40px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.fiscalLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 0 0 4px;
+}
+
+.fiscalValue {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.fiscalActual { color: var(--primary-700); }
+.fiscalMeta { margin-left: auto; }
+
+.fiscalNote {
+  font-size: 12.5px;
+  color: var(--gray-500);
+  margin: 0;
+  max-width: 240px;
+  line-height: 1.5;
+}
+
+.fiscalBar {
+  height: 6px;
+  background: var(--gray-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.fiscalBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-500), var(--primary-700));
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+@media (max-width: 768px) {
+  .fiscalNumbers { gap: 20px; }
+  .fiscalValue { font-size: 20px; }
+}
