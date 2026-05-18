@@ -14,10 +14,21 @@ import FinanceReport from '../../components/sections/Finance/FinanceReport';
 import IncomeFormModal from '../../components/sections/Finance/IncomeFormModal';
 import ExpenseFormModal from '../../components/sections/Finance/ExpenseFormModal';
 import ConfirmModal from '../../components/sections/Finance/ConfirmModal';
+import TransferDueTable from '../../components/sections/Finance/TransferDueTable';
+import {
+  createTransferDue,
+  deleteTransferDue,
+  getTransferIncomeReceipts,
+  getTransferDues,
+  markTransferDueCashPaid,
+  saveTransferDues,
+  syncPaidTransferDuesToIncomeReceipts,
+} from '../../utils/Finance/transferDues';
 
 export default function FinancePage() {
-  const [thuList, setThuList] = useState(MOCK_THU);
+  const [thuList, setThuList] = useState(() => mergeIncomeReceipts(MOCK_THU));
   const [chiList, setChiList] = useState(MOCK_CHI);
+  const [transferDues, setTransferDues] = useState(() => getTransferDues());
 
   const [thuFilters, setThuFilters] = useState({
     lyDo: '',
@@ -149,14 +160,42 @@ export default function FinancePage() {
   const openEditThuModal = (r) => { setEditThu(r); setThuOpen(true); };
   const openEditChiModal = (r) => { setEditChi(r); setChiOpen(true); };
 
+  const refreshTransferDuesAndReceipts = () => {
+    const dues = getTransferDues();
+    syncPaidTransferDuesToIncomeReceipts(dues);
+    setTransferDues(dues);
+    setThuList((prev) => mergeIncomeReceipts(prev));
+  };
+
+  const handleMarkCashPaid = (id) => {
+    setTransferDues(markTransferDueCashPaid(id));
+    setThuList((prev) => mergeIncomeReceipts(prev));
+  };
+
   const handleThuSubmit = (data) => {
     setFormLoading(true);
     setTimeout(() => {
       if (editThu) {
         setThuList(p => p.map(r => r.id === editThu.id ? { ...r, ...data } : r));
+      } else if (data?.mode === 'transfer' || (Array.isArray(data) && data[0]?.mode === 'transfer')) {
+        const records = Array.isArray(data) ? data : [data];
+        setTransferDues((prev) => {
+          const created = records.map((record, index) =>
+            createTransferDue(record, [...prev, ...records.slice(0, index)])
+          );
+          const next = [...created, ...prev];
+          saveTransferDues(next);
+          return next;
+        });
       } else {
-        const newId = `THU${String(thuList.length + 1).padStart(3, '0')}`;
-        setThuList(p => [...p, { ...data, id: newId }]);
+        const records = Array.isArray(data) ? data : [data];
+        setThuList(p => [
+          ...p,
+          ...records.map((record, index) => ({
+            ...record,
+            id: `THU${String(p.length + index + 1).padStart(3, '0')}`,
+          })),
+        ]);
       }
       setFormLoading(false);
       setThuOpen(false);
@@ -248,6 +287,15 @@ export default function FinancePage() {
         />
       )}
 
+      {tab === 'chuyenKhoan' && (
+        <TransferDueTable
+          dues={transferDues}
+          onRefresh={refreshTransferDuesAndReceipts}
+          onMarkCashPaid={handleMarkCashPaid}
+          onDelete={(id) => setTransferDues(deleteTransferDue(id))}
+        />
+      )}
+
       {tab === 'baocao' && (
         <FinanceReport
           baocaoThang={baocaoThang}
@@ -280,4 +328,12 @@ export default function FinancePage() {
 
     
   );
+}
+
+function mergeIncomeReceipts(baseReceipts) {
+  syncPaidTransferDuesToIncomeReceipts();
+  const transferReceipts = getTransferIncomeReceipts();
+  const existingIds = new Set(baseReceipts.map((receipt) => receipt.id));
+  const missingReceipts = transferReceipts.filter((receipt) => !existingIds.has(receipt.id));
+  return [...missingReceipts, ...baseReceipts];
 }

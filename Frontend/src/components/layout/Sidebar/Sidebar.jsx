@@ -20,6 +20,7 @@ const menuItems = [
   { id: "eventuser",  label: "Event User",  icon: events,   path: "/eventuser"     },
   { id: "eventadmin",  label: "Event Admin",  icon: events,   path: "/eventadmin"     },
   { id: "finance",   label: "Finance",   icon: finance,   path: "/finance"   },
+  { id: "memberdues", label: "Đóng quỹ", icon: finance, path: "/memberdues" },
 ];
 
 const bottomItems = [
