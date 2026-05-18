@@ -85,6 +85,13 @@
   margin: 0 0 20px;
 }
 
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .proposeBtn {
   display: inline-flex;
   align-items: center;
@@ -338,7 +345,7 @@
 
 /* ── CONTENT ── */
 .content {
-  padding: 20px 24px 40px;
+  padding: 20px 0px 40px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -620,7 +627,7 @@
 }
 
 .breadcrumbSep {
-  color: var(--gray-400);
+  color: var(--gray-500);
   font-size: 12px;
 }
 
@@ -648,4 +655,213 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--gray-500);
+}
+
+.historyOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.historyModal {
+  width: min(920px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  background: var(--white-hard);
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  box-shadow: 0 22px 70px rgba(15, 23, 42, 0.24);
+}
+
+.historyHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.historyHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.historyEyebrow {
+  margin: 0 0 4px;
+  color: var(--primary-700);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.historyTitle {
+  margin: 0;
+  color: var(--gray-900);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.historySummary {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.historyCloseBtn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--gray-300);
+  border-radius: 9px;
+  background: var(--white-hard);
+  color: var(--gray-700);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.historyCloseBtn:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.historyList {
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.historyList::-webkit-scrollbar {
+  width: 5px;
+}
+
+.historyList::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 999px;
+}
+
+.historyItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  background: #fbfdff;
+}
+
+.historyMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.historyTopline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.historyCode {
+  color: var(--gray-500);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.historyItemTitle {
+  margin: 0;
+  color: var(--gray-900);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.historyMeta,
+.historyNote {
+  margin: 0;
+  color: var(--gray-500);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.historyNote {
+  color: var(--gray-700);
+}
+
+.historyDates {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--gray-500);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.historyEmpty {
+  padding: 20px;
+  border: 1px dashed var(--gray-300);
+  border-radius: 12px;
+  color: var(--gray-500);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .historyOverlay {
+    padding: 14px;
+    align-items: flex-start;
+  }
+
+  .historyModal {
+    max-height: calc(100vh - 28px);
+    padding: 14px;
+  }
+
+  .historyHeader,
+  .historyItem {
+    flex-direction: column;
+  }
+
+  .historyDates {
+    align-items: flex-start;
+  }
 }

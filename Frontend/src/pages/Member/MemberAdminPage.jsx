@@ -212,7 +212,7 @@ export default function MemberAdminPage() {
         <div className={styles.tableHeader}>
           <div>
             <h2 className={styles.tableTitle}>
-              {activeTab === 'review' ? 'Phiếu thành viên chờ xét duyệt' : 'Danh sách thành viên đã duyệt'}
+              {activeTab === 'review' ? 'Phiếu thành viên chờ xét duyệt' : 'Danh sách thành viên'}
             </h2>
             <p className={styles.tableSubtitle}>
               {activeTab === 'review'
