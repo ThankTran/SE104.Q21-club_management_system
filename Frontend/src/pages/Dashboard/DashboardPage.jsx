@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "./DashboardPage.module.css";
-import { getDashboardOverviewAPI } from "../services/dashboard-service";
+import { getDashboardOverviewAPI } from "../../services/dashboard-service";
 
 const DEFAULT_OVERVIEW = {
   stats: [

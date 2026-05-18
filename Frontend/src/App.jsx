@@ -4,10 +4,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
 // Public
-import LandingPage from "./pages/LandingPage";
-import HomePage    from "./pages/Homepage";
+import LandingPage from "./pages/Public/LandingPage";
+import HomePage    from "./pages/Public/Homepage";
 
-import DashboardPage from "./pages/DashboardPage";;
+import DashboardPage from "./pages/Dashboard/DashboardPage";;
 
 // Member pages
 import MemberAdminPage from "./pages/Member/MemberAdminPage";

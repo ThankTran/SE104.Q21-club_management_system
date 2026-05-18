@@ -4,7 +4,7 @@ import {
   RESOURCE_SOURCES,
   RESOURCE_TYPES,
   STATUS_CONFIG,
-} from './resourceAdminData';
+} from '../../../data/Resource/resourceAdminData';
 import styles from './ResourceReviewModal.module.css';
 
 export default function ResourceReviewModal({ resource, onClose, onApprove, onReject }) {
