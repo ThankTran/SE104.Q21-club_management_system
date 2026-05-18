@@ -37,7 +37,7 @@ export default function EventEvaluationModal({
               className={`${styles.input} ${errors.evaluationDate ? styles.inputError : ''}`}
               type="date"
               value={form.evaluationDate}
-              onChange={(e) => onChange('evaluationDate', e.target.value)}
+              readOnly
             />
             {errors.evaluationDate && <p className={styles.formError}>{errors.evaluationDate}</p>}
           </label>

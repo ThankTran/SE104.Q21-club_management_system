@@ -133,7 +133,7 @@
 
 .table thead th {
   padding: 12px 20px;
-  text-align: left;
+  text-align: center;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.8px;
@@ -155,9 +155,14 @@
   white-space: nowrap;
 }
 
+.centerCell {
+  text-align: center;
+}
+
 .dateHead {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 
@@ -294,10 +299,8 @@
   min-width: 104px;
   height: 32px;
   padding: 0 12px;
-  border: 1.5px solid #c7d2fe;
+  border: 1.5px solid transparent;
   border-radius: 8px;
-  background: #eef2ff;
-  color: #3730a3;
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -306,15 +309,59 @@
   font-family: var(--font-family);
 }
 
-.statusActionBtn:hover {
-  background: #3730a3;
-  border-color: #3730a3;
+.statusUpcomingBtn {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+.statusUpcomingBtn:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
   color: white;
+}
+
+.statusRunningBtn {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+.statusRunningBtn:hover {
+  background: #047857;
+  border-color: #047857;
+  color: white;
+}
+
+.statusFinishBtn {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #c2410c;
+}
+.statusFinishBtn:hover {
+  background: #c2410c;
+  border-color: #c2410c;
+  color: white;
+}
+
+.statusDoneBtn {
+  min-width: 104px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: not-allowed;
+  opacity: 1;
+  font-family: var(--font-family);
 }
 
 .actionBtns {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 

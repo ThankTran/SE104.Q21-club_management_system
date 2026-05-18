@@ -86,7 +86,7 @@ export default async function exportEventsExcelPro(events = []) {
     });
   };
 
-  async function addLogo(ws, { col = 0.02, row = 0, width = 55, height = 55 } = {}) {
+  async function addLogo(ws, { col = 0.23, row = 0, width = 55, height = 55 } = {}) {
     try {
       const imageId = wb.addImage({
         base64: await toBase64(logo),

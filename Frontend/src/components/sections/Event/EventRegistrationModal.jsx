@@ -1,6 +1,6 @@
 import styles from './EventRegistrationModal.module.css';
 
-export default function EventRegistrationModal({ event, members, onClose }) {
+export default function EventRegistrationModal({ event, members, onClose, onExport }) {
   if (!event) return null;
 
   return (
@@ -19,15 +19,23 @@ export default function EventRegistrationModal({ event, members, onClose }) {
         </div>
 
         <div className={styles.summary}>
-          <span>Đã đăng ký</span>
-          <strong>{members.length.toLocaleString('vi-VN')}</strong>
+          <div>
+            <span>Đã đăng ký</span>
+            <strong>{members.length.toLocaleString('vi-VN')}</strong>
+          </div>
+          <button className={styles.exportBtn} onClick={onExport} disabled={!members.length}>
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Xuất file
+          </button>
         </div>
 
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Mã thành viên</th>
+                <th>MSSV</th>
                 <th>Họ tên</th>
                 <th>Lớp</th>
                 <th>Email</th>
