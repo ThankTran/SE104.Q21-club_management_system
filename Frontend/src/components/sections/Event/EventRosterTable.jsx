@@ -7,6 +7,13 @@ const getRateClass = (rate) => {
   return styles.rateLow;
 };
 
+const getStatusActionClass = (status) => {
+  if (status === 'draft') return styles.statusUpcomingBtn;
+  if (status === 'upcoming') return styles.statusRunningBtn;
+  if (status === 'published') return styles.statusFinishBtn;
+  return '';
+};
+
 const STATUS_ACTIONS = {
   draft: { label: 'Sắp diễn ra', nextStatus: 'upcoming' },
   upcoming: { label: 'Đang diễn ra', nextStatus: 'published' },
@@ -158,18 +165,22 @@ export default function EventRosterTable({
                       {percent}%
                     </span>
                   </td>
-                  <td>
-                    {statusAction && (
-                      <button
-                        className={styles.statusActionBtn}
-                        onClick={() => onUpdateStatus(event.id, statusAction.nextStatus)}
-                      >
-                        {statusAction.label}
-                      </button>
-                    )}
-                  </td>
-                  <td>
-                    <div className={styles.actionBtns}>
+                <td className={styles.centerCell}>
+                  {statusAction ? (
+                    <button
+                      className={`${styles.statusActionBtn} ${getStatusActionClass(event.status)}`}
+                      onClick={() => onUpdateStatus(event.id, statusAction.nextStatus)}
+                    >
+                      {statusAction.label}
+                    </button>
+                  ) : (
+                    <button className={styles.statusDoneBtn} disabled>
+                      Đã kết thúc
+                    </button>
+                  )}
+                </td>
+                <td className={styles.centerCell}>
+                  <div className={styles.actionBtns}>
                     <button className={styles.editBtn} onClick={() => onEdit(event)} title="Chỉnh sửa">
                       <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -201,7 +212,7 @@ export default function EventRosterTable({
                     </button>
                   </div>
                 </td>
-                <td>
+                <td className={styles.centerCell}>
                   <button
                     className={styles.registrationsBtn}
                     onClick={() => onViewRegistrations(event)}

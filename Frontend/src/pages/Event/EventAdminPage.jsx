@@ -5,10 +5,12 @@ import exportEventsExcel from '../../utils/Export/exportEventsExcel';
 
 import EventAdminHeader from '../../components/sections/Event/EventAdminHeader';
 import EventDeleteConfirmModal from '../../components/sections/Event/EventDeleteConfirmModal';
+import EventEvaluationHistoryModal from '../../components/sections/Event/EventEvaluationHistoryModal';
 import EventEvaluationModal from '../../components/sections/Event/EventEvaluationModal';
 import EventFiscalSummary from '../../components/sections/Event/EventFiscalSummary';
 import EventRegistrationModal from '../../components/sections/Event/EventRegistrationModal';
 import EventRosterTable from '../../components/sections/Event/EventRosterTable';
+import exportEventRegistrationsExcel from '../../utils/Export/exportEventRegistrationsExcel';
 import {
   MOCK_EVENTS,
   PAGE_SIZE,
@@ -23,6 +25,12 @@ import {
   normalizeEvent,
 } from '../../utils/Event/eventAdminUtils';
 import styles from './EventAdminPage.module.css';
+
+const getTodayDateInputValue = () => {
+  const today = new Date();
+  const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 10);
+};
 
 export default function EventAdminPage() {
   const [events, setEvents] = useState(() => MOCK_EVENTS.map(normalizeEvent));
@@ -40,6 +48,7 @@ export default function EventAdminPage() {
   const [evaluationForm, setEvaluationForm] = useState({ evaluationDate: '', evaluation: '' });
   const [evaluationErrors, setEvaluationErrors] = useState({});
   const [evaluations, setEvaluations] = useState([]);
+  const [evaluationHistoryOpen, setEvaluationHistoryOpen] = useState(false);
   const [registrationTarget, setRegistrationTarget] = useState(null);
 
   const totalEstimated = events.reduce((sum, event) => sum + (Number(event.estimatedCost) || 0), 0);
@@ -127,10 +136,17 @@ export default function EventAdminPage() {
     const current = evaluations.find((item) => item.eventCode === event.eventCode);
     setEvaluationTarget(event);
     setEvaluationForm({
-      evaluationDate: current?.evaluationDate || '',
+      evaluationDate: getTodayDateInputValue(),
       evaluation: current?.evaluation || '',
     });
     setEvaluationErrors({});
+  };
+
+  const openEvaluationFromHistory = (evaluation) => {
+    const event = events.find((item) => item.eventCode === evaluation.eventCode);
+    if (!event) return;
+
+    openEvaluation(event);
   };
 
   const getEvaluationCode = (event) =>
@@ -150,10 +166,10 @@ export default function EventAdminPage() {
 
   const submitEvaluation = () => {
     const errs = {};
+    const today = getTodayDateInputValue();
     const eventEndDate = evaluationTarget?.date ? new Date(evaluationTarget.date) : null;
-    const evaluationDate = evaluationForm.evaluationDate ? new Date(evaluationForm.evaluationDate) : null;
+    const evaluationDate = new Date(today);
 
-    if (!evaluationForm.evaluationDate) errs.evaluationDate = 'Vui lòng chọn ngày đánh giá';
     if (eventEndDate && evaluationDate && evaluationDate <= eventEndDate) {
       errs.evaluationDate = 'Ngày đánh giá phải lớn hơn ngày kết thúc sự kiện';
     }
@@ -170,7 +186,7 @@ export default function EventAdminPage() {
         id: existed?.id || createEvaluationCode(evaluationTarget.eventCode, prev.length),
         eventCode: evaluationTarget.eventCode,
         eventTitle: evaluationTarget.title,
-        evaluationDate: evaluationForm.evaluationDate,
+        evaluationDate: today,
         evaluation: evaluationForm.evaluation.trim(),
       };
 
@@ -183,7 +199,11 @@ export default function EventAdminPage() {
 
   return (
     <div className={styles.page}>
-      <EventAdminHeader onExport={() => exportEventsExcel(filtered)} onAdd={openAdd} />
+      <EventAdminHeader
+        onExport={() => exportEventsExcel(filtered)}
+        onAdd={openAdd}
+        onViewEvaluationHistory={() => setEvaluationHistoryOpen(true)}
+      />
 
       <EventFiscalSummary totalEstimated={totalEstimated} totalActual={totalActual} />
 
@@ -241,6 +261,13 @@ export default function EventAdminPage() {
         onSubmit={submitEvaluation}
       />
 
+      <EventEvaluationHistoryModal
+        open={evaluationHistoryOpen}
+        evaluations={evaluations}
+        onClose={() => setEvaluationHistoryOpen(false)}
+        onSelectEvaluation={openEvaluationFromHistory}
+      />
+
       <EventDeleteConfirmModal
         event={deleteConfirm}
         onCancel={() => setDeleteConfirm(null)}
@@ -251,6 +278,7 @@ export default function EventAdminPage() {
         event={registrationTarget}
         members={registeredMembers}
         onClose={() => setRegistrationTarget(null)}
+        onExport={() => exportEventRegistrationsExcel(registrationTarget, registeredMembers)}
       />
     </div>
   );
