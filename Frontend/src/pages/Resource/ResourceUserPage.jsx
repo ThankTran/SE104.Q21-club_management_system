@@ -36,6 +36,39 @@ const SOURCE_OPTIONS = ['Tất cả', 'Giảng viên cung cấp', 'Tự biên so
 
 const PAGE_SIZE = 12;
 
+const MEMBER_PROFILE = {
+  name: 'Nguyễn Minh Anh',
+  memberId: 'TV001',
+  role: 'Thành viên',
+};
+
+const INITIAL_MEMBER_SUBMISSIONS = [
+  {
+    id: 'DX-001',
+    title: 'Giáo trình React Hooks cơ bản',
+    subject: 'Lập trình Web',
+    type: 'Tài liệu tham khảo',
+    format: 'PDF',
+    link: '#',
+    createdAt: '2024-12-12',
+    status: 'approved',
+    reviewedAt: '2024-12-14',
+    note: 'Đã duyệt và thêm vào kho tài liệu.',
+  },
+  {
+    id: 'DX-002',
+    title: 'Slide DevOps tổng hợp',
+    subject: 'DevOps',
+    type: 'Slide bài giảng',
+    format: 'PPT',
+    link: '#',
+    createdAt: '2024-12-15',
+    status: 'pending',
+    reviewedAt: '',
+    note: 'Phiếu đang chờ admin xét duyệt.',
+  },
+];
+
 export default function ResourceUserPage() {
   // Filters
   const [search, setSearch]       = useState('');
@@ -54,6 +87,8 @@ export default function ResourceUserPage() {
   const [formOpen, setFormOpen]   = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submissionsOpen, setSubmissionsOpen] = useState(false);
+  const [memberSubmissions, setMemberSubmissions] = useState(INITIAL_MEMBER_SUBMISSIONS);
 
   // Derived data
   const subjects = useMemo(
@@ -120,6 +155,21 @@ export default function ResourceUserPage() {
   const handleSubmitForm = (formData) => {
     setFormLoading(true);
     setTimeout(() => {
+      const today = new Date().toISOString().split('T')[0];
+      setMemberSubmissions((prev) => [
+        {
+          ...formData,
+          id: `DX-${String(prev.length + 1).padStart(3, '0')}`,
+          createdAt: today,
+          status: 'pending',
+          reviewedAt: '',
+          note: 'Phiếu đang chờ admin xét duyệt.',
+          uploadedBy: MEMBER_PROFILE.name,
+          memberId: MEMBER_PROFILE.memberId,
+          memberRole: MEMBER_PROFILE.role,
+        },
+        ...prev,
+      ]);
       setFormLoading(false);
       setFormOpen(false);
       setSubmitted(true);
@@ -147,12 +197,24 @@ export default function ResourceUserPage() {
             <p className={styles.heroSub}>
               Giáo trình, slide và tài liệu tham khảo từ giảng viên &amp; cộng đồng — miễn phí, đã xét duyệt.
             </p>
-            <button className={styles.proposeBtn} onClick={() => setFormOpen(true)}>
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 5v14M5 12h14"/>
-              </svg>
-              Đề xuất tài liệu
-            </button>
+            <div className={styles.heroActions}>
+              <button className={styles.proposeBtn} onClick={() => setFormOpen(true)}>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Đề xuất tài liệu
+              </button>
+              <button
+                className={styles.proposeBtn}
+                onClick={() => setSubmissionsOpen(true)}
+              >
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M9 11l3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+                Tài liệu đã đề xuất
+              </button>
+            </div>
           </div>
 
           {/* Stats pills */}
@@ -466,6 +528,12 @@ export default function ResourceUserPage() {
         loading={formLoading}
         isAdmin={false}
       />
+
+      <SubmissionHistoryModal
+        open={submissionsOpen}
+        submissions={memberSubmissions}
+        onClose={() => setSubmissionsOpen(false)}
+      />
     </div>
   );
 }
@@ -509,6 +577,77 @@ function StatPill({ icon, value, label }) {
       <span className={styles.statLabel}>{label}</span>
     </div>
   );
+}
+
+function SubmissionHistoryModal({ open, submissions, onClose }) {
+  if (!open) return null;
+
+  const pendingCount = submissions.filter((item) => item.status === 'pending').length;
+
+  return (
+    <div className={styles.historyOverlay} onClick={onClose}>
+      <section className={styles.historyModal} onClick={(event) => event.stopPropagation()}>
+        <div className={styles.historyHeader}>
+          <div>
+            <p className={styles.historyEyebrow}>Theo dõi phiếu của tôi</p>
+            <h2 className={styles.historyTitle}>Lịch sử đề xuất tài liệu</h2>
+          </div>
+          <div className={styles.historyHeaderActions}>
+            <span className={styles.historySummary}>
+              {submissions.length} phiếu · {pendingCount} chờ duyệt
+            </span>
+            <button type="button" className={styles.historyCloseBtn} onClick={onClose}>
+              ×
+            </button>
+          </div>
+        </div>
+
+        {submissions.length === 0 ? (
+          <div className={styles.historyEmpty}>
+            Bạn chưa gửi đề xuất tài liệu nào.
+          </div>
+        ) : (
+          <div className={styles.historyList}>
+            {submissions.map((item) => {
+              const status = SUBMISSION_STATUS[item.status] || SUBMISSION_STATUS.pending;
+              return (
+                <article key={item.id} className={styles.historyItem}>
+                  <div className={styles.historyMain}>
+                    <div className={styles.historyTopline}>
+                      <span className={styles.historyCode}>{item.id}</span>
+                      <span className={styles.statusBadge} style={{ background: status.bg, color: status.color }}>
+                        {status.label}
+                      </span>
+                    </div>
+                    <h3 className={styles.historyItemTitle}>{item.title}</h3>
+                    <p className={styles.historyMeta}>
+                      {item.subject} · {item.type} · {item.format}
+                    </p>
+                    <p className={styles.historyNote}>{item.note}</p>
+                  </div>
+                  <div className={styles.historyDates}>
+                    <span>Gửi: {formatHistoryDate(item.createdAt)}</span>
+                    <span>Duyệt: {item.reviewedAt ? formatHistoryDate(item.reviewedAt) : 'Chưa có'}</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+const SUBMISSION_STATUS = {
+  pending: { label: 'Chờ duyệt', bg: '#fef3c7', color: '#92400e' },
+  approved: { label: 'Đã duyệt', bg: '#dcfce7', color: '#15803d' },
+  rejected: { label: 'Từ chối', bg: '#fee2e2', color: '#b91c1c' },
+};
+
+function formatHistoryDate(date) {
+  if (!date) return 'Chưa có';
+  return new Date(date).toLocaleDateString('vi-VN');
 }
 
 function FilterSection({ title, children }) {
