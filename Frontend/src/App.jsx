@@ -7,7 +7,7 @@ import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 import LandingPage from "./pages/LandingPage";
 import HomePage    from "./pages/Homepage";
 
-import DashboardPage from "./pages/DashboardPage";;
+import DashboardPage from "./pages/Dashboard/DashboardPage";;
 
 // Member pages
 import MemberAdminPage from "./pages/Member/MemberAdminPage";

@@ -1,0 +1,159 @@
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-600);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.tab:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+
+.tabActive {
+  border-color: var(--primary-500);
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #3b82f6;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--gray-500);
+  text-align: center;
+  padding: 24px 0;
+  list-style: none;
+}
+
+/* ActivityTimeline.module.css */
+
+.timeline {
+  list-style: none;
+  padding: 0 4px 0 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 312px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+.timeline::-webkit-scrollbar {
+  width: 4px;
+}
+
+.timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.timeline::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 999px;
+}
+
+.timelineItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 6px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.timelineClickable {
+  cursor: pointer;
+}
+
+.timelineClickable:hover {
+  background: #f1f5f9;
+}
+
+.timelineClickable:hover .timelineArrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.timelineDotWrap {
+  width: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 5px;
+}
+
+.timelineDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+  flex-shrink: 0;
+}
+
+.timelineContent {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.timelineText {
+  font-size: 14px;
+  color: var(--gray-700);
+  margin: 0 0 2px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.timelineTextUnread {
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.timelineTime {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.timelineArrow {
+  font-size: 14px;
+  color: var(--gray-400);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+  align-self: center;
+  flex-shrink: 0;
+}
