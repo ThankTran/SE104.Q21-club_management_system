@@ -276,7 +276,7 @@
 .hlBookmark {
   background: transparent;
   border: none;
-  color: var(--gray-400);
+  color: var(--gray-500);
   cursor: pointer;
   padding: 4px;
   transition: color 0.15s;
