@@ -44,6 +44,7 @@ export default function MemberForm({
   initial = null,
   loading = false,
   existingMembers = [],
+  departments = DEPARTMENTS,
 }) {
   const isEdit = !!initial;
   const [form, setForm] = useState(EMPTY_FORM);
@@ -187,7 +188,7 @@ export default function MemberForm({
           <Field label="Khoa *" error={errors.department}>
             <select className={`${styles.select} ${errors.department ? styles.inputError : ''}`} value={form.department} onChange={handleChange('department')}>
               <option value="">-- Chọn khoa --</option>
-              {DEPARTMENTS.map((item) => <option key={item} value={item}>{item}</option>)}
+              {departments.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </Field>
 

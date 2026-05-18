@@ -1,8 +1,8 @@
 import React from "react";
-import Navbar from "../components/layout/Navbar/Navbar";
-import NavbarFM from "../components/layout/Navbar/NavbarFM";
-import Sidebar from "../components/layout/Sidebar/Sidebar";
-import Searchbar from "../components/common/SearchBar/Searchbar";
+import Navbar from "../../components/layout/Navbar/Navbar";
+import NavbarFM from "../../components/layout/Navbar/NavbarFM";
+import Sidebar from "../../components/layout/Sidebar/Sidebar";
+import Searchbar from "../../components/common/SearchBar/Searchbar";
 
 const HomePage = () => {
   return (

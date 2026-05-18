@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import EventForm from '../../components/sections/Event/EventForm';
 import exportEventsExcel from '../../utils/Export/exportEventsExcel';
@@ -12,13 +12,20 @@ import EventRegistrationModal from '../../components/sections/Event/EventRegistr
 import EventRosterTable from '../../components/sections/Event/EventRosterTable';
 import exportEventRegistrationsExcel from '../../utils/Export/exportEventRegistrationsExcel';
 import {
+  createEventAPI,
+  deleteEventAPI,
+  getEventsAPI,
+  normalizeEventFromApi,
+  toEventPayload,
+} from '../../services/event-service';
+import {
   MOCK_EVENTS,
   PAGE_SIZE,
   REGISTERED_MEMBER_POOL,
   STATUS_LABEL,
   TAG_FILTERS,
   TAG_LABEL,
-} from '../../data/eventAdminData';
+} from '../../data/Event/eventAdminData';
 import {
   buildRegisteredMembers,
   createEvaluationCode,
@@ -34,6 +41,7 @@ const getTodayDateInputValue = () => {
 
 export default function EventAdminPage() {
   const [events, setEvents] = useState(() => MOCK_EVENTS.map(normalizeEvent));
+  const [apiError, setApiError] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [tagFilter, setTagFilter] = useState('all');
@@ -50,6 +58,27 @@ export default function EventAdminPage() {
   const [evaluations, setEvaluations] = useState([]);
   const [evaluationHistoryOpen, setEvaluationHistoryOpen] = useState(false);
   const [registrationTarget, setRegistrationTarget] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getEventsAPI()
+      .then((data) => {
+        if (ignore) return;
+        const nextEvents = Array.isArray(data) ? data.map(normalizeEventFromApi) : [];
+        setEvents(nextEvents.length ? nextEvents : MOCK_EVENTS.map(normalizeEvent));
+        setApiError('');
+      })
+      .catch((error) => {
+        if (ignore) return;
+        setApiError(error?.message || 'Không tải được danh sách sự kiện từ API.');
+        setEvents(MOCK_EVENTS.map(normalizeEvent));
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const totalEstimated = events.reduce((sum, event) => sum + (Number(event.estimatedCost) || 0), 0);
   const totalActual = events
@@ -104,32 +133,48 @@ export default function EventAdminPage() {
     setFormOpen(true);
   };
 
-  const handleSubmit = (formData) => {
+  const handleSubmit = async (formData) => {
     setFormLoading(true);
-    setTimeout(() => {
+    try {
       if (editTarget) {
+        // TODO(BE): Chưa có PUT/PATCH /api/events/{id}; tạm cập nhật local.
         setEvents((prev) =>
           prev.map((event) => (event.id === editTarget.id ? { ...event, ...formData } : event)),
         );
       } else {
-        const newId = events.length ? Math.max(...events.map((event) => event.id)) + 1 : 1;
-        setEvents((prev) => [{ ...formData, id: newId, attendance: 0, status: 'draft' }, ...prev]);
+        const created = await createEventAPI(toEventPayload({ ...formData, status: 'draft' }));
+        setEvents((prev) => [
+          normalizeEventFromApi(created),
+          ...prev,
+        ]);
       }
-      setFormLoading(false);
       setFormOpen(false);
-    }, 800);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không lưu được sự kiện.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const updateEventStatus = (eventId, status) => {
+    // TODO(BE): Chưa có endpoint cập nhật trạng thái sự kiện; tạm cập nhật local.
     setEvents((prev) =>
       prev.map((event) => (event.id === eventId ? { ...event, status } : event)),
     );
   };
 
-  const confirmDelete = () => {
-    setEvents((prev) => prev.filter((event) => event.id !== deleteConfirm.id));
-    setEvaluations((prev) => prev.filter((item) => item.eventCode !== deleteConfirm.eventCode));
-    setDeleteConfirm(null);
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await deleteEventAPI(deleteConfirm.id);
+      setEvents((prev) => prev.filter((event) => event.id !== deleteConfirm.id));
+      setEvaluations((prev) => prev.filter((item) => item.eventCode !== deleteConfirm.eventCode));
+      setDeleteConfirm(null);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không xoá được sự kiện.');
+    }
   };
 
   const openEvaluation = (event) => {
@@ -199,6 +244,8 @@ export default function EventAdminPage() {
 
   return (
     <div className={styles.page}>
+      {apiError && <div className={styles.apiError}>{apiError}</div>}
+
       <EventAdminHeader
         onExport={() => exportEventsExcel(filtered)}
         onAdd={openAdd}

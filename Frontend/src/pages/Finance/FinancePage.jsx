@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import styles from './FinancePage.module.css';
 
-import { MOCK_THU, MOCK_CHI } from '../../data/financeMockData';
+import { MOCK_THU, MOCK_CHI } from '../../data/Finance/financeMockData';
 import { getThang } from '../../utils/Finance/financeUtils';
 
 import FinanceHeader from '../../components/sections/Finance/FinanceHeader';
@@ -24,11 +24,20 @@ import {
   saveTransferDues,
   syncPaidTransferDuesToIncomeReceipts,
 } from '../../utils/Finance/transferDues';
+import {
+  createTransactionAPI,
+  deleteTransactionAPI,
+  getTransactionsAPI,
+  normalizeTransactionFromApi,
+  toExpensePayload,
+  toIncomePayload,
+} from '../../services/finance-service';
 
 export default function FinancePage() {
   const [thuList, setThuList] = useState(() => mergeIncomeReceipts(MOCK_THU));
   const [chiList, setChiList] = useState(MOCK_CHI);
   const [transferDues, setTransferDues] = useState(() => getTransferDues());
+  const [apiError, setApiError] = useState('');
 
   const [thuFilters, setThuFilters] = useState({
     lyDo: '',
@@ -63,6 +72,32 @@ export default function FinancePage() {
   const [searchChi, setSearchChi] = useState('');
   const [sortThu, setSortThu] = useState('desc');
   const [sortChi, setSortChi] = useState('desc');
+
+  useEffect(() => {
+    let ignore = false;
+
+    getTransactionsAPI()
+      .then((data) => {
+        if (ignore) return;
+        const transactions = Array.isArray(data) ? data.map(normalizeTransactionFromApi) : [];
+        const income = transactions.filter((item) => item.raw?.type === 'INCOME');
+        const expense = transactions.filter((item) => item.raw?.type !== 'INCOME');
+
+        setThuList(income.length ? mergeIncomeReceipts(income) : mergeIncomeReceipts(MOCK_THU));
+        setChiList(expense.length ? expense : MOCK_CHI);
+        setApiError('');
+      })
+      .catch((error) => {
+        if (ignore) return;
+        setThuList(mergeIncomeReceipts(MOCK_THU));
+        setChiList(MOCK_CHI);
+        setApiError(error?.message || 'Không tải được dữ liệu thu chi từ API.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const tongThu = thuList.reduce((s, r) => s + r.soTien, 0);
   const tongChi = chiList.reduce((s, r) => s + r.soTien, 0);
@@ -172,10 +207,11 @@ export default function FinancePage() {
     setThuList((prev) => mergeIncomeReceipts(prev));
   };
 
-  const handleThuSubmit = (data) => {
+  const handleThuSubmit = async (data) => {
     setFormLoading(true);
-    setTimeout(() => {
+    try {
       if (editThu) {
+        // TODO(BE): Chưa có PUT/PATCH /api/transactions/{id}; tạm cập nhật local.
         setThuList(p => p.map(r => r.id === editThu.id ? { ...r, ...data } : r));
       } else if (data?.mode === 'transfer' || (Array.isArray(data) && data[0]?.mode === 'transfer')) {
         const records = Array.isArray(data) ? data : [data];
@@ -189,44 +225,63 @@ export default function FinancePage() {
         });
       } else {
         const records = Array.isArray(data) ? data : [data];
-        setThuList(p => [
-          ...p,
-          ...records.map((record, index) => ({
+        const created = await Promise.all(records.map((record, index) => {
+          const localRecord = {
             ...record,
-            id: `THU${String(p.length + index + 1).padStart(3, '0')}`,
-          })),
-        ]);
+            id: record.id || `THU${String(thuList.length + index + 1).padStart(3, '0')}`,
+          };
+          return createTransactionAPI(toIncomePayload(localRecord));
+        }));
+        setThuList(p => [...p, ...created.map(normalizeTransactionFromApi)]);
       }
-      setFormLoading(false);
       setThuOpen(false);
       setEditThu(null);
-    }, 600);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không lưu được phiếu thu.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
-  const handleChiSubmit = (data) => {
+  const handleChiSubmit = async (data) => {
     setFormLoading(true);
-    setTimeout(() => {
+    try {
       if (editChi) {
+        // TODO(BE): Chưa có PUT/PATCH /api/transactions/{id}; tạm cập nhật local.
         setChiList(p => p.map(r => r.id === editChi.id ? { ...r, ...data } : r));
       } else {
-        const newId = `CHI${String(chiList.length + 1).padStart(3, '0')}`;
-        setChiList(p => [...p, { ...data, id: newId }]);
+        const localRecord = { ...data, id: data.id || `CHI${String(chiList.length + 1).padStart(3, '0')}` };
+        const created = await createTransactionAPI(toExpensePayload(localRecord));
+        setChiList(p => [...p, normalizeTransactionFromApi(created)]);
       }
-      setFormLoading(false);
       setChiOpen(false);
       setEditChi(null);
-    }, 600);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không lưu được phiếu chi.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    if (deleteTarget.id.startsWith('THU')) setThuList(p => p.filter(r => r.id !== deleteTarget.id));
-    else setChiList(p => p.filter(r => r.id !== deleteTarget.id));
-    setDeleteTarget(null);
+    try {
+      await deleteTransactionAPI(deleteTarget.id);
+      if (deleteTarget.id.startsWith('THU')) setThuList(p => p.filter(r => r.id !== deleteTarget.id));
+      else setChiList(p => p.filter(r => r.id !== deleteTarget.id));
+      setDeleteTarget(null);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không xoá được giao dịch.');
+    }
   };
 
   return (
     <div className={styles.page}>
+      {apiError && <div className={styles.apiError}>{apiError}</div>}
+
       <FinanceHeader
         onOpenThu={openThuModal}
         onOpenChi={openChiModal}

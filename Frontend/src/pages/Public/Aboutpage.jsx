@@ -1,9 +1,9 @@
 import React from "react";
 import styles from "./Aboutpage.module.css";
-import missionIcon from "../assets/icons/mission.svg";
-import visionIcon from "../assets/icons/vision.svg";
-import valuesIcon from "../assets/icons/values.svg";
-import useScrollReveal from "../hooks/useScrollReveal";
+import missionIcon from "../../assets/icons/mission.svg";
+import visionIcon from "../../assets/icons/vision.svg";
+import valuesIcon from "../../assets/icons/values.svg";
+import useScrollReveal from "../../hooks/useScrollReveal";
 
 const teamMembers = [
   {

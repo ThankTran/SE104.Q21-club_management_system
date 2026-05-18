@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import MemberTable from '../../components/sections/Member/MemberTable';
 import MemberForm, { DEPARTMENTS } from '../../components/sections/Member/MemberForm';
@@ -8,13 +8,25 @@ import MemberDetailModal from '../../components/sections/Member/MemberDetailModa
 import MemberHistoryModal from '../../components/sections/Member/MemberHistoryModal';
 import MemberReviewModal from '../../components/sections/Member/MemberReviewModal';
 import MemberDeleteConfirmModal from '../../components/sections/Member/MemberDeleteConfirmModal';
-import { MOCK_MEMBERS } from '../../components/sections/Member/memberMockData';
+import { MOCK_MEMBERS } from '../../data/Member/memberMockData';
+import {
+  approveMemberAPI,
+  getMemberDepartmentsAPI,
+  getMembersAPI,
+  normalizeMemberFromApi,
+  registerMemberAPI,
+  toApprovalPayload,
+  toMemberPayload,
+  updateMemberAPI,
+} from '../../services/member-service';
 import styles from './MemberAdminPage.module.css';
 
 const PAGE_SIZE = 8;
 
 export default function MemberAdminPage() {
   const [members, setMembers] = useState(MOCK_MEMBERS);
+  const [apiError, setApiError] = useState('');
+  const [departmentOptions, setDepartmentOptions] = useState(DEPARTMENTS);
   const [activeTab, setActiveTab] = useState('review');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -31,6 +43,48 @@ export default function MemberAdminPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
 
+  useEffect(() => {
+    let ignore = false;
+
+    Promise.allSettled([getMembersAPI(), getMemberDepartmentsAPI()])
+      .then(([membersResult, departmentsResult]) => {
+        if (ignore) return;
+
+        if (membersResult.status === 'fulfilled') {
+          const nextMembers = Array.isArray(membersResult.value)
+            ? membersResult.value.map(normalizeMemberFromApi)
+            : [];
+          setMembers(nextMembers.length ? nextMembers : MOCK_MEMBERS);
+          setApiError('');
+        } else {
+          setMembers(MOCK_MEMBERS);
+          setApiError(membersResult.reason?.message || 'Không tải được danh sách thành viên từ API.');
+        }
+
+        if (departmentsResult.status === 'fulfilled' && Array.isArray(departmentsResult.value)) {
+          setDepartmentOptions(
+            departmentsResult.value.map((department) => ({
+              id: department.departmentId,
+              name: department.departmentName,
+            })),
+          );
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const departmentNames = useMemo(
+    () => departmentOptions.map((department) => department.name || department),
+    [departmentOptions],
+  );
+
+  const getDepartmentId = (departmentName) => {
+    const department = departmentOptions.find((item) => (item.name || item) === departmentName);
+    return department?.id || null;
+  };
   const statuses = useMemo(() => [...new Set(members.map((m) => m.requestStatus))], [members]);
   const roles = useMemo(() => [...new Set(members.map((m) => m.role))], [members]);
 
@@ -87,21 +141,31 @@ export default function MemberAdminPage() {
     setFormOpen(true);
   };
 
-  const handleSubmit = (formData) => {
+  const handleSubmit = async (formData) => {
     setFormLoading(true);
-    setTimeout(() => {
+    try {
+      const payload = toMemberPayload({
+        ...formData,
+        departmentId: formData.departmentId || getDepartmentId(formData.department),
+      });
+
       if (editTarget) {
-        setMembers((prev) => prev.map((m) => (m.id === editTarget.id ? { ...m, ...formData } : m)));
+        const updated = await updateMemberAPI(editTarget.memberId || editTarget.id, payload);
+        setMembers((prev) => prev.map((m) => (
+          m.id === editTarget.id ? normalizeMemberFromApi(updated) : m
+        )));
       } else {
-        setMembers((prev) => [
-          { ...formData, avatar: formData.name.slice(0, 2).toUpperCase(), reviewedBy: '', reviewedAt: '', reviewNote: '' },
-          ...prev,
-        ]);
+        const created = await registerMemberAPI(payload);
+        setMembers((prev) => [normalizeMemberFromApi(created), ...prev]);
       }
-      setFormLoading(false);
       setFormOpen(false);
       setPage(1);
-    }, 300);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không lưu được hồ sơ thành viên.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const openReview = (member, type) => {
@@ -109,18 +173,31 @@ export default function MemberAdminPage() {
     setReviewType(type);
   };
 
-  const confirmReview = (member, reviewData) => {
-    setMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, ...reviewData } : m)));
-    setReviewTarget(null);
+  const confirmReview = async (member, reviewData) => {
+    try {
+      if (member.memberId) {
+        await approveMemberAPI(toApprovalPayload(member, reviewData));
+      } else {
+        // TODO(BE): Dữ liệu mock không có memberId nên không thể gọi /api/members/approve.
+      }
+      setMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, ...reviewData } : m)));
+      setReviewTarget(null);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không cập nhật được trạng thái xét duyệt.');
+    }
   };
 
   const confirmDelete = () => {
+    // TODO(BE): Chưa có DELETE /api/members/{id}; tạm xoá local.
     setMembers((prev) => prev.filter((m) => m.id !== deleteConfirm.id));
     setDeleteConfirm(null);
   };
 
   return (
     <div className={styles.page}>
+      {apiError && <div className={styles.apiError}>{apiError}</div>}
+
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Quản lý thành viên</h1>
@@ -200,7 +277,7 @@ export default function MemberAdminPage() {
             setStatusFilter={setStatusFilter}
             roleFilter={roleFilter}
             setRoleFilter={setRoleFilter}
-            departments={DEPARTMENTS}
+            departments={departmentNames}
             statuses={statuses}
             roles={roles}
             showStatus={false}
@@ -257,6 +334,7 @@ export default function MemberAdminPage() {
         initial={editTarget}
         loading={formLoading}
         existingMembers={members}
+        departments={departmentNames}
       />
 
       <MemberDetailModal member={detailTarget} onClose={() => setDetailTarget(null)} />

@@ -2,7 +2,7 @@
 
 import MemberTable from '../../components/sections/Member/MemberTable';
 import MemberUserFilterBar from '../../components/sections/Member/MemberUserFilterBar';
-import { MOCK_USER_MEMBERS } from '../../components/sections/Member/memberUserMockData';
+import { MOCK_USER_MEMBERS } from '../../data/Member/memberUserMockData';
 import styles from './MemberUserPage.module.css';
 
 const PAGE_SIZE = 10;
