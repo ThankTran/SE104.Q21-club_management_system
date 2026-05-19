@@ -236,7 +236,7 @@ git --version
 ## 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/ThankTran/club-management.git
 cd club-management
 ```
 
