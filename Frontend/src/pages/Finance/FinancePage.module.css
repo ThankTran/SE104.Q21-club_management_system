@@ -7,6 +7,16 @@
   min-height: 100%;
 }
 
+.apiError {
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .page {
     padding: 16px;

@@ -10,6 +10,16 @@
   padding: 30px;
 }
 
+.apiError {
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .pageHeader {
   display: flex;
   align-items: flex-start;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FolderClosed } from 'lucide-react';
-import { RESOURCE_FOLDER_TREE } from './resourceFolderData';
+import { RESOURCE_FOLDER_TREE } from '../../../data/Resource/resourceFolderData';
 import styles from './ResourceFolderView.module.css';
 
 export default function ResourceFolderView({ selectedFolderId, onSelectFolder }) {

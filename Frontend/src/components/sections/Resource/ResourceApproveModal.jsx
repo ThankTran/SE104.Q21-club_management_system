@@ -3,7 +3,7 @@ import {
   DEFAULT_RESOURCE_FOLDER_ID,
   RESOURCE_FOLDER_TREE,
   RESOURCE_LEAF_FOLDERS,
-} from './resourceFolderData';
+} from '../../../data/Resource/resourceFolderData';
 import styles from './ResourceApproveModal.module.css';
 
 export default function ResourceApproveModal({ resource, onCancel, onConfirm }) {

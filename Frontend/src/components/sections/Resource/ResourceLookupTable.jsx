@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { FORMAT_CONFIG, RESOURCE_LOOKUP_MAX_DISPLAY } from './resourceAdminData';
+import { FORMAT_CONFIG, RESOURCE_LOOKUP_MAX_DISPLAY } from '../../../data/Resource/resourceAdminData';
 import styles from './ResourceLookupTable.module.css';
 
 const FOLDER_TREE = [
