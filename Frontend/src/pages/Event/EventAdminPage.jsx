@@ -1,14 +1,23 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import EventForm from '../../components/sections/Event/EventForm';
 import exportEventsExcel from '../../utils/Export/exportEventsExcel';
 
 import EventAdminHeader from '../../components/sections/Event/EventAdminHeader';
 import EventDeleteConfirmModal from '../../components/sections/Event/EventDeleteConfirmModal';
+import EventEvaluationHistoryModal from '../../components/sections/Event/EventEvaluationHistoryModal';
 import EventEvaluationModal from '../../components/sections/Event/EventEvaluationModal';
 import EventFiscalSummary from '../../components/sections/Event/EventFiscalSummary';
 import EventRegistrationModal from '../../components/sections/Event/EventRegistrationModal';
 import EventRosterTable from '../../components/sections/Event/EventRosterTable';
+import exportEventRegistrationsExcel from '../../utils/Export/exportEventRegistrationsExcel';
+import {
+  createEventAPI,
+  deleteEventAPI,
+  getEventsAPI,
+  normalizeEventFromApi,
+  toEventPayload,
+} from '../../services/event-service';
 import {
   MOCK_EVENTS,
   PAGE_SIZE,
@@ -16,7 +25,7 @@ import {
   STATUS_LABEL,
   TAG_FILTERS,
   TAG_LABEL,
-} from '../../data/eventAdminData';
+} from '../../data/Event/eventAdminData';
 import {
   buildRegisteredMembers,
   createEvaluationCode,
@@ -24,8 +33,15 @@ import {
 } from '../../utils/Event/eventAdminUtils';
 import styles from './EventAdminPage.module.css';
 
+const getTodayDateInputValue = () => {
+  const today = new Date();
+  const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 10);
+};
+
 export default function EventAdminPage() {
   const [events, setEvents] = useState(() => MOCK_EVENTS.map(normalizeEvent));
+  const [apiError, setApiError] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [tagFilter, setTagFilter] = useState('all');
@@ -40,7 +56,29 @@ export default function EventAdminPage() {
   const [evaluationForm, setEvaluationForm] = useState({ evaluationDate: '', evaluation: '' });
   const [evaluationErrors, setEvaluationErrors] = useState({});
   const [evaluations, setEvaluations] = useState([]);
+  const [evaluationHistoryOpen, setEvaluationHistoryOpen] = useState(false);
   const [registrationTarget, setRegistrationTarget] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getEventsAPI()
+      .then((data) => {
+        if (ignore) return;
+        const nextEvents = Array.isArray(data) ? data.map(normalizeEventFromApi) : [];
+        setEvents(nextEvents.length ? nextEvents : MOCK_EVENTS.map(normalizeEvent));
+        setApiError('');
+      })
+      .catch((error) => {
+        if (ignore) return;
+        setApiError(error?.message || 'Không tải được danh sách sự kiện từ API.');
+        setEvents(MOCK_EVENTS.map(normalizeEvent));
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const totalEstimated = events.reduce((sum, event) => sum + (Number(event.estimatedCost) || 0), 0);
   const totalActual = events
@@ -95,42 +133,65 @@ export default function EventAdminPage() {
     setFormOpen(true);
   };
 
-  const handleSubmit = (formData) => {
+  const handleSubmit = async (formData) => {
     setFormLoading(true);
-    setTimeout(() => {
+    try {
       if (editTarget) {
+        // TODO(BE): Chưa có PUT/PATCH /api/events/{id}; tạm cập nhật local.
         setEvents((prev) =>
           prev.map((event) => (event.id === editTarget.id ? { ...event, ...formData } : event)),
         );
       } else {
-        const newId = events.length ? Math.max(...events.map((event) => event.id)) + 1 : 1;
-        setEvents((prev) => [{ ...formData, id: newId, attendance: 0, status: 'draft' }, ...prev]);
+        const created = await createEventAPI(toEventPayload({ ...formData, status: 'draft' }));
+        setEvents((prev) => [
+          normalizeEventFromApi(created),
+          ...prev,
+        ]);
       }
-      setFormLoading(false);
       setFormOpen(false);
-    }, 800);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không lưu được sự kiện.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const updateEventStatus = (eventId, status) => {
+    // TODO(BE): Chưa có endpoint cập nhật trạng thái sự kiện; tạm cập nhật local.
     setEvents((prev) =>
       prev.map((event) => (event.id === eventId ? { ...event, status } : event)),
     );
   };
 
-  const confirmDelete = () => {
-    setEvents((prev) => prev.filter((event) => event.id !== deleteConfirm.id));
-    setEvaluations((prev) => prev.filter((item) => item.eventCode !== deleteConfirm.eventCode));
-    setDeleteConfirm(null);
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await deleteEventAPI(deleteConfirm.id);
+      setEvents((prev) => prev.filter((event) => event.id !== deleteConfirm.id));
+      setEvaluations((prev) => prev.filter((item) => item.eventCode !== deleteConfirm.eventCode));
+      setDeleteConfirm(null);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không xoá được sự kiện.');
+    }
   };
 
   const openEvaluation = (event) => {
     const current = evaluations.find((item) => item.eventCode === event.eventCode);
     setEvaluationTarget(event);
     setEvaluationForm({
-      evaluationDate: current?.evaluationDate || '',
+      evaluationDate: getTodayDateInputValue(),
       evaluation: current?.evaluation || '',
     });
     setEvaluationErrors({});
+  };
+
+  const openEvaluationFromHistory = (evaluation) => {
+    const event = events.find((item) => item.eventCode === evaluation.eventCode);
+    if (!event) return;
+
+    openEvaluation(event);
   };
 
   const getEvaluationCode = (event) =>
@@ -150,10 +211,10 @@ export default function EventAdminPage() {
 
   const submitEvaluation = () => {
     const errs = {};
+    const today = getTodayDateInputValue();
     const eventEndDate = evaluationTarget?.date ? new Date(evaluationTarget.date) : null;
-    const evaluationDate = evaluationForm.evaluationDate ? new Date(evaluationForm.evaluationDate) : null;
+    const evaluationDate = new Date(today);
 
-    if (!evaluationForm.evaluationDate) errs.evaluationDate = 'Vui lòng chọn ngày đánh giá';
     if (eventEndDate && evaluationDate && evaluationDate <= eventEndDate) {
       errs.evaluationDate = 'Ngày đánh giá phải lớn hơn ngày kết thúc sự kiện';
     }
@@ -170,7 +231,7 @@ export default function EventAdminPage() {
         id: existed?.id || createEvaluationCode(evaluationTarget.eventCode, prev.length),
         eventCode: evaluationTarget.eventCode,
         eventTitle: evaluationTarget.title,
-        evaluationDate: evaluationForm.evaluationDate,
+        evaluationDate: today,
         evaluation: evaluationForm.evaluation.trim(),
       };
 
@@ -183,7 +244,13 @@ export default function EventAdminPage() {
 
   return (
     <div className={styles.page}>
-      <EventAdminHeader onExport={() => exportEventsExcel(filtered)} onAdd={openAdd} />
+      {apiError && <div className={styles.apiError}>{apiError}</div>}
+
+      <EventAdminHeader
+        onExport={() => exportEventsExcel(filtered)}
+        onAdd={openAdd}
+        onViewEvaluationHistory={() => setEvaluationHistoryOpen(true)}
+      />
 
       <EventFiscalSummary totalEstimated={totalEstimated} totalActual={totalActual} />
 
@@ -241,6 +308,13 @@ export default function EventAdminPage() {
         onSubmit={submitEvaluation}
       />
 
+      <EventEvaluationHistoryModal
+        open={evaluationHistoryOpen}
+        evaluations={evaluations}
+        onClose={() => setEvaluationHistoryOpen(false)}
+        onSelectEvaluation={openEvaluationFromHistory}
+      />
+
       <EventDeleteConfirmModal
         event={deleteConfirm}
         onCancel={() => setDeleteConfirm(null)}
@@ -251,6 +325,7 @@ export default function EventAdminPage() {
         event={registrationTarget}
         members={registeredMembers}
         onClose={() => setRegistrationTarget(null)}
+        onExport={() => exportEventRegistrationsExcel(registrationTarget, registeredMembers)}
       />
     </div>
   );

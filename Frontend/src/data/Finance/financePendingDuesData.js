@@ -1,0 +1,66 @@
+export const MOCK_PENDING_DUES = [
+  {
+    id: '2410001',
+    name: 'Nguyễn Minh Anh',
+    role: 'Thành viên',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+  {
+    id: '2410002',
+    name: 'Trần Quốc Bảo',
+    role: 'Thành viên',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+  {
+    id: '2410003',
+    name: 'Lê Hoàng Nam',
+    role: 'Ban học thuật',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+    {
+    id: '2410001',
+    name: 'Nguyễn Minh Anh',
+    role: 'Thành viên',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+  {
+    id: '2410002',
+    name: 'Trần Quốc Bảo',
+    role: 'Thành viên',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+  {
+    id: '2410003',
+    name: 'Lê Hoàng Nam',
+    role: 'Ban học thuật',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+    {
+    id: '2410001',
+    name: 'Nguyễn Minh Anh',
+    role: 'Thành viên',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+  {
+    id: '2410002',
+    name: 'Trần Quốc Bảo',
+    role: 'Thành viên',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+  {
+    id: '2410003',
+    name: 'Lê Hoàng Nam',
+    role: 'Ban học thuật',
+    month: 'Tháng 5',
+    amount: 75000,
+  },
+];
+

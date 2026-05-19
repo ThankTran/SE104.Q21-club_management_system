@@ -2,39 +2,9 @@ import { useState, useMemo } from 'react';
 import ResourceCard from '../../components/sections/Resource/ResourceCard';
 import ResourceForm from '../../components/sections/Resource/ResourceForm';
 import ResourceFolderView from '../../components/sections/Resource/ResourceFolderView';
-import { RESOURCE_LEAF_FOLDERS } from '../../components/sections/Resource/resourceFolderData';
-
+import { RESOURCE_LEAF_FOLDERS } from '../../data/Resource/resourceFolderData';
+import { INITIAL_MEMBER_SUBMISSIONS, MEMBER_PROFILE, MOCK_RESOURCES, PAGE_SIZE, FORMAT_OPTIONS, SOURCE_OPTIONS, TYPE_TABS } from '../../data/Resource/resourceUserData';
 import styles from './ResourceUserPage.module.css';
-
-// ── Mock data ─────────────────────────────────────────────────
-const MOCK_RESOURCES = [
-  { id: 1, title: 'Giáo trình Lập trình hướng đối tượng', category: 'major', major: 'Công nghệ phần mềm', subject: 'Lập trình hướng đối tượng', type: 'Giáo trình', format: 'PDF', source: 'Giảng viên cung cấp', description: 'Tài liệu chính thức môn OOP dùng trong học kỳ 1.', link: '#', uploadedBy: 'Nguyễn Minh Anh', createdAt: '2024-12-10', status: 'approved' },
-  { id: 2, title: 'Slide Cơ sở dữ liệu – Chương 1 đến 5', category: 'major', major: 'Hệ thống thông tin', subject: 'Cơ sở dữ liệu', type: 'Slide bài giảng', format: 'PPT', source: 'Giảng viên cung cấp', description: 'Slide bài giảng môn CSDL.', link: '#', uploadedBy: 'Trần Quốc Bảo', createdAt: '2024-12-08', status: 'approved' },
-  { id: 3, title: 'Tài liệu tham khảo Mạng máy tính', category: 'major', major: 'Mạng máy tính và truyền thông', subject: 'Mạng máy tính', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'Tổng hợp lý thuyết TCP/IP.', link: '#', uploadedBy: 'Lê Hoàng Nam', createdAt: '2024-12-05', status: 'approved' },
-  { id: 4, title: 'Giáo trình Giải tích 1', category: 'general', major: null, subject: 'Giải tích 1', type: 'Giáo trình', format: 'PDF', source: 'Giảng viên cung cấp', description: 'Giáo trình Giải tích 1.', link: '#', uploadedBy: 'Phạm Gia Hân', createdAt: '2024-12-01', status: 'approved' },
-  { id: 5, title: 'Slide Kỹ thuật phần mềm – Agile & Scrum', category: 'major', major: 'Công nghệ phần mềm', subject: 'Kỹ thuật phần mềm', type: 'Slide bài giảng', format: 'PPT', source: 'Tự biên soạn', description: 'Agile và Scrum.', link: '#', uploadedBy: 'Võ Đức Tài', createdAt: '2024-11-28', status: 'approved' },
-  { id: 6, title: 'Python cho Data Science – Hướng dẫn', category: 'major', major: 'Khoa học dữ liệu', subject: 'Khoa học dữ liệu', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'Pandas và NumPy.', link: '#', uploadedBy: 'Nguyễn Khánh Linh', createdAt: '2024-11-25', status: 'approved' },
-  { id: 7, title: 'Giáo trình Đại số tuyến tính', category: 'general', major: null, subject: 'Đại số tuyến tính', type: 'Giáo trình', format: 'PDF', source: 'Giảng viên cung cấp', description: 'Ma trận và không gian vector.', link: '#', uploadedBy: 'Đặng Nhật Quang', createdAt: '2024-11-22', status: 'approved' },
-  { id: 8, title: 'Slide An toàn thông tin – Chương 1-4', category: 'major', major: 'An toàn thông tin', subject: 'An toàn thông tin', type: 'Slide bài giảng', format: 'PPT', source: 'Giảng viên cung cấp', description: 'Mã hóa và bảo mật.', link: '#', uploadedBy: 'Huỳnh Bảo Trân', createdAt: '2024-11-20', status: 'approved' },
-  { id: 9, title: 'Tài liệu Git & GitHub thực hành', category: 'major', major: 'Công nghệ phần mềm', subject: 'Công cụ lập trình', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'Git từ cơ bản đến nâng cao.', link: '#', uploadedBy: 'Trương Hải Đăng', createdAt: '2024-11-18', status: 'approved' },
-  { id: 10, title: 'Giáo trình Kiến trúc máy tính', category: 'major', major: 'Kỹ thuật máy tính', subject: 'Kiến trúc máy tính', type: 'Giáo trình', format: 'PDF', source: 'Giảng viên cung cấp', description: 'CPU và bộ nhớ.', link: '#', uploadedBy: 'Bùi Ngọc Mai', createdAt: '2024-11-15', status: 'approved' },
-  { id: 11, title: 'React.js – Tài liệu học cơ bản', category: 'major', major: 'Công nghệ phần mềm', subject: 'Lập trình Web', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'React hooks và routing.', link: '#', uploadedBy: 'Lý Tuấn Kiệt', createdAt: '2024-11-12', status: 'approved' },
-  { id: 12, title: 'Slide Trí tuệ nhân tạo – Giới thiệu AI', category: 'major', major: 'Khoa học máy tính', subject: 'Trí tuệ nhân tạo', type: 'Slide bài giảng', format: 'PPT', source: 'Giảng viên cung cấp', description: 'Machine learning cơ bản.', link: '#', uploadedBy: 'Phan Thảo Vy', createdAt: '2024-11-10', status: 'approved' },
-  { id: 13, title: 'Tổng hợp đề thi CSDL các năm', category: 'major', major: 'Hệ thống thông tin', subject: 'Cơ sở dữ liệu', type: 'Tài liệu tham khảo', format: 'DOCX', source: 'Tự biên soạn', description: 'Đề thi từ 2020–2024.', link: '#', uploadedBy: 'Ngô Gia Huy', createdAt: '2024-11-08', status: 'approved' },
-  { id: 14, title: 'Docker & Container – Hướng dẫn thực tế', category: 'major', major: 'Công nghệ phần mềm', subject: 'DevOps', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'Docker cơ bản.', link: '#', uploadedBy: 'Mai Thanh Tùng', createdAt: '2024-11-05', status: 'approved' },
-  { id: 15, title: 'Slide Lập trình Web – HTML CSS JS', category: 'major', major: 'Thương mại điện tử', subject: 'Lập trình Web', type: 'Slide bài giảng', format: 'PPT', source: 'Giảng viên cung cấp', description: 'HTML CSS JavaScript.', link: '#', uploadedBy: 'Đoàn Yến Nhi', createdAt: '2024-11-02', status: 'approved' },
-  { id: 16, title: 'Giáo trình Xác suất thống kê', category: 'general', major: null, subject: 'Xác suất thống kê', type: 'Giáo trình', format: 'PDF', source: 'Giảng viên cung cấp', description: 'Xác suất và thống kê.', link: '#', uploadedBy: 'Tạ Minh Khoa', createdAt: '2024-10-28', status: 'approved' },
-  { id: 17, title: 'Node.js – Backend Development Guide', category: 'major', major: 'Công nghệ phần mềm', subject: 'Lập trình Web', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'REST API với Express.', link: '#', uploadedBy: 'Vũ Thành Công', createdAt: '2024-10-25', status: 'approved' },
-  { id: 18, title: 'Tổng hợp đề thi Giải tích 1 – 2023', category: 'general', major: null, subject: 'Giải tích 1', type: 'Tài liệu tham khảo', format: 'DOCX', source: 'Tự biên soạn', description: 'Đề thi Giải tích 1.', link: '#', uploadedBy: 'Châu Bích Ngọc', createdAt: '2024-10-22', status: 'approved' },
-  { id: 19, title: 'Slide Hệ điều hành – Chương 1-6', category: 'major', major: 'Khoa học máy tính', subject: 'Hệ điều hành', type: 'Slide bài giảng', format: 'PPT', source: 'Giảng viên cung cấp', description: 'Process và Thread.', link: '#', uploadedBy: 'Nguyễn Quốc Hưng', createdAt: '2024-10-18', status: 'approved' },
-  { id: 20, title: 'Tài liệu UI/UX Design Fundamentals', category: 'major', major: 'Thương mại điện tử', subject: 'Thiết kế giao diện', type: 'Tài liệu tham khảo', format: 'PDF', source: 'Internet', description: 'Wireframe và prototype.', link: '#', uploadedBy: 'Lâm Gia Linh', createdAt: '2024-10-15', status: 'approved' },
-];
-
-const TYPE_TABS = ['Tất cả', 'Giáo trình', 'Slide bài giảng', 'Tài liệu tham khảo', 'Đề thi', 'Bài tập', 'Khác'];
-const FORMAT_OPTIONS = ['Tất cả', 'PDF', 'DOCX', 'PPT', 'ZIP', 'PNG', 'Khác'];
-const SOURCE_OPTIONS = ['Tất cả', 'Giảng viên cung cấp', 'Tự biên soạn', 'Internet', 'Sinh viên khóa trước', 'Khác'];
-
-const PAGE_SIZE = 12;
 
 export default function ResourceUserPage() {
   // Filters
@@ -54,6 +24,8 @@ export default function ResourceUserPage() {
   const [formOpen, setFormOpen]   = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submissionsOpen, setSubmissionsOpen] = useState(false);
+  const [memberSubmissions, setMemberSubmissions] = useState(INITIAL_MEMBER_SUBMISSIONS);
 
   // Derived data
   const subjects = useMemo(
@@ -120,6 +92,21 @@ export default function ResourceUserPage() {
   const handleSubmitForm = (formData) => {
     setFormLoading(true);
     setTimeout(() => {
+      const today = new Date().toISOString().split('T')[0];
+      setMemberSubmissions((prev) => [
+        {
+          ...formData,
+          id: `DX-${String(prev.length + 1).padStart(3, '0')}`,
+          createdAt: today,
+          status: 'pending',
+          reviewedAt: '',
+          note: 'Phiếu đang chờ admin xét duyệt.',
+          uploadedBy: MEMBER_PROFILE.name,
+          memberId: MEMBER_PROFILE.memberId,
+          memberRole: MEMBER_PROFILE.role,
+        },
+        ...prev,
+      ]);
       setFormLoading(false);
       setFormOpen(false);
       setSubmitted(true);
@@ -147,12 +134,24 @@ export default function ResourceUserPage() {
             <p className={styles.heroSub}>
               Giáo trình, slide và tài liệu tham khảo từ giảng viên &amp; cộng đồng — miễn phí, đã xét duyệt.
             </p>
-            <button className={styles.proposeBtn} onClick={() => setFormOpen(true)}>
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 5v14M5 12h14"/>
-              </svg>
-              Đề xuất tài liệu
-            </button>
+            <div className={styles.heroActions}>
+              <button className={styles.proposeBtn} onClick={() => setFormOpen(true)}>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Đề xuất tài liệu
+              </button>
+              <button
+                className={styles.proposeBtn}
+                onClick={() => setSubmissionsOpen(true)}
+              >
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M9 11l3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+                Tài liệu đã đề xuất
+              </button>
+            </div>
           </div>
 
           {/* Stats pills */}
@@ -466,6 +465,12 @@ export default function ResourceUserPage() {
         loading={formLoading}
         isAdmin={false}
       />
+
+      <SubmissionHistoryModal
+        open={submissionsOpen}
+        submissions={memberSubmissions}
+        onClose={() => setSubmissionsOpen(false)}
+      />
     </div>
   );
 }
@@ -509,6 +514,77 @@ function StatPill({ icon, value, label }) {
       <span className={styles.statLabel}>{label}</span>
     </div>
   );
+}
+
+function SubmissionHistoryModal({ open, submissions, onClose }) {
+  if (!open) return null;
+
+  const pendingCount = submissions.filter((item) => item.status === 'pending').length;
+
+  return (
+    <div className={styles.historyOverlay} onClick={onClose}>
+      <section className={styles.historyModal} onClick={(event) => event.stopPropagation()}>
+        <div className={styles.historyHeader}>
+          <div>
+            <p className={styles.historyEyebrow}>Theo dõi phiếu của tôi</p>
+            <h2 className={styles.historyTitle}>Lịch sử đề xuất tài liệu</h2>
+          </div>
+          <div className={styles.historyHeaderActions}>
+            <span className={styles.historySummary}>
+              {submissions.length} phiếu · {pendingCount} chờ duyệt
+            </span>
+            <button type="button" className={styles.historyCloseBtn} onClick={onClose}>
+              ×
+            </button>
+          </div>
+        </div>
+
+        {submissions.length === 0 ? (
+          <div className={styles.historyEmpty}>
+            Bạn chưa gửi đề xuất tài liệu nào.
+          </div>
+        ) : (
+          <div className={styles.historyList}>
+            {submissions.map((item) => {
+              const status = SUBMISSION_STATUS[item.status] || SUBMISSION_STATUS.pending;
+              return (
+                <article key={item.id} className={styles.historyItem}>
+                  <div className={styles.historyMain}>
+                    <div className={styles.historyTopline}>
+                      <span className={styles.historyCode}>{item.id}</span>
+                      <span className={styles.statusBadge} style={{ background: status.bg, color: status.color }}>
+                        {status.label}
+                      </span>
+                    </div>
+                    <h3 className={styles.historyItemTitle}>{item.title}</h3>
+                    <p className={styles.historyMeta}>
+                      {item.subject} · {item.type} · {item.format}
+                    </p>
+                    <p className={styles.historyNote}>{item.note}</p>
+                  </div>
+                  <div className={styles.historyDates}>
+                    <span>Gửi: {formatHistoryDate(item.createdAt)}</span>
+                    <span>Duyệt: {item.reviewedAt ? formatHistoryDate(item.reviewedAt) : 'Chưa có'}</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+const SUBMISSION_STATUS = {
+  pending: { label: 'Chờ duyệt', bg: '#fef3c7', color: '#92400e' },
+  approved: { label: 'Đã duyệt', bg: '#dcfce7', color: '#15803d' },
+  rejected: { label: 'Từ chối', bg: '#fee2e2', color: '#b91c1c' },
+};
+
+function formatHistoryDate(date) {
+  if (!date) return 'Chưa có';
+  return new Date(date).toLocaleDateString('vi-VN');
 }
 
 function FilterSection({ title, children }) {

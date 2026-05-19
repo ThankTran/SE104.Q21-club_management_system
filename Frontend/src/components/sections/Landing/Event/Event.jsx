@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { eventsData } from '../../../data/content';
+import { eventsData } from '../../../../data/Public/content';
 import styles from './Event.module.css';
 
 export default function Events() {

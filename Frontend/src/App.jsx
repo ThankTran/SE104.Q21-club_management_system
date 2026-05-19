@@ -4,10 +4,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
 // Public
-import LandingPage from "./pages/LandingPage";
-import HomePage    from "./pages/Homepage";
+import LandingPage from "./pages/Public/LandingPage";
+import HomePage    from "./pages/Public/Homepage";
 
-import DashboardPage from "./pages/DashboardPage";;
+import DashboardPage from "./pages/Dashboard/DashboardPage";;
 
 // Member pages
 import MemberAdminPage from "./pages/Member/MemberAdminPage";
@@ -23,6 +23,7 @@ import ResourceAdminPage from "./pages/Resource/ResourceAdminPage";
 
 // Finance page 
 import FinancePage from "./pages/Finance/FinancePage";
+import MemberPaymentPage from "./pages/Finance/MemberPaymentPage";
 
 // Placeholder cho các trang chưa code
 const Placeholder = ({ title }) => (
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/eventuser"    element={<EventUserPage />} />
           <Route path="/eventadmin" element={<EventAdminPage />} />
           <Route path="/finance"   element={<FinancePage />} />
+          <Route path="/memberdues" element={<MemberPaymentPage />} />
         </Route>
 
         {/* ── Fallback ── */}
