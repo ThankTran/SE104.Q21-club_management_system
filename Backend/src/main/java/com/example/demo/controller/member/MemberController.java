@@ -56,6 +56,8 @@ public class MemberController {
             @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) String reqStatus,
             @RequestParam(required = false) String graduatedStatus,
+            @RequestParam(required = false) Integer rolePriority,
+            @RequestParam(required = false) Boolean rolePriorityGreaterThan,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -76,6 +78,8 @@ public class MemberController {
                     .graduatedStatus(graduatedStatus != null
                             ? com.example.demo.domain.enums.GraduatedStatusEnum.valueOf(graduatedStatus.toUpperCase())
                             : null)
+                    .rolePriority(rolePriority)
+                    .rolePriorityGreaterThan(rolePriorityGreaterThan)
                     .build();
 
             Page<MemberResponse> response = memberUseCase.searchMembers(searchRequest, pageable);
