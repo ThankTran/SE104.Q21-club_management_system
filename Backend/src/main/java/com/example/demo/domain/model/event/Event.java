@@ -37,7 +37,7 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted_at IS NULL")
 public class Event {
     @Id
-    @Column(name = "event_id", length = 50)
+    @Column(name = "event_id")
     private String eventId;
 
     @Column(name = "event_name", nullable = false)

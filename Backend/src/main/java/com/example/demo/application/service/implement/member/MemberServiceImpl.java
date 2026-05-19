@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 @Transactional
 @CacheConfig(cacheNames = "members")
 public class MemberServiceImpl implements com.example.demo.application.service.interfaces.member.MemberService {
+    private static final int MIN_ROLE_PRIORITY = 1;
+    private static final int MAX_ROLE_PRIORITY = 10;
 
     private final MemberRepository memberRepository;
     private final DepartmentRepository departmentRepository;
@@ -124,7 +126,7 @@ public class MemberServiceImpl implements com.example.demo.application.service.i
 
     // ==================== BM3: Tra cứu ====================
     @Override
-    @Cacheable(key = "'search:' + (#request?.studentId ?: '') + '|' + (#request?.fullName ?: '') + '|' + (#request?.departmentId ?: '') + '|' + (#request?.reqStatus ?: '') + '|' + (#request?.graduatedStatus ?: '') + '|p:' + #pageable.pageNumber + '|s:' + #pageable.pageSize + '|sort:' + #pageable.sort.toString()")
+    @Cacheable(key = "'search:' + (#request?.studentId ?: '') + '|' + (#request?.fullName ?: '') + '|' + (#request?.departmentId ?: '') + '|' + (#request?.reqStatus ?: '') + '|' + (#request?.graduatedStatus ?: '') + '|' + (#request?.rolePriority ?: '') + '|' + (#request?.rolePriorityGreaterThan ?: '') + '|p:' + #pageable.pageNumber + '|s:' + #pageable.pageSize + '|sort:' + #pageable.sort.toString()")
     public Page<MemberResponse> searchMembers(MemberSearchRequest request, Pageable pageable) {
         MemberSearchRequest safeRequest = request == null ? MemberSearchRequest.builder().build() : request;
         return filterMembers(safeRequest, pageable).map(memberMapper::toResponse);
@@ -133,6 +135,7 @@ public class MemberServiceImpl implements com.example.demo.application.service.i
     private Page<Member> filterMembers(MemberSearchRequest request, Pageable pageable) {
         String studentId = normalizeSearchText(request.getStudentId());
         String fullName = normalizeSearchText(request.getFullName());
+        validateRolePriorityFilter(request);
 
         return memberRepository.searchMembers(
                 studentId,
@@ -140,7 +143,18 @@ public class MemberServiceImpl implements com.example.demo.application.service.i
                 request.getDepartmentId(),
                 request.getReqStatus(),
                 request.getGraduatedStatus(),
+                request.getRolePriority(),
+                request.getRolePriorityGreaterThan(),
                 pageable);
+    }
+
+    private void validateRolePriorityFilter(MemberSearchRequest request) {
+        if (request.getRolePriority() == null) {
+            return;
+        }
+        if (request.getRolePriority() < MIN_ROLE_PRIORITY || request.getRolePriority() > MAX_ROLE_PRIORITY) {
+            throw new IllegalArgumentException("Role priority must be between 1 and 10");
+        }
     }
 
     private String normalizeSearchText(String value) {

@@ -1,6 +1,7 @@
 package com.example.demo.application.service.interfaces.event;
 
 import com.example.demo.application.dto.request.event.EventRequest;
+import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,8 @@ public interface EventService {
     List<EventResponse> getByDateRange(LocalDate from, LocalDate to);
 
     EventResponse getById(String id);
+
+    EventCalendarLinkResponse getGoogleCalendarLink(String id);
 
     void delete(String id);
 

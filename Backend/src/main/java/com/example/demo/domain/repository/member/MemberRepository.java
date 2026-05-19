@@ -48,17 +48,25 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             SELECT m
             FROM Member m
             LEFT JOIN m.department d
+            LEFT JOIN m.role r
             WHERE (:studentId IS NULL OR LOWER(m.studentId) LIKE LOWER(CONCAT('%', :studentId, '%')))
               AND (:fullName IS NULL OR LOWER(m.fullName) LIKE LOWER(CONCAT('%', :fullName, '%')))
               AND (:departmentId IS NULL OR d.departmentId = :departmentId)
               AND (:reqStatus IS NULL OR m.reqStatus = :reqStatus)
               AND (:graduatedStatus IS NULL OR m.graduatedStatus = :graduatedStatus)
+              AND (
+                    :rolePriority IS NULL
+                    OR (:rolePriorityGreaterThan = TRUE AND r.priority > :rolePriority)
+                    OR ((:rolePriorityGreaterThan IS NULL OR :rolePriorityGreaterThan = FALSE) AND r.priority = :rolePriority)
+                  )
             """)
     Page<Member> searchMembers(@Param("studentId") String studentId,
                                @Param("fullName") String fullName,
                                @Param("departmentId") Long departmentId,
                                @Param("reqStatus") ApprovalStatusEnum reqStatus,
                                @Param("graduatedStatus") GraduatedStatusEnum graduatedStatus,
+                               @Param("rolePriority") Integer rolePriority,
+                               @Param("rolePriorityGreaterThan") Boolean rolePriorityGreaterThan,
                                Pageable pageable);
 
     boolean existsByStudentId(String studentId);

@@ -1,6 +1,7 @@
 package com.example.demo.controller.event;
 
 import com.example.demo.application.dto.request.event.EventRequest;
+import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import com.example.demo.application.service.interfaces.event.EventService;
 import java.time.LocalDate;
@@ -40,6 +41,16 @@ public class EventController {
             return ResponseEntity.ok(eventService.getById(id));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/google-calendar-link")
+    public ResponseEntity<?> getGoogleCalendarLink(@PathVariable String id) {
+        try {
+            EventCalendarLinkResponse response = eventService.getGoogleCalendarLink(id);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

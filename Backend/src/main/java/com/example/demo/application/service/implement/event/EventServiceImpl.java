@@ -1,8 +1,10 @@
 package com.example.demo.application.service.implement.event;
 
 import com.example.demo.application.dto.request.event.EventRequest;
+import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import com.example.demo.application.mapper.event.EventMapper;
+import com.example.demo.domain.model.event.Event;
 import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.repository.event.EventOrganizerRepository;
 import com.example.demo.domain.repository.event.EventRepository;
@@ -10,8 +12,11 @@ import com.example.demo.domain.repository.finance.TransactionRepository;
 import com.example.demo.domain.repository.member.MemberRepository;
 import com.example.demo.domain.service.event.EventDomainService;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,6 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @CacheConfig(cacheNames = "events")
 public class EventServiceImpl implements com.example.demo.application.service.interfaces.event.EventService {
+    private static final ZoneId EVENT_TIMEZONE = ZoneId.of("Asia/Bangkok");
+    private static final DateTimeFormatter GOOGLE_CALENDAR_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'");
+
     private final EventRepository eventRepository;
     private final EventOrganizerRepository eventOrganizerRepository;
     private final TransactionRepository transactionRepository;
@@ -87,6 +96,38 @@ public class EventServiceImpl implements com.example.demo.application.service.in
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + id));
     }
 
+    @Override
+    public EventCalendarLinkResponse getGoogleCalendarLink(String id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + id));
+
+        if (event.getStartTime() == null || event.getEndTime() == null) {
+            throw new IllegalArgumentException("Event chua co du thong tin thoi gian de tao link Google Calendar");
+        }
+
+        String details = buildEventDetails(event);
+        String dates = event.getStartTime().atZone(EVENT_TIMEZONE).withZoneSameInstant(ZoneId.of("UTC"))
+                .format(GOOGLE_CALENDAR_DATE_FORMAT)
+                + "/"
+                + event.getEndTime().atZone(EVENT_TIMEZONE).withZoneSameInstant(ZoneId.of("UTC"))
+                .format(GOOGLE_CALENDAR_DATE_FORMAT);
+
+        String googleCalendarLink = UriComponentsBuilder
+                .fromUriString("https://calendar.google.com/calendar/render")
+                .queryParam("action", "TEMPLATE")
+                .queryParam("text", event.getEventName())
+                .queryParam("dates", dates)
+                .queryParam("details", details)
+                .queryParam("location", event.getLocation())
+                .build()
+                .toUriString();
+
+        return EventCalendarLinkResponse.builder()
+                .eventId(event.getEventId())
+                .googleCalendarLink(googleCalendarLink)
+                .build();
+    }
+
     @CacheEvict(allEntries = true)
     public void delete(String id) {
         if (!eventRepository.existsById(id)) {
@@ -121,5 +162,19 @@ public class EventServiceImpl implements com.example.demo.application.service.in
     @Async("applicationTaskExecutor")
     public CompletableFuture<EventResponse> getByIdAsync(String id) {
         return CompletableFuture.completedFuture(getById(id));
+    }
+
+    private String buildEventDetails(Event event) {
+        StringBuilder details = new StringBuilder();
+        if (event.getDescription() != null && !event.getDescription().isBlank()) {
+            details.append(event.getDescription().trim());
+        }
+        if (event.getEventId() != null && !event.getEventId().isBlank()) {
+            if (details.length() > 0) {
+                details.append("\n\n");
+            }
+            details.append("Ma su kien: ").append(event.getEventId());
+        }
+        return details.toString();
     }
 }
