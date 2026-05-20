@@ -1,0 +1,93 @@
+  /* ComboChart.module.css */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-600);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.15s;
+}
+
+.tab:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+
+.tabActive {
+  border-color: var(--primary-500);
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--gray-500);
+  font-weight: 600;
+}
+
+.legendBox {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.legendLine {
+  width: 20px;
+  height: 2.5px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Chart area ── */
+.chartWrap {
+  width: 100%;
+}
+
+/* ── Fade animation ── */
+.fadeIn {
+  animation: fadeInChart 0.3s ease;
+}
+
+@keyframes fadeInChart {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
