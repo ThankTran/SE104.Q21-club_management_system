@@ -1,0 +1,218 @@
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  font-family: var(--font-family);
+  font-size: 13.5px;
+}
+
+.table thead tr {
+  background: var(--white-soft);
+  border-bottom: 1.5px solid var(--gray-300);
+}
+
+.table th {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.sortBtn:hover {
+  color: var(--primary-700);
+}
+
+
+.row {
+  border-bottom: 1px solid #f1f3f5;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover,
+.selectedRow {
+  background: #f5f8ff;
+}
+
+.selectedRow {
+  box-shadow: inset 3px 0 0 var(--primary-500);
+}
+
+.table td {
+  padding: 15px 18px;
+  vertical-align: middle;
+  color: var(--gray-900);
+  white-space: nowrap;
+}
+
+.accountCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--white-hard);
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-300));
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0 0 2px;
+}
+
+.meta {
+  margin: 0;
+  color: var(--gray-500);
+  font-size: 12px;
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.roleBadge {
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.username {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--white-soft);
+  border: 1px solid var(--gray-300);
+  color: var(--gray-900);
+  font-size: 12.5px;
+  font-weight: 800;
+  font-family: "Consolas", "Courier New", monospace;
+}
+
+.passwordCell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 150px;
+  height: 32px;
+  padding: 0 6px 0 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  background: var(--white-soft);
+  color: var(--gray-900);
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.eyeBtn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--gray-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.eyeBtn:hover {
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.lastLogin {
+  color: var(--gray-700);
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iconBtn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-700);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.iconBtn:hover {
+  border-color: var(--primary-300);
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.deleteBtn:hover {
+  border-color: #fecaca;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.empty {
+  padding: 56px 20px;
+  text-align: center;
+  color: var(--gray-500);
+  font-size: 14px;
+}

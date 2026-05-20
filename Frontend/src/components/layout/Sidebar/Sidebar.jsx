@@ -9,6 +9,7 @@ import finance   from "../../../assets/icons/finance.svg";
 import help      from "../../../assets/icons/help.svg";
 import logout    from "../../../assets/icons/logout.svg";
 import home      from "../../../assets/icons/home.svg";
+import setting   from "../../../assets/icons/setting.svg";
 
 const menuItems = [
   { id: "home",      label: "Home",      icon: home,      path: "/home"      },
@@ -21,6 +22,7 @@ const menuItems = [
   { id: "eventadmin",  label: "Event Admin",  icon: events,   path: "/eventadmin"     },
   { id: "finance",   label: "Finance",   icon: finance,   path: "/finance"   },
   { id: "memberdues", label: "Đóng quỹ", icon: finance, path: "/memberdues" },
+  { id: "account", label: "Tài khoản", icon: setting, path: "/account" },
 ];
 
 const bottomItems = [
