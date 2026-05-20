@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RoleDomainServiceImpl implements RoleDomainService {
+    private static final int MIN_ROLE_PRIORITY = 1;
+    private static final int MAX_ROLE_PRIORITY = 10;
+
     @Override
     public void validateCreateRequest(RoleRequest request) {
         if (request == null) {
@@ -13,8 +16,10 @@ public class RoleDomainServiceImpl implements RoleDomainService {
         if (request.getRoleName() == null || request.getRoleName().isBlank()) {
             throw new IllegalArgumentException("Role name must not be empty");
         }
-        if (request.getPriority() == null || request.getPriority() < 1) {
-            throw new IllegalArgumentException("Role priority must be greater than zero");
+        if (request.getPriority() == null
+                || request.getPriority() < MIN_ROLE_PRIORITY
+                || request.getPriority() > MAX_ROLE_PRIORITY) {
+            throw new IllegalArgumentException("Role priority must be between 1 and 10");
         }
     }
 

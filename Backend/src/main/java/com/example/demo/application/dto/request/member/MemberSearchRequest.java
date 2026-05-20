@@ -13,4 +13,6 @@ public class MemberSearchRequest {
     private Long departmentId;   
     private ApprovalStatusEnum reqStatus;      
     private GraduatedStatusEnum graduatedStatus; 
+    private Integer rolePriority;
+    private Boolean rolePriorityGreaterThan;
 }
