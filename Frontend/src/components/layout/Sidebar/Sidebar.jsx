@@ -26,7 +26,7 @@ const menuItems = [
 ];
 
 const bottomItems = [
-  { id: "help",   label: "Trợ giúp",   icon: help   },
+  { id: "help", label: "Trợ giúp", icon: help, path: "/help" },
 ];
 
 const Sidebar = () => {
@@ -34,7 +34,7 @@ const Sidebar = () => {
   const location = useLocation();
 
   // Xác định active dựa theo URL thực tế, không phải state
-  const activeId = menuItems.find((item) =>
+  const activeId = [...menuItems, ...bottomItems].find((item) =>
     location.pathname.startsWith(item.path)
   )?.id ?? "dashboard";
 
@@ -60,8 +60,9 @@ const Sidebar = () => {
         {bottomItems.map((item) => (
           <button
             key={item.id}
-            className={styles.bottomItem}
+            className={`${styles.bottomItem} ${activeId === item.id ? styles.active : ""}`}
             title={item.label}
+            onClick={() => navigate(item.path)}
           >
             <img src={item.icon} alt={item.label} className={styles.icon} />
             <span className={styles.label}>{item.label}</span>
