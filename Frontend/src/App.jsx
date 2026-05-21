@@ -4,8 +4,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
 
 // Public
-import LandingPage from "./pages/LandingPage";
-import HomePage    from "./pages/Homepage";
+import LandingPage from "./pages/Public/LandingPage";
+import HomePage    from "./pages/Public/Homepage";
+
+import DashboardPage from "./pages/Dashboard/DashboardPage";;
 
 // Member pages
 import MemberAdminPage from "./pages/Member/MemberAdminPage";
@@ -21,6 +23,8 @@ import ResourceAdminPage from "./pages/Resource/ResourceAdminPage";
 
 // Finance page 
 import FinancePage from "./pages/Finance/FinancePage";
+import MemberPaymentPage from "./pages/Finance/MemberPaymentPage";
+import AccountPage from "./pages/Account/AccountPage";
 
 // Profile page
 import ProfilePage from "./pages/Profile/ProfilePage";
@@ -56,6 +60,7 @@ export default function App() {
 
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<HomePage />} />          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
           <Route path="/resourcesuser" element={<ResourceUserPage />} />
@@ -66,6 +71,8 @@ export default function App() {
           <Route path="/profile"   element={<ProfilePage />} />
           <Route path="/help"      element={<HelpPage />} />
           <Route path="/settings"  element={<SettingsPage />} />
+          <Route path="/memberdues" element={<MemberPaymentPage />} />
+          <Route path="/account" element={<AccountPage />} />
         </Route>
 
         {/* ── Fallback ── */}

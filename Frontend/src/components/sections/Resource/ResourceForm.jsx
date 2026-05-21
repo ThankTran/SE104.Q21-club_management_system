@@ -57,14 +57,13 @@ export default function ResourceForm({
     setErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
-  // Validate theo QĐ7.1, QĐ7.2, QĐ7.3
   const validate = () => {
     const errs = {};
-    if (!form.title.trim())   errs.title   = 'Vui lòng nhập tên tài liệu (QĐ7.1)';
-    if (!form.subject.trim()) errs.subject = 'Vui lòng nhập môn học / chủ đề (QĐ7.2)';
+    if (!form.title.trim())   errs.title   = 'Vui lòng nhập tên tài liệu';
+    if (!form.subject.trim()) errs.subject = 'Vui lòng nhập môn học / chủ đề';
     if (!form.type)           errs.type    = 'Vui lòng chọn loại tài liệu';
     if (!form.format)         errs.format  = 'Vui lòng chọn định dạng';
-    if (!form.link.trim())    errs.link    = 'Vui lòng nhập đường dẫn tài liệu (QĐ7.3)';
+    if (!form.link.trim())    errs.link    = 'Vui lòng nhập đường dẫn tài liệu';
     return errs;
   };
 
@@ -100,7 +99,7 @@ export default function ResourceForm({
           </button>
         </div>
 
-        {/* Mã phiếu + Ngày lập (BM7 header) */}
+        {/* Mã phiếu + Ngày lập */}
         <div className={styles.formMeta}>
           <span className={styles.formMetaTag}>
             📋 Phiếu thêm tài liệu học thuật
@@ -250,9 +249,17 @@ export default function ResourceForm({
 
 // Field wrapper
 function Field({ label, error, children }) {
+  const labelContent = typeof label === 'string' && label.trimEnd().endsWith('*')
+    ? (
+      <>
+        {label.replace(/\s*\*$/, '')} <span className={styles.required}>*</span>
+      </>
+    )
+    : label;
+
   return (
     <div className={styles.field}>
-      <label className={styles.label}>{label}</label>
+      <label className={styles.label}>{labelContent}</label>
       {children}
       {error && <p className={styles.errorMsg}>{error}</p>}
     </div>

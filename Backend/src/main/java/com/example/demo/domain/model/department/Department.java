@@ -12,7 +12,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-
 public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

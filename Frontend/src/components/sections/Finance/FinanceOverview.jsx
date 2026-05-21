@@ -1,10 +1,12 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './FinanceOverview.module.css';
 import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
+import FinanceCharts from './FinanceCharts';
+import PendingDuesList from './PendingDuesList';
 
 export default function OverviewPanel({ thuList, chiList, setTab }) {
   return (
     <div className={styles.overviewGrid}>
-      <div className={styles.overviewPanel}>
+      <div className={`${styles.overviewPanel} ${styles.incomePanel}`}>
         <div className={styles.panelHead}>
           <h3 className={styles.panelTitle}>Thu gần đây</h3>
           <button className={styles.panelLink} onClick={() => setTab('thu')}>Xem tất cả →</button>
@@ -20,7 +22,7 @@ export default function OverviewPanel({ thuList, chiList, setTab }) {
           </div>
         ))}
       </div>
-      <div className={styles.overviewPanel}>
+      <div className={`${styles.overviewPanel} ${styles.expensePanel}`}>
         <div className={styles.panelHead}>
           <h3 className={styles.panelTitle}>Chi gần đây</h3>
           <button className={styles.panelLink} onClick={() => setTab('chi')}>Xem tất cả →</button>
@@ -35,6 +37,12 @@ export default function OverviewPanel({ thuList, chiList, setTab }) {
             <span className={styles.recentAmt} style={{ color: '#b91c1c' }}>-{fmtMoney(r.soTien)}</span>
           </div>
         ))}
+      </div>
+      <div className={styles.chartPanel}>
+        <FinanceCharts thuList={thuList} chiList={chiList} />
+      </div>
+      <div className={styles.duesPanel}>
+        <PendingDuesList />
       </div>
     </div>
   );

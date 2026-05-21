@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import styles from './FinancePage.module.css';
 
-import { MOCK_THU, MOCK_CHI } from '../../data/financeMockData';
+import { MOCK_THU, MOCK_CHI } from '../../data/Finance/financeMockData';
 import { getThang } from '../../utils/Finance/financeUtils';
 
 import FinanceHeader from '../../components/sections/Finance/FinanceHeader';
@@ -14,10 +14,48 @@ import FinanceReport from '../../components/sections/Finance/FinanceReport';
 import IncomeFormModal from '../../components/sections/Finance/IncomeFormModal';
 import ExpenseFormModal from '../../components/sections/Finance/ExpenseFormModal';
 import ConfirmModal from '../../components/sections/Finance/ConfirmModal';
+import TransferDueTable from '../../components/sections/Finance/TransferDueTable';
+import {
+  createTransferDue,
+  deleteTransferDue,
+  getTransferIncomeReceipts,
+  getTransferDues,
+  markTransferDueCashPaid,
+  saveTransferDues,
+  syncPaidTransferDuesToIncomeReceipts,
+} from '../../utils/Finance/transferDues';
+import {
+  createTransactionAPI,
+  deleteTransactionAPI,
+  getTransactionsAPI,
+  normalizeTransactionFromApi,
+  toExpensePayload,
+  toIncomePayload,
+} from '../../services/finance-service';
 
 export default function FinancePage() {
-  const [thuList, setThuList] = useState(MOCK_THU);
+  const [thuList, setThuList] = useState(() => mergeIncomeReceipts(MOCK_THU));
   const [chiList, setChiList] = useState(MOCK_CHI);
+  const [transferDues, setTransferDues] = useState(() => getTransferDues());
+  const [apiError, setApiError] = useState('');
+
+  const [thuFilters, setThuFilters] = useState({
+    lyDo: '',
+    hinhThuc: '',
+    dateType: '',
+    month: '',
+    quarter: '',
+    year: '',
+  });
+
+  const [chiFilters, setChiFilters] = useState({
+    noiDung: '',
+    nguoiNhan: '',
+    dateType: '',
+    month: '',
+    quarter: '',
+    year: '',
+  });
 
   const [tab, setTab] = useState('overview');
 
@@ -35,6 +73,32 @@ export default function FinancePage() {
   const [sortThu, setSortThu] = useState('desc');
   const [sortChi, setSortChi] = useState('desc');
 
+  useEffect(() => {
+    let ignore = false;
+
+    getTransactionsAPI()
+      .then((data) => {
+        if (ignore) return;
+        const transactions = Array.isArray(data) ? data.map(normalizeTransactionFromApi) : [];
+        const income = transactions.filter((item) => item.raw?.type === 'INCOME');
+        const expense = transactions.filter((item) => item.raw?.type !== 'INCOME');
+
+        setThuList(income.length ? mergeIncomeReceipts(income) : mergeIncomeReceipts(MOCK_THU));
+        setChiList(expense.length ? expense : MOCK_CHI);
+        setApiError('');
+      })
+      .catch((error) => {
+        if (ignore) return;
+        setThuList(mergeIncomeReceipts(MOCK_THU));
+        setChiList(MOCK_CHI);
+        setApiError(error?.message || 'Không tải được dữ liệu thu chi từ API.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   const tongThu = thuList.reduce((s, r) => s + r.soTien, 0);
   const tongChi = chiList.reduce((s, r) => s + r.soTien, 0);
   const soDu    = tongThu - tongChi;
@@ -45,90 +109,187 @@ export default function FinancePage() {
   const bcTongChi = bcChi.reduce((s, r) => s + r.soTien, 0);
   const bcSoDu    = bcTongThu - bcTongChi;
 
+  // Lọc ngày
+  const matchDateFilter = (dateStr, filters) => {
+    if (!filters.dateType || filters.dateType === '') return true;  // ← thêm check rỗng
+    
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const quarter = Math.ceil(month / 3);
+
+    if (filters.dateType === 'month') {
+      return !filters.month || month === Number(filters.month);
+    }
+    if (filters.dateType === 'quarter') {
+      return !filters.quarter || quarter === Number(filters.quarter);
+    }
+    if (filters.dateType === 'year') {
+      return !filters.year || year === Number(filters.year);
+    }
+    return true;
+  };
+
   const filteredThu = useMemo(() => {
     const q = searchThu.toLowerCase();
 
-    const filtered = thuList.filter(
-      r =>
+    const filtered = thuList.filter(r => {
+      const matchSearch =
         !q ||
         r.nguoiNop.toLowerCase().includes(q) ||
         r.lyDo.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q)
-    );
+        r.id.toLowerCase().includes(q);
+
+      const matchLyDo =
+        !thuFilters.lyDo ||
+        r.lyDo.toLowerCase().includes(thuFilters.lyDo.toLowerCase());
+
+      const matchHinhThuc =
+        !thuFilters.hinhThuc ||
+        r.hinhThuc === thuFilters.hinhThuc;
+
+      const matchDate = matchDateFilter(r.ngayThu, thuFilters);
+
+      return matchSearch && matchLyDo && matchHinhThuc && matchDate;
+    });
 
     return filtered.sort((a, b) => {
       const da = new Date(a.ngayThu);
       const db = new Date(b.ngayThu);
-
       return sortThu === 'asc' ? da - db : db - da;
     });
-  }, [thuList, searchThu, sortThu]);
+  }, [thuList, searchThu, thuFilters, sortThu]);
 
   const filteredChi = useMemo(() => {
     const q = searchChi.toLowerCase();
 
-    const filtered = chiList.filter(
-      r =>
+    const filtered = chiList.filter(r => {
+      const matchSearch =
         !q ||
         r.nguoiNhan.toLowerCase().includes(q) ||
         r.noiDung.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q)
-    );
+        r.id.toLowerCase().includes(q);
+
+      const matchNoiDung =
+        !chiFilters.noiDung ||
+        r.noiDung.toLowerCase().includes(chiFilters.noiDung.toLowerCase());
+
+      const matchNguoiNhan =
+        !chiFilters.nguoiNhan ||
+        r.nguoiNhan.toLowerCase().includes(chiFilters.nguoiNhan.toLowerCase());
+
+      const matchDate = matchDateFilter(r.ngayLap, chiFilters);
+
+      return matchSearch && matchNoiDung && matchNguoiNhan && matchDate;
+    });
 
     return filtered.sort((a, b) => {
       const da = new Date(a.ngayLap);
       const db = new Date(b.ngayLap);
-
       return sortChi === 'asc' ? da - db : db - da;
     });
-  }, [chiList, searchChi, sortChi]);
+  }, [chiList, searchChi, chiFilters, sortChi]);
 
   const openThuModal = () => { setEditThu(null); setThuOpen(true); };
   const openChiModal = () => { setEditChi(null); setChiOpen(true); };
   const openEditThuModal = (r) => { setEditThu(r); setThuOpen(true); };
   const openEditChiModal = (r) => { setEditChi(r); setChiOpen(true); };
 
-  const handleThuSubmit = (data) => {
+  const refreshTransferDuesAndReceipts = () => {
+    const dues = getTransferDues();
+    syncPaidTransferDuesToIncomeReceipts(dues);
+    setTransferDues(dues);
+    setThuList((prev) => mergeIncomeReceipts(prev));
+  };
+
+  const handleMarkCashPaid = (id) => {
+    setTransferDues(markTransferDueCashPaid(id));
+    setThuList((prev) => mergeIncomeReceipts(prev));
+  };
+
+  const handleThuSubmit = async (data) => {
     setFormLoading(true);
-    setTimeout(() => {
+    try {
       if (editThu) {
+        // TODO(BE): Chưa có PUT/PATCH /api/transactions/{id}; tạm cập nhật local.
         setThuList(p => p.map(r => r.id === editThu.id ? { ...r, ...data } : r));
+      } else if (data?.mode === 'transfer' || (Array.isArray(data) && data[0]?.mode === 'transfer')) {
+        const records = Array.isArray(data) ? data : [data];
+        setTransferDues((prev) => {
+          const created = records.map((record, index) =>
+            createTransferDue(record, [...prev, ...records.slice(0, index)])
+          );
+          const next = [...created, ...prev];
+          saveTransferDues(next);
+          return next;
+        });
       } else {
-        const newId = `THU${String(thuList.length + 1).padStart(3, '0')}`;
-        setThuList(p => [...p, { ...data, id: newId }]);
+        const records = Array.isArray(data) ? data : [data];
+        const created = await Promise.all(records.map((record, index) => {
+          const localRecord = {
+            ...record,
+            id: record.id || `THU${String(thuList.length + index + 1).padStart(3, '0')}`,
+          };
+          return createTransactionAPI(toIncomePayload(localRecord));
+        }));
+        setThuList(p => [...p, ...created.map(normalizeTransactionFromApi)]);
       }
-      setFormLoading(false);
       setThuOpen(false);
       setEditThu(null);
-    }, 600);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không lưu được phiếu thu.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
-  const handleChiSubmit = (data) => {
+  const handleChiSubmit = async (data) => {
     setFormLoading(true);
-    setTimeout(() => {
+    try {
       if (editChi) {
+        // TODO(BE): Chưa có PUT/PATCH /api/transactions/{id}; tạm cập nhật local.
         setChiList(p => p.map(r => r.id === editChi.id ? { ...r, ...data } : r));
       } else {
-        const newId = `CHI${String(chiList.length + 1).padStart(3, '0')}`;
-        setChiList(p => [...p, { ...data, id: newId }]);
+        const localRecord = { ...data, id: data.id || `CHI${String(chiList.length + 1).padStart(3, '0')}` };
+        const created = await createTransactionAPI(toExpensePayload(localRecord));
+        setChiList(p => [...p, normalizeTransactionFromApi(created)]);
       }
-      setFormLoading(false);
       setChiOpen(false);
       setEditChi(null);
-    }, 600);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không lưu được phiếu chi.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    if (deleteTarget.id.startsWith('THU')) setThuList(p => p.filter(r => r.id !== deleteTarget.id));
-    else setChiList(p => p.filter(r => r.id !== deleteTarget.id));
-    setDeleteTarget(null);
+    try {
+      await deleteTransactionAPI(deleteTarget.id);
+      if (deleteTarget.id.startsWith('THU')) setThuList(p => p.filter(r => r.id !== deleteTarget.id));
+      else setChiList(p => p.filter(r => r.id !== deleteTarget.id));
+      setDeleteTarget(null);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không xoá được giao dịch.');
+    }
   };
 
   return (
     <div className={styles.page}>
-      <FinanceHeader onOpenThu={openThuModal} onOpenChi={openChiModal} />
+      {apiError && <div className={styles.apiError}>{apiError}</div>}
 
+      <FinanceHeader
+        onOpenThu={openThuModal}
+        onOpenChi={openChiModal}
+        thuList={thuList}
+        chiList={chiList}
+        bcThu={bcThu}
+        bcChi={bcChi}
+      />
       <FinanceStats
         tongThu={tongThu}
         tongChi={tongChi}
@@ -159,7 +320,9 @@ export default function FinancePage() {
           onEditThu={openEditThuModal}
           setDeleteTarget={setDeleteTarget}
           sortThu={sortThu}
-          setSortThu={setSortThu} 
+          setSortThu={setSortThu}
+          filters={thuFilters}
+          setFilters={setThuFilters}
         />
       )}
 
@@ -174,6 +337,17 @@ export default function FinancePage() {
           setDeleteTarget={setDeleteTarget}
           sortChi={sortChi}
           setSortChi={setSortChi}
+          filters={chiFilters}
+          setFilters={setChiFilters}
+        />
+      )}
+
+      {tab === 'chuyenKhoan' && (
+        <TransferDueTable
+          dues={transferDues}
+          onRefresh={refreshTransferDuesAndReceipts}
+          onMarkCashPaid={handleMarkCashPaid}
+          onDelete={(id) => setTransferDues(deleteTransferDue(id))}
         />
       )}
 
@@ -206,5 +380,15 @@ export default function FinancePage() {
       />
       <ConfirmModal item={deleteTarget} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
     </div>
+
+    
   );
+}
+
+function mergeIncomeReceipts(baseReceipts) {
+  syncPaidTransferDuesToIncomeReceipts();
+  const transferReceipts = getTransferIncomeReceipts();
+  const existingIds = new Set(baseReceipts.map((receipt) => receipt.id));
+  const missingReceipts = transferReceipts.filter((receipt) => !existingIds.has(receipt.id));
+  return [...missingReceipts, ...baseReceipts];
 }

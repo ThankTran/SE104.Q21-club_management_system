@@ -1,4 +1,4 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import styles from './FinanceTabs.module.css';
 import { TABS } from '../Finance/financeConstants';
 
 export default function FinanceTabs({ tab, setTab }) {

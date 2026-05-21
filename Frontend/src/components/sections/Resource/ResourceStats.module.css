@@ -1,0 +1,90 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  background: var(--white-hard);
+  border: 1px solid;
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #3b82f6;
+}
+
+.blue {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.amber {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.amber::before {
+  background: #f59e0b;
+}
+
+.green {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.green::before {
+  background: #22c55e;
+}
+
+.red {
+  border-color: #fca5a5;
+  background: #fff1f2;
+}
+
+.red::before {
+  background: #ef4444;
+}
+
+
+.label {
+  margin: 0 0 8px;
+  color: var(--gray-500);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.value {
+  margin: 0;
+  color: var(--gray-900);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hint {
+  margin: 8px 0 0;
+  color: var(--gray-500);
+  font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

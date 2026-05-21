@@ -1,5 +1,7 @@
-import styles from '../../../pages/Finance/FinancePage.module.css';
+import { useState } from 'react';
+import styles from './ExpenseTable.module.css';
 import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
+import FinanceFilter from './FinanceFilter';
 
 export default function ExpenseTable({
   chiList,
@@ -11,7 +13,10 @@ export default function ExpenseTable({
   setDeleteTarget,
   sortChi,
   setSortChi,
+  filters,
+  setFilters,
 }) {
+  const [filterOpen, setFilterOpen] = useState(false);
   return (
     <div className={styles.tableSection}>
       <div className={styles.tableHeader}>
@@ -21,6 +26,13 @@ export default function ExpenseTable({
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input className={styles.searchInput} placeholder="Tìm phiếu chi..." value={searchChi} onChange={e => setSearchChi(e.target.value)} />
           </div>
+          <FinanceFilter
+            open={filterOpen}
+            setOpen={setFilterOpen}
+            type="expense"
+            filters={filters}
+            setFilters={setFilters}
+          />
           <button className={styles.btnChi} onClick={onOpenChi}>+ Lập phiếu chi</button>
         </div>
       </div>
@@ -37,7 +49,7 @@ export default function ExpenseTable({
                   className={styles.sortBtn}
                   onClick={() => setSortChi(sortChi === 'asc' ? 'desc' : 'asc')}
                 >
-                  Ngày lập {sortChi === 'asc' ? '↑' : '↓'}
+                  NGÀY LẬP {sortChi === 'asc' ? '↑' : '↓'}
                 </button>
               </th>
               <th>SỐ TIỀN</th>

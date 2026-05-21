@@ -1,5 +1,7 @@
 package com.example.demo.domain.model.finance;
 
+import com.example.demo.domain.enums.TransactionStatus;
+import com.example.demo.domain.enums.TransactionType;
 import com.example.demo.domain.model.event.Event;
 import com.example.demo.domain.model.member.Member;
 import jakarta.persistence.Column;
@@ -19,9 +21,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Where;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 
 
 @Entity
@@ -32,7 +35,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @Builder
 @DynamicUpdate
-@Where(clause = "deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL")
 public class Transaction {
     @Id
     @Column(name = "transaction_id", length = 50)

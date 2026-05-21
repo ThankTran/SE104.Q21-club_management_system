@@ -1,8 +1,12 @@
 package com.example.demo.domain.model.event;
 
+import com.example.demo.domain.enums.ApprovalStatusEnum;
+import com.example.demo.domain.enums.EventStatusEnum;
 import com.example.demo.domain.model.member.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -17,6 +21,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "events")
@@ -26,10 +34,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @DynamicUpdate
-@Where(clause = "deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL")
 public class Event {
     @Id
-    @Column(name = "event_id", length = 50)
+    @Column(name = "event_id")
     private String eventId;
 
     @Column(name = "event_name", nullable = false)

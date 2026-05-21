@@ -1,0 +1,257 @@
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--white-hard);
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  overflow: visible;
+  position: relative;
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #f0f4f8;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--white-soft);
+}
+
+.tableTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tableActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-family: var(--font-family);
+}
+
+.table thead tr {
+  background: var(--white-soft);
+  border-bottom: 1.5px solid #f0f4f8;
+}
+
+.table thead th {
+  padding: 12px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.row {
+  border-bottom: 1px solid #f5f7fa;
+  transition: background 0.15s;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: #f8faff;
+}
+
+.table td {
+  padding: 13px 18px;
+  vertical-align: middle;
+  color: var(--gray-900);
+}
+
+.dateCell {
+  color: var(--gray-700);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.amtThu {
+  font-size: 14px;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.amtChi {
+  font-size: 14px;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.sttCell {
+  color: var(--gray-500);
+  font-size: 13px;
+  text-align: center;
+  width: 40px;
+}
+
+.emptyRow {
+  text-align: center;
+  padding: 48px 20px !important;
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+.baocaoLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.baocaoRule {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.thangLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.thangSelect {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gray-300);
+  background: var(--white-hard);
+  color: var(--gray-900);
+  font-size: 13px;
+  font-family: var(--font-family);
+  outline: none;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.thangSelect:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.baocaoCard {
+  margin: 0;
+}
+
+.baocaoCardHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.baocaoTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gray-900);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.baocaoThang {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.loaiBadgeThu {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #dcfce7;
+  color: #15803d;
+  letter-spacing: 0.5px;
+}
+
+.loaiBadgeChi {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #fee2e2;
+  color: #b91c1c;
+  letter-spacing: 0.5px;
+}
+
+.baocaoTotals {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 2px solid #e8edf3;
+  margin: 0;
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 22px;
+  border-bottom: 1px solid #f5f7fa;
+}
+
+.totalDuRow {
+  background: var(--white-soft);
+  border-bottom: none;
+}
+
+.totalLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.totalLabelDu {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--gray-900);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.totalValThu {
+  font-size: 15px;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.totalValChi {
+  font-size: 15px;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.totalValDuPos {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary-700);
+}
+
+.totalValDuNeg {
+  font-size: 18px;
+  font-weight: 800;
+  color: #b91c1c;
+}
