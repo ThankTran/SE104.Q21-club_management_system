@@ -11,19 +11,19 @@ import logout    from "../../../assets/icons/logout.svg";
 import home      from "../../../assets/icons/home.svg";
 
 const menuItems = [
-  { id: "home",      label: "Trang chủ",      icon: home,      path: "/home"      },
-  { id: "dashboard", label: "Thống kê", icon: dashboard, path: "/dashboard" },
-  { id: "memberuser",   label: "Thành viên",   icon: members,   path: "/memberuser"   },
-  { id: "memberadmin",  label: "Quản trị viên",  icon: members,   path: "/memberadmin"     },
-  { id: "resourcesuser", label: "Tài liệu", icon: resources, path: "/resourcesuser" },
-  { id: "resourcesadmin", label: "Quản lý tài liệu", icon: resources, path: "/resourcesadmin" },
-  { id: "eventuser",  label: "Sự kiện",  icon: events,   path: "/eventuser"     },
-  { id: "eventadmin",  label: "Quản lí sự kiện",  icon: events,   path: "/eventadmin"     },
-  { id: "finance",   label: "Thu chi",   icon: finance,   path: "/finance"   },
+  { id: "home",           label: "Trang chủ",         icon: home,      path: "/home"          },
+  { id: "dashboard",      label: "Thống kê",           icon: dashboard, path: "/dashboard"     },
+  { id: "memberuser",     label: "Thành viên",         icon: members,   path: "/memberuser"    },
+  { id: "memberadmin",    label: "Quản trị viên",      icon: members,   path: "/memberadmin"   },
+  { id: "resourcesuser",  label: "Tài liệu",           icon: resources, path: "/resourcesuser" },
+  { id: "resourcesadmin", label: "Quản lý tài liệu",  icon: resources, path: "/resourcesadmin"},
+  { id: "eventuser",      label: "Sự kiện",            icon: events,    path: "/eventuser"     },
+  { id: "eventadmin",     label: "Quản lí sự kiện",   icon: events,    path: "/eventadmin"    },
+  { id: "finance",        label: "Thu chi",            icon: finance,   path: "/finance"       },
 ];
 
 const bottomItems = [
-  { id: "help",   label: "Trợ giúp",   icon: help   },
+  { id: "help", label: "Trợ giúp", icon: help, path: "/help" },
 ];
 
 const Sidebar = () => {
@@ -31,7 +31,7 @@ const Sidebar = () => {
   const location = useLocation();
 
   // Xác định active dựa theo URL thực tế, không phải state
-  const activeId = menuItems.find((item) =>
+  const activeId = [...menuItems, ...bottomItems].find((item) =>
     location.pathname.startsWith(item.path)
   )?.id ?? "dashboard";
 
@@ -57,8 +57,9 @@ const Sidebar = () => {
         {bottomItems.map((item) => (
           <button
             key={item.id}
-            className={styles.bottomItem}
+            className={`${styles.bottomItem} ${activeId === item.id ? styles.active : ""}`}
             title={item.label}
+            onClick={() => navigate(item.path)}
           >
             <img src={item.icon} alt={item.label} className={styles.icon} />
             <span className={styles.label}>{item.label}</span>

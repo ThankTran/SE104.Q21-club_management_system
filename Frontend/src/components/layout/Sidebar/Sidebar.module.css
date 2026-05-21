@@ -129,6 +129,16 @@
   color: var(--primary-700);
 }
 
+.bottomItem.active {
+  box-shadow: inset 2px 3px 10px 1px var(--shadow-inner);
+  color: var(--primary-700);
+  font-weight: 600;
+}
+
+.bottomItem.active .icon {
+  color: var(--brand-blue-link);
+}
+
 .bottomItem:last-child:hover {
   box-shadow: inset 2px 3px 10px 1px var(--shadow-inner);
   color: var(--primary-700);
