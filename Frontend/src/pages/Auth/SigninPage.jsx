@@ -21,9 +21,6 @@ const LoginPage = () => {
             <input type="checkbox" id="remember" name="remember" />
             <label htmlFor="remember">Remember me</label>
           </div>
-          <a href="#" className={styles.signupLink}>
-            Forgot password?
-          </a>
         </div>
         <button type="submit" className={styles.button}>
           Đăng nhập
