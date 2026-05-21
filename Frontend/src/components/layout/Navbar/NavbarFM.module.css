@@ -158,24 +158,95 @@
 }
 
 .iconBtn {
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 18px;
   cursor: pointer;
-  padding: 4px;
-  transition: opacity 0.2s;
+  padding: 8px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .iconBtn:hover {
-  opacity: 0.7;
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.iconImg {
+  width: 22px;
+  height: 22px;
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+
+.notificationContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bellBadge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background-color: #e41e3f; /* Bright vibrant red */
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 1.5px solid var(--white-hard);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.activeIconBtn {
+  background-color: rgba(0, 61, 130, 0.08) !important;
+  transform: scale(1.05);
+}
+
+.activeIconBtn .iconImg {
+  filter: invert(16%) sepia(94%) saturate(2377%) hue-rotate(205deg) brightness(94%) contrast(101%);
 }
 
 .profileBtn {
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   margin-left: 8px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profileBtn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.activeProfileBtn {
+  background-color: rgba(0, 61, 130, 0.05) !important;
 }
 
 .avatar {
@@ -184,11 +255,17 @@
   background: var(--text-header);
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .avatar:hover {
   background: var(--text-darkest);
+}
+
+.activeAvatar {
+  background: var(--brand-secondary) !important;
+  box-shadow: 0 0 0 2px var(--white-hard), 0 0 0 4px var(--brand-secondary);
+  transform: scale(1.05);
 }
 
 .profileContainer {
@@ -197,7 +274,7 @@
 
 .dropdownMenu {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 12px); 
   right: 0;
   background: white;
   border-radius: 12px;
