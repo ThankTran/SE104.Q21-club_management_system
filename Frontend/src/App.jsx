@@ -22,6 +22,17 @@ import ResourceAdminPage from "./pages/Resource/ResourceAdminPage";
 // Finance page 
 import FinancePage from "./pages/Finance/FinancePage";
 
+// Profile page
+import ProfilePage from "./pages/Profile/ProfilePage";
+
+// Help page
+import HelpPage from "./pages/Help/HelpPage";
+
+// Settings page
+import SettingsPage from "./pages/Settings/SettingsPage";
+
+import SigninPage from "./pages/Auth/SigninPage";
+
 // Placeholder cho các trang chưa code
 const Placeholder = ({ title }) => (
   <div style={{ padding: "40px 32px" }}>
@@ -41,10 +52,10 @@ export default function App() {
 
         {/* ── Public ── */}
         <Route path="/"     element={<LandingPage />} />
-        <Route path="/home" element={<HomePage />} />
+        <Route path="/signin" element={<SigninPage />} />
 
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
+          <Route path="/home" element={<HomePage />} />          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />
           <Route path="/resourcesuser" element={<ResourceUserPage />} />
@@ -52,6 +63,9 @@ export default function App() {
           <Route path="/eventuser"    element={<EventUserPage />} />
           <Route path="/eventadmin" element={<EventAdminPage />} />
           <Route path="/finance"   element={<FinancePage />} />
+          <Route path="/profile"   element={<ProfilePage />} />
+          <Route path="/help"      element={<HelpPage />} />
+          <Route path="/settings"  element={<SettingsPage />} />
         </Route>
 
         {/* ── Fallback ── */}
