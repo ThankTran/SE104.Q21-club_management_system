@@ -38,14 +38,6 @@
 /* Header */
 .header { text-align: center; margin-bottom: 32px; }
 
-.logo {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, var(--primary-700), var(--primary-500));
-  border-radius: 12px;
-  margin: 0 auto 16px;
-}
-
 .title {
   color: var(--gray-900);
   font-size: 32px;

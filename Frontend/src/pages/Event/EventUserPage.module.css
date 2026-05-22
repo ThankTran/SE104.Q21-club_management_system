@@ -53,20 +53,6 @@
 }
 .heroBtnPrimary:hover { background: var(--primary-100); }
 
-.heroBtnSecondary {
-  padding: 9px 22px;
-  border-radius: 8px;
-  border: 1.5px solid rgba(255,255,255,0.3);
-  background: transparent;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font-family);
-  transition: background 0.15s;
-}
-.heroBtnSecondary:hover { background: rgba(255,255,255,0.1); }
-
 /* ────────────────────────────────────────
    FILTER ROW
 ──────────────────────────────────────── */
@@ -165,13 +151,6 @@
   color: var(--gray-500);
   font-size: 15px;
   font-weight: 600;
-}
-
-.registerdEvents,
-.upcomingEvents,
-.highlightsEvents {
-  margin: 0; 
-  padding: 0;
 }
 
 @media (max-width: 600px) {

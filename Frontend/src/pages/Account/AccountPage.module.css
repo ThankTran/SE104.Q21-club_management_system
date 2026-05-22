@@ -62,25 +62,6 @@
   box-shadow: 0 6px 18px rgba(29, 78, 216, 0.25);
 }
 
-.secondaryBtn {
-  padding: 0 14px;
-  border: 1.5px solid var(--gray-300);
-  background: var(--white-hard);
-  color: var(--gray-700);
-}
-
-.secondaryBtn:hover {
-  border-color: var(--primary-300);
-  background: var(--primary-100);
-  color: var(--primary-700);
-}
-
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
 .contentGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -130,12 +111,6 @@
   color: var(--primary-700);
   font-size: 12px;
   font-weight: 800;
-}
-
-.tableSubtitle {
-  margin: 4px 0 0;
-  color: var(--gray-500);
-  font-size: 12.5px;
 }
 
 .pagination {

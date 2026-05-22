@@ -183,27 +183,6 @@
   gap: 6px;
 }
 
-.iconBtn {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border-radius: 8px;
-  border: 1.5px solid var(--gray-300);
-  background: var(--white-hard);
-  color: var(--gray-700);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.iconBtn:hover {
-  border-color: var(--primary-300);
-  background: var(--primary-100);
-  color: var(--primary-700);
-}
-
 .deleteBtn:hover {
   border-color: #fecaca;
   background: #fee2e2;
