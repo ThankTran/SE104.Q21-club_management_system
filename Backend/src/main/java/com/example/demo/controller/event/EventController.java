@@ -3,7 +3,7 @@ package com.example.demo.controller.event;
 import com.example.demo.application.dto.request.event.EventRequest;
 import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
-import com.example.demo.application.service.interfaces.event.EventService;
+import com.example.demo.application.service.event.interfaces.EventService;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;

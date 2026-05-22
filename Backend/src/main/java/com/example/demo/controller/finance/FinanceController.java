@@ -1,6 +1,6 @@
 package com.example.demo.controller.finance;
 
-import com.example.demo.application.service.interfaces.finance.FinanceService;
+import com.example.demo.application.service.finance.interfaces.FinanceService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;

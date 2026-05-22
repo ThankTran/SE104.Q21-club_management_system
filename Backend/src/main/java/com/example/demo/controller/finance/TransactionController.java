@@ -2,7 +2,7 @@ package com.example.demo.controller.finance;
 
 import com.example.demo.application.dto.request.finance.TransactionRequest;
 import com.example.demo.application.dto.response.finance.TransactionResponse;
-import com.example.demo.application.service.interfaces.finance.TransactionService;
+import com.example.demo.application.service.finance.interfaces.TransactionService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

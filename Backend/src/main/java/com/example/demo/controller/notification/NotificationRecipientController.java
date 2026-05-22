@@ -2,7 +2,7 @@ package com.example.demo.controller.notification;
 
 import com.example.demo.application.dto.request.notification.NotificationRecipientRequest;
 import com.example.demo.application.dto.response.notification.NotificationRecipientResponse;
-import com.example.demo.application.service.interfaces.notification.NotificationRecipientService;
+import com.example.demo.application.service.notification.interfaces.NotificationRecipientService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

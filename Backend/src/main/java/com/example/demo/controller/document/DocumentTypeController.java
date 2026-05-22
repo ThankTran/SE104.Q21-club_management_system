@@ -2,7 +2,7 @@ package com.example.demo.controller.document;
 
 import com.example.demo.application.dto.request.document.DocumentTypeRequest;
 import com.example.demo.application.dto.response.document.DocumentTypeResponse;
-import com.example.demo.application.service.interfaces.document.DocumentTypeService;
+import com.example.demo.application.service.document.interfaces.DocumentTypeService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;

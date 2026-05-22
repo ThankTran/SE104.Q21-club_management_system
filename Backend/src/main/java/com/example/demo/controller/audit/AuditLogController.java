@@ -2,7 +2,7 @@ package com.example.demo.controller.audit;
 
 import com.example.demo.application.dto.request.audit.AuditLogRequest;
 import com.example.demo.application.dto.response.audit.AuditLogResponse;
-import com.example.demo.application.service.interfaces.audit.AuditLogService;
+import com.example.demo.application.service.audit.interfaces.AuditLogService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
