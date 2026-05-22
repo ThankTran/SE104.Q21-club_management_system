@@ -104,7 +104,7 @@ export const getEventRolesAPI = () =>
   api.get('event-roles')
 
 export const getEventRoleByNameAPI = (roleName) =>
-  api.get('event-roles/by-name', { params: { roleName } })
+  api.get('event-roles/by-name', { params: { name: roleName } })
 
 export const registerEventAPI = (eventId, memberId) =>
   api.post(`events/${eventId}/registrations`, { memberId })

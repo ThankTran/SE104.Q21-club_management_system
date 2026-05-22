@@ -7,7 +7,7 @@ export const getRoleByIdAPI = (id) =>
   api.get(`roles/${id}`)
 
 export const getRoleByNameAPI = (roleName) =>
-  api.get('roles/by-name', { params: { roleName } })
+  api.get('roles/by-name', { params: { name: roleName } })
 
 export const createRoleAPI = (payload) =>
   api.post('roles', payload)
