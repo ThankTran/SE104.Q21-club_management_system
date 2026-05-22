@@ -59,7 +59,8 @@ export default function App() {
         <Route path="/signin" element={<SigninPage />} />
 
         <Route element={<DashboardLayout />}>
-          <Route path="/home" element={<HomePage />} />          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
+          <Route path="/home" element={<HomePage />} />          
+          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />

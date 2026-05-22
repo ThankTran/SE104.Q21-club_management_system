@@ -1,16 +1,16 @@
 import React from "react";
 import styles from "./Homepage.module.css";
-import archiveIcon from "../assets/icons/archive.svg";
-import membersIcon from "../assets/icons/members.svg";
-import eventsIcon from "../assets/icons/events.svg";
-import addIcon from "../assets/icons/add.svg";
-import verifyIcon from "../assets/icons/verify.svg";
-import maintenanceIcon from "../assets/icons/maintenance.svg";
-import exportReportIcon from "../assets/icons/export-report.svg";
-import preferencesIcon from "../assets/icons/preferences.svg";
-import broadcastIcon from "../assets/icons/broadcast.svg";
-import chevronRightIcon from "../assets/icons/chevron-right.svg";
-import useScrollReveal from "../hooks/useScrollReveal";
+import archiveIcon from "../../assets/icons/archive.svg";
+import membersIcon from "../../assets/icons/members.svg";
+import eventsIcon from "../../assets/icons/events.svg";
+import addIcon from "../../assets/icons/add.svg";
+import verifyIcon from "../../assets/icons/verify.svg";
+import maintenanceIcon from "../../assets/icons/maintenance.svg";
+import exportReportIcon from "../../assets/icons/export-report.svg";
+import preferencesIcon from "../../assets/icons/preferences.svg";
+import broadcastIcon from "../../assets/icons/broadcast.svg";
+import chevronRightIcon from "../../assets/icons/chevron-right.svg";
+import useScrollReveal from "../../hooks/useScrollReveal";
 
 const Homepage = () => {
   useScrollReveal();
@@ -219,8 +219,4 @@ const Homepage = () => {
   );
 };
 
-<<<<<<< HEAD:Frontend/src/pages/Homepage.jsx
 export default Homepage;
-=======
-export default HomePage;
->>>>>>> 71001f3e404fb7e6ae8c7b9d0a9126e9df0793f7:Frontend/src/pages/Public/Homepage.jsx
