@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./HelpPage.module.css";
-import useScrollReveal from "../../hooks/useScrollReveal";
+
 
 import searchIcon from "../../assets/icons/search.svg";
 import helpIcon from "../../assets/icons/help.svg";
@@ -65,12 +65,15 @@ const CATEGORIES = [
 ];
 
 export default function HelpPage() {
-  useScrollReveal();
+
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [expandedFaq, setExpandedFaq] = useState(null);
   
+  // Right Column Tab: "ai" | "form"
+  const [activeRightTab, setActiveRightTab] = useState("ai");
+
   // Feedback Form State
   const [formState, setFormState] = useState({
     name: "",
@@ -81,6 +84,185 @@ export default function HelpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // AI Agent States
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: "bot-welcome-txt",
+      sender: "bot",
+      text: "Chào khách iu thanh__tr 🌹, hôm nay bạn cần CLB hỗ trợ về điều gì, hãy hỏi ngay để được giải đáp nhanh chóng nhất nha! 🎉🥰",
+      isWelcome: true
+    },
+    {
+      id: "bot-welcome-opt",
+      sender: "bot",
+      isOptions: true
+    }
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [chatInputValue, setChatInputValue] = useState("");
+  const [optionsOffset, setOptionsOffset] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const chatEndRef = useRef(null);
+
+  // Auto scroll chat
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages, isTyping]);
+
+  // AI agent responses dictionary
+  const AI_ANSWERS = {
+    "Làm thế nào để cập nhật thông tin học tập và chuyên ngành?": 
+      "Để cập nhật chuyên ngành và học tập, bạn làm theo các bước sau nhé:\n1. Bấm vào Avatar góc trên cùng bên phải màn hình để chọn **Hồ sơ**.\n2. Chọn tab **Học tập & Chuyên môn**.\n3. Tại mục Kỹ năng học thuật, bạn có thể gõ tìm kiếm và nhấn nút **+ Thêm tag** để cập nhật nhanh chóng! 🎓",
+    
+    "Quy trình đăng ký tham gia một sự kiện mới như thế nào?": 
+      "Quy trình đăng ký sự kiện vô cùng đơn giản:\n1. Chọn mục **Sự kiện** trên Sidebar bên trái.\n2. Duyệt qua danh sách sự kiện và bấm vào sự kiện bạn muốn tham gia.\n3. Nhấn **Đăng ký tham gia**. Hệ thống sẽ tự động gửi email xác nhận và lưu lịch sử vào hoạt động của bạn! 📅",
+    
+    "Làm cách nào để tải tài liệu học thuật lên hệ thống?": 
+      "Để chia sẻ tài liệu hữu ích cho CLB:\n1. Di chuyển tới mục **Tài liệu** trên thanh điều hướng.\n2. Bấm nút **Thêm tài liệu** ở góc trên.\n3. Điền các trường thông tin (tên môn, mô tả) và tải lên file (định dạng PDF, DOCX, ZIP dưới 20MB).\n*Lưu ý: Tài liệu sẽ hiển thị công khai sau khi được Ban Quản Trị duyệt nhé!* 📚",
+    
+    "Tôi có thể theo dõi tình hình tài chính và quỹ CLB ở đâu?": 
+      "Tất cả các khoản thu chi đều minh bạch tại CLB:\n1. Hãy truy cập mục **Thu chi** trên Sidebar.\n2. Tại đây có biểu đồ trực quan, danh sách đóng góp quỹ và nhật ký chi tiêu của Ban Tài chính được cập nhật mỗi tháng! 💰",
+    
+    "Làm sao để thay đổi mật khẩu và cài đặt nhận thông báo?": 
+      "Để nâng cao bảo mật tài khoản:\n1. Vào trang **Cá nhân** bằng menu góc phải.\n2. Chọn tab **Bảo mật & Cài đặt**.\n3. Tại đây bạn có thể đổi mật khẩu mới hoặc gạt các toggle bật/tắt nhận thông báo qua Email hoặc hệ thống! 🔑",
+    
+    "Tôi muốn tham gia Ban Học thuật hoặc Ban Truyền thông của CLB thì làm thế nào?": 
+      "Chào mừng bạn đến với các Ban hoạt động của CLB! Đơn đăng ký thường mở vào đầu học kỳ trên Trang chủ. Bạn hãy cập nhật thông tin CV trong Hồ sơ cá nhân trước, sau đó nộp đơn ứng tuyển online trực tiếp hoặc liên hệ các Trưởng Ban để được phỏng vấn nhé! 🤝",
+    
+    "Có giới hạn dung lượng và định dạng cho tài liệu tải lên không?": 
+      "Dung lượng tối đa được hỗ trợ là **20MB** mỗi tệp để bảo toàn máy chủ. Các định dạng được phép tải lên bao gồm: `PDF`, `DOCX`, `XLSX`, `PPTX`, `ZIP`, `RAR`. Chú ý quét virus trước khi đăng bạn nhé! 💾",
+    
+    "Tôi muốn liên hệ gấp với Ban Quản Trị?":
+      "Bạn có thể liên hệ trực tiếp với Ban Quản Trị qua các kênh ưu tiên sau:\n- 📞 Hotline: **0987654321**\n- ✉️ Email: **24521092@gm.uit.edu.vn**\n- 🏢 Văn phòng: **Tầng 7, tòa E, trường ĐH Công nghệ Thông tin (UIT)**. Chúng mình luôn sẵn sàng lắng nghe bạn! 🏢",
+      
+    "Làm sao để đóng lệ phí sinh hoạt CLB?":
+      "Để đóng quỹ thành viên CLB:\n1. Vào mục **Thu chi**.\n2. Tìm phần đóng lệ phí định kỳ.\n3. Bấm **Thanh toán trực tuyến** hoặc chuyển khoản theo cú pháp hướng dẫn kèm mã QR được tạo tự động nhé! 💳",
+  };
+
+  const ALL_AGENT_QUESTIONS = Object.keys(AI_ANSWERS);
+
+  const SUGGESTION_PILLS = [
+    { label: "Lỗi khóa/giới hạn tài khoản 🔒", query: "Tôi muốn liên hệ gấp với Ban Quản Trị?" },
+    { label: "Tham gia sự kiện 📅", query: "Quy trình đăng ký tham gia một sự kiện mới như thế nào?" },
+    { label: "Tải tài liệu 📚", query: "Làm cách nào để tải tài liệu học thuật lên hệ thống?" },
+    { label: "Thay đổi thông tin cá nhân 🎓", query: "Làm thế nào để cập nhật thông tin học tập và chuyên ngành?" },
+    { label: "Thay mật khẩu 🔑", query: "Làm sao để thay đổi mật khẩu và cài đặt nhận thông báo?" }
+  ];
+
+  const getDisplayedQuestions = () => {
+    const list = [];
+    for (let i = 0; i < 4; i++) {
+      list.push(ALL_AGENT_QUESTIONS[(optionsOffset + i) % ALL_AGENT_QUESTIONS.length]);
+    }
+    return list;
+  };
+
+  const handleRotateQuestions = () => {
+    setIsSpinning(true);
+    setOptionsOffset(prev => prev + 4);
+    setTimeout(() => {
+      setIsSpinning(false);
+    }, 500);
+  };
+
+  const findBestAnswer = (userQuery) => {
+    const query = userQuery.toLowerCase().trim();
+    if (!query) return null;
+    
+    // Check exact or direct match of questions
+    for (const question of ALL_AGENT_QUESTIONS) {
+      if (question.toLowerCase().includes(query) || query.includes(question.toLowerCase())) {
+        return AI_ANSWERS[question];
+      }
+    }
+    
+    // Keyword match logic
+    if (query.includes("sự kiện") || query.includes("event") || query.includes("đăng ký")) {
+      return AI_ANSWERS["Quy trình đăng ký tham gia một sự kiện mới như thế nào?"];
+    }
+    if (query.includes("tài liệu") || query.includes("resource") || query.includes("tải lên") || query.includes("pdf")) {
+      if (query.includes("dung lượng") || query.includes("giới hạn") || query.includes("mb") || query.includes("định dạng")) {
+        return AI_ANSWERS["Có giới hạn dung lượng và định dạng cho tài liệu tải lên không?"];
+      }
+      return AI_ANSWERS["Làm cách nào để tải tài liệu học thuật lên hệ thống?"];
+    }
+    if (query.includes("cập nhật") || query.includes("thông tin") || query.includes("chuyên ngành") || query.includes("major") || query.includes("học tập")) {
+      return AI_ANSWERS["Làm thế nào để cập nhật thông tin học tập và chuyên ngành?"];
+    }
+    if (query.includes("tài chính") || query.includes("quỹ") || query.includes("thu chi") || query.includes("tiền") || query.includes("phí")) {
+      if (query.includes("đóng") || query.includes("nộp")) {
+        return AI_ANSWERS["Làm sao để đóng lệ phí sinh hoạt CLB?"];
+      }
+      return AI_ANSWERS["Tôi có thể theo dõi tình hình tài chính và quỹ CLB ở đâu?"];
+    }
+    if (query.includes("mật khẩu") || query.includes("cài đặt") || query.includes("bảo mật") || query.includes("thông báo")) {
+      return AI_ANSWERS["Làm sao để thay đổi mật khẩu và cài đặt nhận thông báo?"];
+    }
+    if (query.includes("tuyển") || query.includes("tham gia ban") || query.includes("truyền thông") || query.includes("học thuật") || query.includes("vào clb")) {
+      return AI_ANSWERS["Tôi muốn tham gia Ban Học thuật hoặc Ban Truyền thông của CLB thì làm thế nào?"];
+    }
+    if (query.includes("liên hệ") || query.includes("admin") || query.includes("hotline") || query.includes("email") || query.includes("chủ nhiệm") || query.includes("gấp")) {
+      return AI_ANSWERS["Tôi muốn liên hệ gấp với Ban Quản Trị?"];
+    }
+
+    return "Cảm ơn bạn đã đặt câu hỏi. Hệ thống chưa tìm thấy tài liệu hướng dẫn khớp hoàn toàn với câu hỏi của bạn.\n\nBạn có thể gửi yêu cầu trực tiếp qua tab **Gửi yêu cầu hỗ trợ** bên cạnh hoặc liên hệ nhanh với Ban Quản trị qua Hotline **0987654321** để được giải đáp tức thì nhé! 💖";
+  };
+
+  const handleSelectQuestion = (question) => {
+    if (isTyping) return;
+    
+    // User message
+    const userMsg = {
+      id: `user-${Date.now()}`,
+      sender: "user",
+      text: question
+    };
+    
+    setChatMessages(prev => [...prev, userMsg]);
+    setIsTyping(true);
+    
+    // AI response delay
+    setTimeout(() => {
+      const answer = findBestAnswer(question);
+      const botMsg = {
+        id: `bot-${Date.now()}`,
+        sender: "bot",
+        text: answer
+      };
+      setChatMessages(prev => [...prev, botMsg]);
+      setIsTyping(false);
+    }, 750);
+  };
+
+  const handleSendCustomText = (e) => {
+    e.preventDefault();
+    const text = chatInputValue.trim();
+    if (!text || isTyping) return;
+    
+    const userMsg = {
+      id: `user-${Date.now()}`,
+      sender: "user",
+      text: text
+    };
+    
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInputValue("");
+    setIsTyping(true);
+    
+    setTimeout(() => {
+      const answer = findBestAnswer(text);
+      const botMsg = {
+        id: `bot-${Date.now()}`,
+        sender: "bot",
+        text: answer
+      };
+      setChatMessages(prev => [...prev, botMsg]);
+      setIsTyping(false);
+    }, 750);
+  };
 
   const toggleFaq = (id) => {
     if (expandedFaq === id) {
@@ -126,7 +308,7 @@ export default function HelpPage() {
         message: "",
       });
       
-      // Auto dismiss success screen after 5 seconds
+      // Auto dismiss success screen after 6 seconds
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 6000);
@@ -146,9 +328,9 @@ export default function HelpPage() {
   return (
     <div className={styles.container}>
       {/* Help Banner Section */}
-      <div className={`${styles.banner} reveal`}>
+      <div className={styles.banner}>
         <div className={styles.bannerOverlay}></div>
-        <div className={`${styles.bannerContent} reveal-left`}>
+        <div className={styles.bannerContent}>
           <h1 className={styles.bannerTitle}>Chúng tôi có thể giúp gì cho bạn?</h1>
           <p className={styles.bannerSubtitle}>
             Tìm kiếm câu trả lời nhanh chóng hoặc gửi yêu cầu hỗ trợ đến Ban quản trị câu lạc bộ.
@@ -178,7 +360,7 @@ export default function HelpPage() {
       {/* Main Grid */}
       <div className={styles.gridContent}>
         {/* Left Column: FAQ Accordion & Category Tabs */}
-        <div className={`${styles.faqColumn} reveal-left`}>
+        <div className={styles.faqColumn}>
           <h2 className={styles.sectionTitle}>
             <img src={infoIcon} alt="FAQs" className={styles.sectionTitleIcon} />
             Câu hỏi thường gặp
@@ -250,127 +432,193 @@ export default function HelpPage() {
           </div>
         </div>
 
-        {/* Right Column: Contact info & Support Form */}
-        <div className={`${styles.formColumn} reveal-right`}>
-          {/* Quick Contact Cards */}
-          <div className={styles.contactSection}>
-            <h3 className={styles.sideTitle}>Liên hệ hỗ trợ nhanh</h3>
-            <div className={styles.contactCards}>
-              <div className={styles.contactCard}>
-                <span className={styles.contactLabel}>Email Hỗ trợ:</span>
-                <a href="mailto:24521092@gm.uit.edu.vn" className={styles.contactValue}>
-                  24521092@gm.uit.edu.vn
-                </a>
-              </div>
-              <div className={styles.contactCard}>
-                <span className={styles.contactLabel}>Hotline:</span>
-                <span className={styles.contactValue}>0987654321</span>
-              </div>
-              <div className={styles.contactCard}>
-                <span className={styles.contactLabel}>Văn phòng CLB:</span>
-                <span className={styles.contactValue}>Tầng 7, tòa E, UIT</span>
-              </div>
-            </div>
+        {/* Right Column: AI Agent Chat & Traditional Form */}
+        <div className={styles.formColumn}>
+          {/* Navigation tabs for AI Agent vs Traditional Ticket Form */}
+          <div className={styles.rightTabsContainer}>
+            <button
+              className={`${styles.rightTabBtn} ${activeRightTab === "ai" ? styles.rightTabActive : ""}`}
+              onClick={() => setActiveRightTab("ai")}
+            >
+              <span className={styles.tabIconEmoji}>🤖</span>
+              Trợ lý AI Agent
+            </button>
+            <button
+              className={`${styles.rightTabBtn} ${activeRightTab === "form" ? styles.rightTabActive : ""}`}
+              onClick={() => setActiveRightTab("form")}
+            >
+              <span className={styles.tabIconEmoji}>📝</span>
+              Gửi yêu cầu
+            </button>
           </div>
 
-          {/* Message / Support Ticket Form */}
-          <div className={styles.ticketFormContainer}>
-            <h3 className={styles.sideTitle}>Gửi ý kiến đóng góp & Yêu cầu</h3>
-            
-            {submitSuccess ? (
-              <div className={styles.successMessage}>
-                <div className={styles.successIcon}>✓</div>
-                <h4 className={styles.successTitle}>Gửi thông tin thành công!</h4>
-                <p className={styles.successText}>
-                  Cảm ơn bạn đã đóng góp ý kiến. Yêu cầu của bạn đã được tiếp nhận và ban quản trị sẽ phản hồi qua email trong vòng 24 giờ làm việc.
-                </p>
-                <button
-                  className={styles.sendNewBtn}
-                  onClick={() => setSubmitSuccess(false)}
-                >
-                  Gửi thêm phản hồi khác
-                </button>
+          {activeRightTab === "ai" ? (
+            /* AI Agent Chat Interface (Shopee CS Style) */
+            <div className={styles.aiAgentWrapper}>
+              {/* Header */}
+              <div className={styles.aiAgentHeader}>
+                <div className={styles.aiHeaderLeft}>
+                  <button className={styles.aiBackBtn} title="Quay lại" onClick={() => handleRotateQuestions()}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    </svg>
+                  </button>
+                  <div className={styles.aiTitleBlock}>
+                    <h3 className={styles.aiHeaderTitle}>Trợ lý AI</h3>
+                    <div className={styles.aiStatusLabel}>
+                      <span className={styles.aiPulseDot}></span>
+                      <span>Trực tuyến</span>
+                    </div>
+                  </div>
+                </div>
+                <span className={styles.aiPriorityBadge}>⭐ ƯU TIÊN</span>
               </div>
-            ) : (
-              <form onSubmit={handleFormSubmit} className={styles.supportForm}>
-                {errorMsg && <div className={styles.formError}>{errorMsg}</div>}
-                
-                <div className={styles.formGroup}>
-                  <label htmlFor="support-name">Họ và tên *</label>
-                  <input
-                    id="support-name"
-                    type="text"
-                    name="name"
-                    value={formState.name}
-                    onChange={handleFormChange}
-                    placeholder="Nhập họ tên của bạn"
-                    required
-                  />
-                </div>
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="support-email">Email liên hệ *</label>
-                  <input
-                    id="support-email"
-                    type="email"
-                    name="email"
-                    value={formState.email}
-                    onChange={handleFormChange}
-                    placeholder="Nhập địa chỉ email"
-                    required
-                  />
-                </div>
+              {/* Chat Scroll Area */}
+              <div className={styles.aiChatContent}>
+                {chatMessages.map((msg) => {
+                  if (msg.sender === "bot") {
+                    return (
+                      <div key={msg.id} className={styles.botMessageRow}>
+                        <div className={styles.botAvatar}>
+                          <span>AI</span>
+                        </div>
+                        <div className={styles.botMessageContentBlock}>
+                          {msg.isWelcome ? (
+                            <div className={styles.botBubbleWelcome}>
+                              Chào khách iu <strong>thanh__tr 🌹</strong>, hôm nay bạn cần CLB hỗ trợ về điều gì, hãy hỏi ngay để được giải đáp nhanh chóng nhất nha! 🎉🥰
+                            </div>
+                          ) : msg.text ? (
+                            <div className={styles.botBubbleMessage}>
+                              {msg.text.split("\n").map((line, lIdx) => (
+                                <p key={lIdx} style={{ margin: line.trim() === "" ? "10px 0" : "4px 0" }}>
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          ) : null}
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="support-topic">Vấn đề cần hỗ trợ *</label>
-                  <select
-                    id="support-topic"
-                    name="topic"
-                    value={formState.topic}
-                    onChange={handleFormChange}
-                  >
-                    <option value="general">Hỏi đáp chung</option>
-                    <option value="member">Quản lý thành viên & Hồ sơ</option>
-                    <option value="event">Sự kiện & Hoạt động</option>
-                    <option value="finance">Thu chi & Tài chính</option>
-                    <option value="technical">Lỗi kỹ thuật hệ thống</option>
-                  </select>
-                </div>
+                          {msg.isOptions && (
+                            <div className={styles.botOptionsCard}>
+                              <h4 className={styles.optionsTitle}>Bạn muốn hỏi về:</h4>
+                              <div className={styles.optionsList}>
+                                {getDisplayedQuestions().map((question, qIdx) => (
+                                  <button
+                                    key={qIdx}
+                                    className={styles.optionQuestionLink}
+                                    onClick={() => handleSelectQuestion(question)}
+                                    disabled={isTyping}
+                                  >
+                                    {question}
+                                  </button>
+                                ))}
+                              </div>
+                              <div className={styles.optionsDivider}></div>
+                              <button
+                                className={styles.rotateQuestionsBtn}
+                                onClick={handleRotateQuestions}
+                                disabled={isTyping}
+                              >
+                                <span className={`${styles.rotateIcon} ${isSpinning ? styles.spinAnimation : ""}`}>🔄</span>
+                                Đổi câu hỏi
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div key={msg.id} className={styles.userMessageRow}>
+                        <div className={styles.userBubbleMessage}>{msg.text}</div>
+                      </div>
+                    );
+                  }
+                })}
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="support-message">Nội dung yêu cầu *</label>
-                  <textarea
-                    id="support-message"
-                    name="message"
-                    rows="4"
-                    maxLength="500"
-                    value={formState.message}
-                    onChange={handleFormChange}
-                    placeholder="Mô tả chi tiết thắc mắc hoặc góp ý của bạn (tối đa 500 ký tự)..."
-                    required
-                  ></textarea>
-                  <span className={styles.charCounter}>
-                    {formState.message.length}/500 ký tự
-                  </span>
-                </div>
+                {isTyping && (
+                  <div className={styles.botMessageRow}>
+                    <div className={styles.botAvatar}>
+                      <span>AI</span>
+                    </div>
+                    <div className={styles.typingIndicatorBubble}>
+                      <span className={styles.typingDot}></span>
+                      <span className={styles.typingDot}></span>
+                      <span className={styles.typingDot}></span>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
 
+              {/* Horizontal Scroll Suggestion Pills Slider */}
+              <div className={styles.suggestionPillsScrollWrapper}>
+                <div className={styles.suggestionPillsList}>
+                  {SUGGESTION_PILLS.map((pill, idx) => (
+                    <button
+                      key={idx}
+                      className={styles.suggestionPillBtn}
+                      onClick={() => handleSelectQuestion(pill.query)}
+                      disabled={isTyping}
+                    >
+                      {pill.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Input Area */}
+              <form onSubmit={handleSendCustomText} className={styles.aiInputForm}>
+                <input
+                  type="text"
+                  placeholder="Nhập yêu cầu của bạn tại đây nhé"
+                  value={chatInputValue}
+                  onChange={(e) => setChatInputValue(e.target.value)}
+                  className={styles.aiInputField}
+                  disabled={isTyping}
+                />
                 <button
                   type="submit"
-                  className={styles.submitBtn}
-                  disabled={isSubmitting}
+                  className={styles.aiSendBtn}
+                  disabled={!chatInputValue.trim() || isTyping}
+                  title="Gửi câu hỏi"
                 >
-                  {isSubmitting ? (
-                    <div className={styles.spinnerWrapper}>
-                      <span className={styles.spinner}></span>
-                      <span>Đang gửi...</span>
-                    </div>
-                  ) : (
-                    "Gửi yêu cầu hỗ trợ"
-                  )}
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                  </svg>
                 </button>
               </form>
-            )}
-          </div>
+
+              <div className={styles.aiFooterDisclaimer}>
+                Được tạo bởi AI, áp dụng <span className={styles.disclaimerUnderline}>điều khoản dịch vụ</span>.
+              </div>
+            </div>
+          ) : (
+            /* Traditional Support / Feedback Form Tab */
+            <>
+              {/* Quick Contact Cards */}
+              <div className={styles.contactSection}>
+                <h3 className={styles.sideTitle}>Liên hệ hỗ trợ nhanh</h3>
+                <div className={styles.contactCards}>
+                  <div className={styles.contactCard}>
+                    <span className={styles.contactLabel}>Email Hỗ trợ:</span>
+                    <a href="mailto:24521092@gm.uit.edu.vn" className={styles.contactValue}>
+                      24521092@gm.uit.edu.vn
+                    </a>
+                  </div>
+                  <div className={styles.contactCard}>
+                    <span className={styles.contactLabel}>Hotline:</span>
+                    <span className={styles.contactValue}>0987654321</span>
+                  </div>
+                  <div className={styles.contactCard}>
+                    <span className={styles.contactLabel}>Văn phòng CLB:</span>
+                    <span className={styles.contactValue}>Tầng 7, tòa E, UIT</span>
+                  </div>
+                </div>
+              </div>
+
+            </>
+          )}
         </div>
       </div>
     </div>
