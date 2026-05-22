@@ -75,7 +75,7 @@ export const getResourceTypesAPI = () =>
   api.get('document-types')
 
 export const getResourceTypeByNameAPI = (typeName) =>
-  api.get('document-types/by-name', { params: { typeName } })
+  api.get('document-types/by-name', { params: { name: typeName } })
 
 export const createResourceStatusAPI = (payload) =>
   api.post('document-statuses', payload)
@@ -84,7 +84,7 @@ export const getResourceStatusesAPI = () =>
   api.get('document-statuses')
 
 export const getResourceStatusByNameAPI = (statusName) =>
-  api.get('document-statuses/by-name', { params: { statusName } })
+  api.get('document-statuses/by-name', { params: { name: statusName } })
 
 // DocumentRequest requires numeric typeId/subjectId. If the form keeps free-text
 // type/subject, FE must resolve or create lookup records before POST /api/documents.

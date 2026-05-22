@@ -2,7 +2,7 @@ package com.example.demo.controller.event;
 
 import com.example.demo.application.dto.request.event.EventOrganizerRequest;
 import com.example.demo.application.dto.response.event.EventOrganizerResponse;
-import com.example.demo.application.service.interfaces.event.EventOrganizerService;
+import com.example.demo.application.service.event.interfaces.EventOrganizerService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

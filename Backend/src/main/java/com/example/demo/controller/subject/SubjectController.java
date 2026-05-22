@@ -2,7 +2,7 @@ package com.example.demo.controller.subject;
 
 import com.example.demo.application.dto.request.subject.SubjectRequest;
 import com.example.demo.application.dto.response.subject.SubjectResponse;
-import com.example.demo.application.service.interfaces.subject.SubjectService;
+import com.example.demo.application.service.subject.interfaces.SubjectService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

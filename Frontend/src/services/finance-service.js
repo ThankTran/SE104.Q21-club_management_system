@@ -1,6 +1,11 @@
 import api from '../utils/api'
 
 const isIncome = (type) => String(type).toUpperCase() === 'INCOME'
+const toDateTimeParam = (value, fallbackTime) => {
+  if (!value) return value
+  const text = String(value)
+  return text.includes('T') ? text : `${text}T${fallbackTime}`
+}
 
 export const normalizeTransactionFromApi = (transaction = {}) => {
   const base = {
@@ -54,13 +59,28 @@ export const toExpensePayload = (item = {}) => ({
 })
 
 export const getTotalIncomeAPI = (from, to) =>
-  api.get('finance/income', { params: { from, to } })
+  api.get('finance/income', {
+    params: {
+      from: toDateTimeParam(from, '00:00:00'),
+      to: toDateTimeParam(to, '23:59:59'),
+    },
+  })
 
 export const getTotalExpenseAPI = (from, to) =>
-  api.get('finance/expense', { params: { from, to } })
+  api.get('finance/expense', {
+    params: {
+      from: toDateTimeParam(from, '00:00:00'),
+      to: toDateTimeParam(to, '23:59:59'),
+    },
+  })
 
 export const getRevenueAPI = (from, to) =>
-  api.get('finance/revenue', { params: { from, to } })
+  api.get('finance/revenue', {
+    params: {
+      from: toDateTimeParam(from, '00:00:00'),
+      to: toDateTimeParam(to, '23:59:59'),
+    },
+  })
 
 export const getIncomeByEventAPI = (eventId) =>
   api.get(`finance/income/by-event/${eventId}`)

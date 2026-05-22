@@ -7,7 +7,7 @@ export const getDepartmentByIdAPI = (id) =>
   api.get(`departments/${id}`)
 
 export const getDepartmentByNameAPI = (departmentName) =>
-  api.get('departments/by-name', { params: { departmentName } })
+  api.get('departments/by-name', { params: { name: departmentName } })
 
 export const createDepartmentAPI = (payload) =>
   api.post('departments', payload)

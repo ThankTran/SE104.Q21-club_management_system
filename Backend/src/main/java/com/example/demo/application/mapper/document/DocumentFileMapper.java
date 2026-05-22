@@ -8,13 +8,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DocumentFileMapper {
-    public DocumentFile toEntity(DocumentFileRequest request, Document document) {
+    public DocumentFile toEntity(DocumentFileRequest request, Document document, String url) {
         return DocumentFile.builder()
                 .document(document)
-                .fileUrl(request.getFileUrl())
-                .fileName(request.getFileName())
-                .fileSize(request.getFileSize())
-                .mimeType(request.getMimeType())
+                .fileUrl(url)
+                .fileName(request.getFile().getName())
+                .fileSize(request.getFile().getSize())
+                .mimeType(request.getFile().getContentType())
                 .build();
     }
 
