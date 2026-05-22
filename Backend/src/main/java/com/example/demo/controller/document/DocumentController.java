@@ -3,7 +3,7 @@ package com.example.demo.controller.document;
 import com.example.demo.application.dto.request.document.DocumentRequest;
 import com.example.demo.application.dto.response.document.DocumentResponse;
 import com.example.demo.application.exception.BusinessException;
-import com.example.demo.application.service.interfaces.document.DocumentService;
+import com.example.demo.application.service.document.interfaces.DocumentService;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

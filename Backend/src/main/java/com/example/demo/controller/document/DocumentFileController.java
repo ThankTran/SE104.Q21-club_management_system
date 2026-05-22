@@ -2,10 +2,11 @@ package com.example.demo.controller.document;
 
 import com.example.demo.application.dto.request.document.DocumentFileRequest;
 import com.example.demo.application.dto.response.document.DocumentFileResponse;
-import com.example.demo.application.service.interfaces.document.DocumentFileService;
+import com.example.demo.application.service.document.interfaces.DocumentFileService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +20,12 @@ public class DocumentFileController {
         this.documentFileService = documentFileService;
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(@Valid @RequestBody DocumentFileRequest request) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(documentFileService.create(request));
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(documentFileService.create(request));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

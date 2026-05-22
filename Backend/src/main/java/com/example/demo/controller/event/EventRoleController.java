@@ -2,7 +2,7 @@ package com.example.demo.controller.event;
 
 import com.example.demo.application.dto.request.event.EventRoleRequest;
 import com.example.demo.application.dto.response.event.EventRoleResponse;
-import com.example.demo.application.service.interfaces.event.EventRoleService;
+import com.example.demo.application.service.event.interfaces.EventRoleService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

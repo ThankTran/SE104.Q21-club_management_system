@@ -2,7 +2,7 @@ package com.example.demo.controller.role;
 
 import com.example.demo.application.dto.request.role.RoleRequest;
 import com.example.demo.application.dto.response.role.RoleResponse;
-import com.example.demo.application.service.interfaces.role.RoleService;
+import com.example.demo.application.service.role.interfaces.RoleService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

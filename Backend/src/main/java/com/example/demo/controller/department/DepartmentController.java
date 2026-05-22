@@ -2,8 +2,9 @@ package com.example.demo.controller.department;
 
 import com.example.demo.application.dto.request.department.DepartmentRequest;
 import com.example.demo.application.dto.response.department.DepartmentResponse;
-import com.example.demo.application.service.interfaces.department.DepartmentService;
 import java.util.List;
+
+import com.example.demo.application.service.department.interfaces.DepartmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

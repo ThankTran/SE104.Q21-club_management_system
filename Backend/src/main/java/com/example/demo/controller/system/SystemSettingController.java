@@ -2,7 +2,7 @@ package com.example.demo.controller.system;
 
 import com.example.demo.application.dto.request.system.SystemSettingRequest;
 import com.example.demo.application.dto.response.system.SystemSettingResponse;
-import com.example.demo.application.service.interfaces.system.SystemSettingService;
+import com.example.demo.application.service.system.interfaces.SystemSettingService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
