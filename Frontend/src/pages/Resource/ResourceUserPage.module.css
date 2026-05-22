@@ -651,6 +651,12 @@
   color: var(--primary-700);
 }
 
+.breadcrumbText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
 .historyOverlay {
   position: fixed;
   inset: 0;

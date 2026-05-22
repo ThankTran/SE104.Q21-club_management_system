@@ -45,14 +45,29 @@
   font-size: 12.5px;
 }
 
+.success {
+  border-color: #bbf7d0;
+  border-left-color: #16a34a;
+}
+
 .success .iconWrap {
   color: #15803d;
   background: #dcfce7;
 }
 
+.danger {
+  border-color: #fecaca;
+  border-left-color: #dc2626;
+}
+
 .danger .iconWrap {
   color: #b91c1c;
   background: #fee2e2;
+}
+
+.warning {
+  border-color: #fde68a;
+  border-left-color: #f59e0b;
 }
 
 .warning .iconWrap {

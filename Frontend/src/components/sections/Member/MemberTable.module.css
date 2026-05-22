@@ -252,6 +252,12 @@
   gap: 4px;
 }
 
+.pageGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .pageBtn {
   width: 32px;
   height: 32px;
@@ -283,6 +289,12 @@
   color: var(--white-hard) !important;
   border-color: var(--primary-900) !important;
   font-weight: 700;
+}
+
+.ellipsis {
+  color: var(--gray-500);
+  padding: 0 2px;
+  font-size: 13px;
 }
 
 /* ── Loading ── */

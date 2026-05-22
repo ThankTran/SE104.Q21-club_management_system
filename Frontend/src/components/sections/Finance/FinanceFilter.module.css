@@ -123,6 +123,12 @@
   color: var(--text-muted-gray);
 }
 
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0 14px;
+}
+
 .actions {
   display: flex;
   gap: 8px;
