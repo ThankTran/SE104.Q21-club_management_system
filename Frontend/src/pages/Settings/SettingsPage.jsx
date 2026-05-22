@@ -71,52 +71,6 @@ export default function SettingsPage() {
     });
   };
 
-  // 3. Security Settings
-  const [security, setSecurity] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-    twoFactorAuth: false,
-  });
-
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    if (!security.currentPassword || !security.newPassword || !security.confirmPassword) {
-      showToast("Vui lòng nhập đầy đủ thông tin mật khẩu", "error");
-      return;
-    }
-    if (security.newPassword !== security.confirmPassword) {
-      showToast("Mật khẩu mới và Xác nhận không khớp", "error");
-      return;
-    }
-    if (security.newPassword.length < 6) {
-      showToast("Mật khẩu mới phải từ 6 ký tự trở lên", "error");
-      return;
-    }
-
-    showToast("Cập nhật mật khẩu thành công!");
-    setSecurity((prev) => ({
-      ...prev,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    }));
-  };
-
-  // 4. Privacy Settings
-  const [privacy, setPrivacy] = useState({
-    hidePhone: true,
-    hideEmail: false,
-    showOnlineStatus: true,
-  });
-
-  const handlePrivacyChange = (key, value) => {
-    setPrivacy((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-    showToast("Đã cập nhật tùy chọn quyền riêng tư!");
-  };
 
   // 5. Integrations Settings
   return (
@@ -158,6 +112,7 @@ export default function SettingsPage() {
             <img src={preferencesIcon} alt="" className={styles.tabIcon} />
             <span>Tài khoản & Giao diện</span>
           </button>
+          
           <button
             className={`${styles.tabBtn} ${activeTab === "notifications" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("notifications")}
@@ -165,20 +120,7 @@ export default function SettingsPage() {
             <img src={notiIcon} alt="" className={styles.tabIcon} />
             <span>Tùy chọn thông báo</span>
           </button>
-          <button
-            className={`${styles.tabBtn} ${activeTab === "security" ? styles.activeTab : ""}`}
-            onClick={() => setActiveTab("security")}
-          >
-            <img src={shieldIcon} alt="" className={styles.tabIcon} />
-            <span>Bảo mật & Đăng nhập</span>
-          </button>
-          <button
-            className={`${styles.tabBtn} ${activeTab === "privacy" ? styles.activeTab : ""}`}
-            onClick={() => setActiveTab("privacy")}
-          >
-            <img src={userIcon} alt="" className={styles.tabIcon} />
-            <span>Quyền riêng tư</span>
-          </button>
+
         </div>
 
         {/* Content area */}
@@ -217,7 +159,6 @@ export default function SettingsPage() {
                     >
                       <option value="light">Sáng (Light Mode)</option>
                       <option value="dark">Tối (Dark Mode)</option>
-                      <option value="system">Theo hệ thống (System)</option>
                     </select>
                   </div>
                 </div>
@@ -272,21 +213,6 @@ export default function SettingsPage() {
 
                 <div className={styles.toggleItem}>
                   <div className={styles.toggleText}>
-                    <h4>Nhắc nhở đóng quỹ & Đóng phí</h4>
-                    <p>Nhận các nhắc nhở hạn đóng phí, tài chính cần hoàn thành sớm.</p>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={notifications.financeReminder}
-                      onChange={() => handleToggleNoti("financeReminder")}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-
-                <div className={styles.toggleItem}>
-                  <div className={styles.toggleText}>
                     <h4>Tải lên tài liệu học thuật</h4>
                     <p>Gửi thông báo khi có tài liệu học tập mới thuộc chuyên ngành của bạn được phê duyệt.</p>
                   </div>
@@ -299,141 +225,7 @@ export default function SettingsPage() {
                     <span className={styles.slider}></span>
                   </label>
                 </div>
-
-                <div className={styles.toggleItem}>
-                  <div className={styles.toggleText}>
-                    <h4>Đăng ký tham gia sự kiện</h4>
-                    <p>Nhận cập nhật khi trạng thái duyệt tham gia sự kiện của bạn thay đổi.</p>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={notifications.eventRegistrations}
-                      onChange={() => handleToggleNoti("eventRegistrations")}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: SECURITY */}
-          {activeTab === "security" && (
-            <div className={styles.tabContent}>
-              <div className={styles.contentHeader}>
-                <h2>Bảo mật & Đăng nhập</h2>
-                <p>Cập nhật mật khẩu của bạn và kiểm tra danh sách phiên đăng nhập hoạt động.</p>
-              </div>
-
-              <div className={styles.securityGrid}>
-                {/* Change Password Block */}
-                <div className={styles.sectionCard}>
-                  <h3>Đổi mật khẩu</h3>
-                  <form onSubmit={handlePasswordSubmit} className={styles.subForm}>
-                    <div className={styles.formGroup}>
-                      <label htmlFor="sec-current-pwd">Mật khẩu hiện tại</label>
-                      <input
-                        id="sec-current-pwd"
-                        type="password"
-                        value={security.currentPassword}
-                        onChange={(e) =>
-                          setSecurity((prev) => ({ ...prev, currentPassword: e.target.value }))
-                        }
-                        placeholder="Nhập mật khẩu hiện tại"
-                        required
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label htmlFor="sec-new-pwd">Mật khẩu mới</label>
-                      <input
-                        id="sec-new-pwd"
-                        type="password"
-                        value={security.newPassword}
-                        onChange={(e) =>
-                          setSecurity((prev) => ({ ...prev, newPassword: e.target.value }))
-                        }
-                        placeholder="Mật khẩu mới (tối thiểu 6 ký tự)"
-                        required
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label htmlFor="sec-confirm-pwd">Xác nhận mật khẩu mới</label>
-                      <input
-                        id="sec-confirm-pwd"
-                        type="password"
-                        value={security.confirmPassword}
-                        onChange={(e) =>
-                          setSecurity((prev) => ({ ...prev, confirmPassword: e.target.value }))
-                        }
-                        placeholder="Xác nhận mật khẩu mới"
-                        required
-                      />
-                    </div>
-                    <button type="submit" className={styles.changePasswordBtn}>
-                      Cập nhật mật khẩu
-                    </button>
-                  </form>
-                </div>                
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: PRIVACY */}
-          {activeTab === "privacy" && (
-            <div className={styles.tabContent}>
-              <div className={styles.contentHeader}>
-                <h2>Quyền riêng tư cá nhân</h2>
-                <p>Quyết định những thông tin nào của bạn được hiển thị với các thành viên khác trong CLB.</p>
-              </div>
-
-              <div className={styles.toggleGroup}>
                 
-
-                <div className={styles.toggleItem}>
-                  <div className={styles.toggleText}>
-                    <h4>Ẩn số điện thoại liên hệ</h4>
-                    <p>Ẩn số điện thoại trên trang thông tin công khai. Các thành viên khác sẽ không thể xem được.</p>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={privacy.hidePhone}
-                      onChange={(e) => handlePrivacyChange("hidePhone", e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-
-                <div className={styles.toggleItem}>
-                  <div className={styles.toggleText}>
-                    <h4>Ẩn địa chỉ email</h4>
-                    <p>Không hiển thị địa chỉ email cá nhân trên danh sách thành viên của câu lạc bộ.</p>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={privacy.hideEmail}
-                      onChange={(e) => handlePrivacyChange("hideEmail", e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-
-                <div className={styles.toggleItem}>
-                  <div className={styles.toggleText}>
-                    <h4>Trạng thái trực tuyến</h4>
-                    <p>Hiển thị chấm xanh trực tuyến khi bạn đang truy cập vào hệ thống CLB.</p>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={privacy.showOnlineStatus}
-                      onChange={(e) => handlePrivacyChange("showOnlineStatus", e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
               </div>
             </div>
           )}
