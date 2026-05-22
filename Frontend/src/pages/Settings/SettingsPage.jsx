@@ -12,7 +12,7 @@ import settingIcon from "../../assets/icons/setting.svg";
 export default function SettingsPage() {
   useScrollReveal();
 
-  // Active Tab State: 'general' | 'notifications' | 'security' | 'privacy' | 'integrations'
+  // Active Tab State: 'general' | 'notifications' | 'system'
   const [activeTab, setActiveTab] = useState("general");
 
   // Toast feedback state
@@ -71,8 +71,46 @@ export default function SettingsPage() {
     });
   };
 
+  // 3. System Settings: Departments & Fund Amount
+  const [departments, setDepartments] = useState([
+    "Khoa học máy tính",
+    "Kỹ thuật phần mềm",
+    "Kỹ thuật máy tính",
+    "Hệ thống thông tin",
+    "Mạng và truyền thông",
+  ]);
+  const [newDept, setNewDept] = useState("");
+  const [fundAmount, setFundAmount] = useState(50000);
 
-  // 5. Integrations Settings
+  const handleAddDept = () => {
+    if (!newDept.trim()) {
+      showToast("Tên khoa không được để trống", "error");
+      return;
+    }
+    if (departments.includes(newDept.trim())) {
+      showToast("Khoa này đã tồn tại", "error");
+      return;
+    }
+    setDepartments((prev) => [...prev, newDept.trim()]);
+    setNewDept("");
+    showToast(`Đã thêm khoa "${newDept.trim()}" thành công`);
+  };
+
+  const handleRemoveDept = (idx) => {
+    const removed = departments[idx];
+    setDepartments((prev) => prev.filter((_, i) => i !== idx));
+    showToast(`Đã xóa khoa "${removed}"`);
+  };
+
+  const handleSystemSave = (e) => {
+    e.preventDefault();
+    if (fundAmount < 0 || isNaN(fundAmount)) {
+      showToast("Số tiền quỹ không hợp lệ", "error");
+      return;
+    }
+    showToast("Cài đặt hệ thống đã được lưu thành công!");
+  };
+
   return (
     <div className={styles.container}>
       {/* Toast Alert */}
@@ -119,6 +157,14 @@ export default function SettingsPage() {
           >
             <img src={notiIcon} alt="" className={styles.tabIcon} />
             <span>Tùy chọn thông báo</span>
+          </button>
+
+          <button
+            className={`${styles.tabBtn} ${activeTab === "system" ? styles.activeTab : ""}`}
+            onClick={() => setActiveTab("system")}
+          >
+            <img src={shieldIcon} alt="" className={styles.tabIcon} />
+            <span>Cài đặt hệ thống</span>
           </button>
 
         </div>
@@ -227,6 +273,97 @@ export default function SettingsPage() {
                 </div>
                 
               </div>
+            </div>
+          )}
+
+          {/* TAB 3: SYSTEM SETTINGS */}
+          {activeTab === "system" && (
+            <div className={styles.tabContent}>
+              <div className={styles.contentHeader}>
+                <h2>Cài đặt hệ thống</h2>
+                <p>Quản lý danh sách khoa và số tiền đóng quỹ định kỳ của câu lạc bộ.</p>
+              </div>
+
+              <form onSubmit={handleSystemSave} className={styles.settingsForm}>
+                {/* Department Management Section */}
+                <div className={styles.sectionCard}>
+                  <h3>🏛️ Quản lý khoa</h3>
+                  <div className={styles.formGroup}>
+                    <label>Thêm khoa mới</label>
+                    <div className={styles.inlineInputRow}>
+                      <input
+                        type="text"
+                        placeholder="Nhập tên khoa..."
+                        value={newDept}
+                        onChange={(e) => setNewDept(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddDept();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.addDeptBtn}
+                        onClick={handleAddDept}
+                      >
+                        + Thêm
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className={styles.deptList}>
+                    {departments.length === 0 && (
+                      <p className={styles.emptyText}>Chưa có khoa nào được thêm.</p>
+                    )}
+                    {departments.map((dept, idx) => (
+                      <div key={idx} className={styles.deptItem}>
+                        <div className={styles.deptInfo}>
+                          <span className={styles.deptIndex}>{idx + 1}</span>
+                          <span className={styles.deptName}>{dept}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.removeDeptBtn}
+                          onClick={() => handleRemoveDept(idx)}
+                          title="Xóa khoa"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Fund Amount Section */}
+                <div className={styles.sectionCard}>
+                  <h3>💰 Quỹ định kỳ</h3>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="fund-amount">Số tiền đóng quỹ định kỳ (VND)</label>
+                    <div className={styles.fundInputWrapper}>
+                      <input
+                        id="fund-amount"
+                        type="number"
+                        min="0"
+                        step="1000"
+                        value={fundAmount}
+                        onChange={(e) => setFundAmount(Number(e.target.value))}
+                      />
+                      <span className={styles.fundUnit}>VND</span>
+                    </div>
+                    <p className={styles.fundHint}>
+                      Hiện tại: <strong>{Number(fundAmount).toLocaleString("vi-VN")} VND</strong> / kỳ
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.formActions}>
+                  <button type="submit" className={styles.saveSubmitBtn}>
+                    Lưu cài đặt hệ thống
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 
