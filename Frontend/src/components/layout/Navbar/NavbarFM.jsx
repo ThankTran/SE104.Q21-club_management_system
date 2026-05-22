@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./NavbarFM.module.css";
 import logo from "../../../assets/logo/logo_cnpm.png";
@@ -6,7 +6,7 @@ import noti from "../../../assets/icons/noti.svg";
 import setting from "../../../assets/icons/setting.svg";
 import Searchbar from "../../common/SearchBar/Searchbar";
 import NotificationPopover from "./NotificationPopover";
-
+  
 const initialNotifications = [
   {
     id: 1,
@@ -82,6 +82,18 @@ const NavbarFM = () => {
   const [openMenu, setOpenMenu] = useState(false);
   const [showNoti, setShowNoti] = useState(false);
   const [notifications, setNotifications] = useState(initialNotifications);
+  const profileRef = useRef(null);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setOpenMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const unreadCount = notifications.filter((n) => n.isUnread).length;
 
@@ -138,7 +150,7 @@ const NavbarFM = () => {
           <img src={setting} alt="Settings" className={styles.iconImg} />
         </button>
 
-        <div className={styles.profileContainer}>
+        <div className={styles.profileContainer} ref={profileRef}>
           <button 
             className={`${styles.profileBtn} ${isProfileOpenOrActive ? styles.activeProfileBtn : ""}`} 
             title="Profile" 
