@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Homepage.module.css";
 import archiveIcon from "../../assets/icons/archive.svg";
 import membersIcon from "../../assets/icons/members.svg";
@@ -13,7 +14,10 @@ import chevronRightIcon from "../../assets/icons/chevron-right.svg";
 import useScrollReveal from "../../hooks/useScrollReveal";
 
 const Homepage = () => {
+  const navigate = useNavigate();
   useScrollReveal();
+
+
   return (
     <div className={styles.container}>
       {/* Hero Section */}
@@ -22,11 +26,10 @@ const Homepage = () => {
           <h1 className={styles.heroTitle}>Welcome back, Quản trị viên CLB</h1>
           <p className={styles.heroSubtitle}>
             Quản lý hoạt động của câu lạc bộ, sắp xếp các sự kiện sắp tới, và
-            giám sát cộng đồng câu lạc bộ học thuật.
+            giám sát cộng đồng.
           </p>
           <div className={styles.heroButtons}>
-            <button className={styles.primaryButton}>Thêm mới</button>
-            <button className={styles.secondaryButton}>Xem báo cáo</button>
+            <button className={styles.secondaryButton} onClick={()=> navigate("/dashboard")}>Xem báo cáo</button>
           </div>
         </div>
       </div>
@@ -188,7 +191,7 @@ const Homepage = () => {
           <div className={styles.adminToolkit}>
             <span className={styles.adminToolkitLabel}>ADMIN TOOLKIT</span>
             <div className={styles.adminToolkitList}>
-              <button className={styles.adminToolkitItem}>
+              <button className={styles.adminToolkitItem} onClick={() => navigate("/dashboard")}>
                 <div className={styles.adminToolkitIcon}>
                   <img src={exportReportIcon} alt="Export Report" width="20" height="20" />
                 </div>
@@ -196,19 +199,11 @@ const Homepage = () => {
                 <img src={chevronRightIcon} alt="" className={styles.adminToolkitChevron} />
               </button>
 
-              <button className={styles.adminToolkitItem}>
+              <button className={styles.adminToolkitItem} onClick={() => navigate("/settings")}>
                 <div className={styles.adminToolkitIcon}>
                   <img src={preferencesIcon} alt="System Preferences" width="20" height="20" />
                 </div>
                 <span className={styles.adminToolkitText}>Tùy chỉnh hệ thống</span>
-                <img src={chevronRightIcon} alt="" className={styles.adminToolkitChevron} />
-              </button>
-
-              <button className={styles.adminToolkitItem}>
-                <div className={styles.adminToolkitIcon}>
-                  <img src={broadcastIcon} alt="Broadcast Message" width="20" height="20" />
-                </div>
-                <span className={styles.adminToolkitText}>Gửi thông báo hàng loạt</span>
                 <img src={chevronRightIcon} alt="" className={styles.adminToolkitChevron} />
               </button>
             </div>
