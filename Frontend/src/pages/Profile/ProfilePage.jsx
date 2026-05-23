@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styles from "./ProfilePage.module.css";
-import settingIcon from "../../assets/icons/setting.svg";
 import membersIcon from "../../assets/icons/members.svg";
 import eventsIcon from "../../assets/icons/events.svg";
 import resourcesIcon from "../../assets/icons/resources.svg";
@@ -9,10 +8,6 @@ import cameraIcon from "../../assets/icons/camera.svg";
 import userIcon from "../../assets/icons/user.svg";
 import academicIcon from "../../assets/icons/academic.svg";
 import timelineIcon from "../../assets/icons/timeline.svg";
-import shieldIcon from "../../assets/icons/shield.svg";
-import penIcon from "../../assets/icons/pen.svg";
-import notiIcon from "../../assets/icons/noti.svg";
-import plusIcon from "../../assets/icons/plus.svg";
 
 const MOCK_ACTIVITIES = [
   {
@@ -53,23 +48,44 @@ const MOCK_ACTIVITIES = [
   },
 ];
 
-const DEFAULT_FACULTIES = [
-  "Khoa học máy tính",
-  "Công nghệ phần mềm",
-  "Kỹ thuật máy tính",
-  "Khoa học & kỹ thuật thông tin",
-  "Hệ thống thông tin",
-  "Mạng máy tính và truyền thông",
+const SKILL_SUGGESTIONS = [
+  "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "C",
+  "ReactJS", "React Native", "Angular", "Vue.js", "Next.js", "Node.js",
+  "Express.js", "Django", "Flask", "Spring Boot", "Laravel", "Ruby on Rails",
+  "HTML", "CSS", "SASS", "TailwindCSS", "Bootstrap",
+  "SQL", "MySQL", "PostgreSQL", "MongoDB", "Redis", "Firebase",
+  "Git", "GitHub", "GitLab", "Docker", "Kubernetes", "AWS", "Azure",
+  "UI/UX Design", "Figma", "Adobe XD", "Photoshop",
+  "Machine Learning", "Deep Learning", "AI", "Data Science",
+  "REST API", "GraphQL", "WebSocket",
+  "Linux", "Bash", "PowerShell",
+  "Agile", "Scrum", "Jira",
+  "Swift", "Kotlin", "Flutter", "Dart",
+  "Blockchain", "Solidity", "Web3",
+  "Cybersecurity", "Penetration Testing",
+  "Unity", "Unreal Engine", "Game Development",
+  "Embedded Systems", "IoT", "Arduino", "Raspberry Pi",
+  "Go", "Rust", "PHP", "R", "Scala",
+  "Jest", "Mocha", "Chai", "JUnit", "PyTest",
+  "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI",
+  "Google Cloud Platform", "DigitalOcean", "Heroku",
+  "Hadoop", "Spark", "Pandas", "NumPy",
+  "Supabase", "Realm",
+  "OWASP", "SSL/TLS", "IAM",
+  "Terraform", "Ansible", "Puppet", "Chef",
+  "Tableau", "Power BI", "Apache Kafka",
+  "Ionic", "Xamarin"
 ];
 
+
 const ProfilePage = () => {
-  // Tabs: 'personal' | 'academic' | 'activity' | 'security'
+  // Tabs: 'personal' | 'academic' | 'activity'
   const [activeTab, setActiveTab] = useState("personal");
-  const [isEditing, setIsEditing] = useState(false);
   const [newSkill, setNewSkill] = useState("");
-  const [faculties, setFaculties] = useState(DEFAULT_FACULTIES);
-  const [newFaculty, setNewFaculty] = useState("");
-  const [showAddFaculty, setShowAddFaculty] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const suggestionsRef = useRef(null);
+  const skillInputRef = useRef(null);
 
   const [profile, setProfile] = useState({
     name: "Nguyễn Văn A",
@@ -79,7 +95,6 @@ const ProfilePage = () => {
     dob: "2006-01-01",
     gender: "Nam",
     faculty: "Công nghệ phần mềm",
-    gpa: "8.25/10",
     department: "Ban chủ nhiệm",
     major: "Khoa Công nghệ phần mềm",
     skills: ["ReactJS", "Node.js", "UI/UX Design", "SQL", "Git"],
@@ -87,19 +102,6 @@ const ProfilePage = () => {
     role: "Trưởng ban ",
     avatar: "https://bazaarvietnam.vn/wp-content/uploads/2023/04/harper-bazaar-ca-si-noi-tieng-nhat-viet-nam-3.jpeg",
     cover: "linear-gradient(135deg, #1e3a8a 0%, #003d82 50%, #3a445eff 100%)",
-  });
-
-  const [tempProfile, setTempProfile] = useState({ ...profile });
-  const [security, setSecurity] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    activityUpdates: true,
-    financeReminder: false,
   });
 
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
@@ -111,94 +113,85 @@ const ProfilePage = () => {
     }, 3500);
   };
 
-  const handleStartEdit = () => {
-    setTempProfile({ ...profile });
-    setIsEditing(true);
-    setShowAddFaculty(false);
-    setNewFaculty("");
-  };
+  // Lọc gợi ý kỹ năng dựa trên input
+  const filteredSuggestions = newSkill.trim()
+    ? SKILL_SUGGESTIONS.filter(
+        (s) =>
+          s.toLowerCase().includes(newSkill.trim().toLowerCase()) &&
+          !profile.skills.includes(s)
+      ).slice(0, 8)
+    : [];
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setShowAddFaculty(false);
-    setNewFaculty("");
-  };
+  // Đóng dropdown khi click bên ngoài
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(e.target) &&
+        skillInputRef.current &&
+        !skillInputRef.current.contains(e.target)
+      ) {
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const handleAddFaculty = () => {
-    const trimmed = newFaculty.trim();
+  const handleAddSkill = (skillName) => {
+    const trimmed = (skillName || newSkill).trim();
     if (!trimmed) return;
-    if (faculties.includes(trimmed)) {
-      showToast("Khoa này đã tồn tại", "error");
-      return;
-    }
-    setFaculties([...faculties, trimmed]);
-    setTempProfile({ ...tempProfile, faculty: trimmed });
-    setNewFaculty("");
-    setShowAddFaculty(false);
-    showToast(`Đã thêm khoa "${trimmed}" thành công!`);
-  };
-
-  const handleSaveProfile = (e) => {
-    e.preventDefault();
-    if (!tempProfile.name.trim()) {
-      showToast("Họ và tên không được để trống", "error");
-      return;
-    }
-    if (!tempProfile.email.trim() || !tempProfile.email.includes("@")) {
-      showToast("Email không hợp lệ", "error");
-      return;
-    }
-
-    setProfile({ ...tempProfile });
-    setIsEditing(false);
-    showToast("Đã cập nhật thông tin cá nhân thành công!");
-  };
-
-  const handleAddSkill = (e) => {
-    e.preventDefault();
-    if (!newSkill.trim()) return;
-    if (tempProfile.skills.includes(newSkill.trim())) {
+    if (profile.skills.includes(trimmed)) {
       showToast("Kỹ năng này đã tồn tại", "error");
       return;
     }
-    setTempProfile({
-      ...tempProfile,
-      skills: [...tempProfile.skills, newSkill.trim()],
-    });
+    setProfile((prev) => ({
+      ...prev,
+      skills: [...prev.skills, trimmed],
+    }));
     setNewSkill("");
+    setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
+    showToast(`Đã thêm kỹ năng "${trimmed}"!`);
   };
 
   const handleRemoveSkill = (skillToRemove) => {
-    setTempProfile({
-      ...tempProfile,
-      skills: tempProfile.skills.filter((skill) => skill !== skillToRemove),
-    });
+    setProfile((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
+    }));
+    showToast(`Đã xóa kỹ năng "${skillToRemove}"`);
   };
 
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    if (!security.currentPassword || !security.newPassword || !security.confirmPassword) {
-      showToast("Vui lòng điền đầy đủ các trường mật khẩu", "error");
-      return;
+  const handleSkillKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedSuggestionIndex((prev) =>
+        prev < filteredSuggestions.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedSuggestionIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredSuggestions.length - 1
+      );
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedSuggestionIndex >= 0 && filteredSuggestions[selectedSuggestionIndex]) {
+        handleAddSkill(filteredSuggestions[selectedSuggestionIndex]);
+      } else {
+        handleAddSkill();
+      }
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
     }
-    if (security.newPassword !== security.confirmPassword) {
-      showToast("Mật khẩu mới và Xác nhận không khớp", "error");
-      return;
-    }
-    if (security.newPassword.length < 6) {
-      showToast("Mật khẩu mới phải từ 6 ký tự trở lên", "error");
-      return;
-    }
-
-    showToast("Đổi mật khẩu thành công!");
-    setSecurity({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 
   const handleAvatarChange = () => {
     const newAvatarUrl = prompt("Nhập URL ảnh đại diện mới:", profile.avatar);
     if (newAvatarUrl && newAvatarUrl.trim().startsWith("http")) {
       setProfile((prev) => ({ ...prev, avatar: newAvatarUrl }));
-      setTempProfile((prev) => ({ ...prev, avatar: newAvatarUrl }));
       showToast("Cập nhật ảnh đại diện thành công!");
     } else if (newAvatarUrl !== null) {
       showToast("URL ảnh không hợp lệ", "error");
@@ -237,22 +230,6 @@ const ProfilePage = () => {
             <p className={styles.roleTitle}>{profile.role} • {profile.department}</p>
             <p className={styles.joinDate}>Gia nhập ngày {profile.joinDate}</p>
           </div>
-          <div className={styles.headerActions}>
-            {!isEditing ? (
-              <button className={styles.editBtn} onClick={handleStartEdit}>
-                <img src={penIcon} alt="" className={styles.btnIcon} /> Chỉnh sửa hồ sơ
-              </button>
-            ) : (
-              <div className={styles.editActions}>
-                <button className={styles.saveBtn} onClick={handleSaveProfile}>
-                  ✓ Lưu thay đổi
-                </button>
-                <button className={styles.cancelBtn} onClick={handleCancelEdit}>
-                  Hủy
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
@@ -261,290 +238,149 @@ const ProfilePage = () => {
         <div className={styles.navTabs}>
           <button
             className={`${styles.tabBtn} ${activeTab === "personal" ? styles.activeTab : ""}`}
-            onClick={() => {
-              setActiveTab("personal");
-              if (!isEditing) setIsEditing(false);
-            }}
+            onClick={() => setActiveTab("personal")}
           >
             <img src={userIcon} alt="" className={styles.tabIcon} /> Thông tin cá nhân
           </button>
           <button
             className={`${styles.tabBtn} ${activeTab === "academic" ? styles.activeTab : ""}`}
-            onClick={() => {
-              setActiveTab("academic");
-              if (!isEditing) setIsEditing(false);
-            }}
+            onClick={() => setActiveTab("academic")}
           >
             <img src={academicIcon} alt="" className={styles.tabIcon} /> Học tập & Chuyên môn
           </button>
           <button
             className={`${styles.tabBtn} ${activeTab === "activity" ? styles.activeTab : ""}`}
-            onClick={() => {
-              setActiveTab("activity");
-              setIsEditing(false);
-            }}
+            onClick={() => setActiveTab("activity")}
           >
             <img src={timelineIcon} alt="" className={styles.tabIcon} /> Lịch sử hoạt động
-          </button>
-          <button
-            className={`${styles.tabBtn} ${activeTab === "security" ? styles.activeTab : ""}`}
-            onClick={() => {
-              setActiveTab("security");
-              setIsEditing(false);
-            }}
-          >
-            <img src={shieldIcon} alt="" className={styles.tabIcon} /> Bảo mật & Cài đặt
           </button>
         </div>
 
         {/* Content Area */}
         <div className={styles.contentCard}>
-          {/* Tab 1: Personal Info */}
+          {/* Tab 1: Personal Info (Read-only) */}
           {activeTab === "personal" && (
             <div className={styles.tabContent}>
               <div className={styles.contentHeader}>
                 <h2>Thông tin cá nhân</h2>
               </div>
-              <form onSubmit={handleSaveProfile} className={styles.profileForm}>
+              <div className={styles.profileForm}>
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
                     <label>Họ và tên</label>
-                    <input
-                      type="text"
-                      value={isEditing ? tempProfile.name : profile.name}
-                      onChange={(e) => setTempProfile({ ...tempProfile, name: e.target.value })}
-                      disabled={!isEditing}
-                      placeholder="Nhập họ tên đầy đủ"
-                      required
-                    />
+                    <input type="text" value={profile.name} disabled />
                   </div>
-
                   <div className={styles.formGroup}>
                     <label>Mã số sinh viên (MSSV)</label>
-                    <input
-                      type="text"
-                      value={isEditing ? tempProfile.studentId : profile.studentId}
-                      onChange={(e) => setTempProfile({ ...tempProfile, studentId: e.target.value })}
-                      disabled={!isEditing}
-                      placeholder="Mã số sinh viên"
-                      required
-                    />
+                    <input type="text" value={profile.studentId} disabled />
                   </div>
-
                   <div className={styles.formGroup}>
                     <label>Địa chỉ Email</label>
-                    <input
-                      type="email"
-                      value={isEditing ? tempProfile.email : profile.email}
-                      onChange={(e) => setTempProfile({ ...tempProfile, email: e.target.value })}
-                      disabled={!isEditing}
-                      placeholder="username@hcmut.edu.vn"
-                      required
-                    />
+                    <input type="email" value={profile.email} disabled />
                   </div>
-
                   <div className={styles.formGroup}>
                     <label>Số điện thoại</label>
-                    <input
-                      type="tel"
-                      value={isEditing ? tempProfile.phone : profile.phone}
-                      onChange={(e) => setTempProfile({ ...tempProfile, phone: e.target.value })}
-                      disabled={!isEditing}
-                      placeholder="Số điện thoại liên lạc"
-                    />
+                    <input type="tel" value={profile.phone} disabled />
                   </div>
-
                   <div className={styles.formGroup}>
                     <label>Ngày sinh</label>
-                    <input
-                      type="date"
-                      value={isEditing ? tempProfile.dob : profile.dob}
-                      onChange={(e) => setTempProfile({ ...tempProfile, dob: e.target.value })}
-                      disabled={!isEditing}
-                    />
+                    <input type="date" value={profile.dob} disabled />
                   </div>
-
                   <div className={styles.formGroup}>
                     <label>Giới tính</label>
-                    {isEditing ? (
-                      <select
-                        value={tempProfile.gender}
-                        onChange={(e) => setTempProfile({ ...tempProfile, gender: e.target.value })}
-                      >
-                        <option value="Nam">Nam</option>
-                        <option value="Nữ">Nữ</option>
-                        <option value="Khác">Khác</option>
-                      </select>
-                    ) : (
-                      <input type="text" value={profile.gender} disabled />
-                    )}
+                    <input type="text" value={profile.gender} disabled />
                   </div>
-
-                  <div className={`${styles.formGroup} ${styles.facultyGroup}`}>
+                  <div className={styles.formGroup}>
                     <label>Khoa</label>
-                    {isEditing ? (
-                      <div className={styles.facultyWrapper}>
-                        <select
-                          value={showAddFaculty ? "__add__" : tempProfile.faculty}
-                          onChange={(e) => {
-                            if (e.target.value === "__add__") {
-                              setShowAddFaculty(true);
-                            } else {
-                              setShowAddFaculty(false);
-                              setTempProfile({ ...tempProfile, faculty: e.target.value });
-                            }
-                          }}
-                          className={styles.facultySelect}
-                        >
-                          {faculties.map((f) => (
-                            <option key={f} value={f}>{f}</option>
-                          ))}
-                          <option value="__add__">+ Thêm khoa mới...</option>
-                        </select>
-                        {showAddFaculty && (
-                          <div className={styles.addFacultyRow}>
-                            <input
-                              type="text"
-                              placeholder="Nhập tên khoa mới"
-                              value={newFaculty}
-                              onChange={(e) => setNewFaculty(e.target.value)}
-                              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddFaculty())}
-                              className={styles.facultyInput}
-                              autoFocus
-                            />
-                            <button
-                              type="button"
-                              className={styles.addFacultyBtn}
-                              onClick={handleAddFaculty}
-                            >
-                              <img src={plusIcon} alt="" className={styles.addFacultyIcon} />
-                              Thêm
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.cancelFacultyBtn}
-                              onClick={() => { setShowAddFaculty(false); setNewFaculty(""); }}
-                            >
-                              Hủy
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <input type="text" value={profile.faculty} disabled />
-                    )}
+                    <input type="text" value={profile.faculty} disabled />
                   </div>
                 </div>
-
-                {isEditing && (
-                  <div className={styles.formActions}>
-                    <button type="submit" className={styles.saveSubmitBtn}>
-                      Lưu thông tin cá nhân
-                    </button>
-                  </div>
-                )}
-              </form>
+              </div>
             </div>
           )}
 
-          {/* Tab 2: Academic & Expertise Info */}
+          {/* Tab 2: Academic & Expertise - Only skill tags */}
           {activeTab === "academic" && (
             <div className={styles.tabContent}>
               <div className={styles.contentHeader}>
                 <h2>Chuyên môn</h2>
               </div>
-              <form onSubmit={handleSaveProfile} className={styles.profileForm}>
+              <div className={styles.profileForm}>
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
-                    <label>Điểm GPA</label>
-                    <input
-                      type="text"
-                      value={isEditing ? tempProfile.gpa : profile.gpa}
-                      onChange={(e) => setTempProfile({ ...tempProfile, gpa: e.target.value })}
-                      disabled={!isEditing}
-                      placeholder="Ví dụ: 8.25/10"
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
                     <label>Ban chủ nhiệm</label>
-                    {isEditing ? (
-                      <select
-                        value={tempProfile.department}
-                        onChange={(e) => setTempProfile({ ...tempProfile, department: e.target.value })}
-                      >
-                        <option value="Ban Chủ nhiệm">Ban Chủ nhiệm</option>
-                        <option value="Ban Học thuật">Ban Học thuật</option>
-                        <option value="Ban Truyền thông">Ban Truyền thông</option>
-                        <option value="Ban Sự kiện">Ban Sự kiện</option>
-                      </select>
-                    ) : (
-                      <input type="text" value={profile.department} disabled />
-                    )}
+                    <input type="text" value={profile.department} disabled />
                   </div>
-
                   <div className={styles.formGroup}>
                     <label>Khoa</label>
-                    <input
-                      type="text"
-                      value={isEditing ? tempProfile.major : profile.major}
-                      onChange={(e) => setTempProfile({ ...tempProfile, major: e.target.value })}
-                      disabled={!isEditing}
-                      placeholder="Khoa Công nghệ phần mềm"
-                    />
+                    <input type="text" value={profile.major} disabled />
                   </div>
                 </div>
 
-                {/* Skill tag list */}
+                {/* Skill tag list with autocomplete */}
                 <div className={styles.skillsSection}>
                   <label className={styles.skillsLabel}>Kỹ năng học thuật & Công nghệ</label>
-                  
+
                   <div className={styles.tagsContainer}>
-                    {(isEditing ? tempProfile.skills : profile.skills).map((skill) => (
+                    {profile.skills.map((skill) => (
                       <span key={skill} className={styles.skillTag}>
                         {skill}
-                        {isEditing && (
-                          <button
-                            type="button"
-                            className={styles.removeTagBtn}
-                            onClick={() => handleRemoveSkill(skill)}
-                            title="Xóa kỹ năng"
-                          >
-                            ×
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          className={styles.removeTagBtn}
+                          onClick={() => handleRemoveSkill(skill)}
+                          title="Xóa kỹ năng"
+                        >
+                          ×
+                        </button>
                       </span>
                     ))}
                   </div>
 
-                  {isEditing && (
-                    <div className={styles.addSkillRow}>
+                  <div className={styles.addSkillRow}>
+                    <div className={styles.skillInputWrapper}>
                       <input
+                        ref={skillInputRef}
                         type="text"
-                        placeholder="Thêm kỹ năng mới (ví dụ: Python, TailwindCSS)"
+                        placeholder="Gõ để tìm kỹ năng (vd: Python, React...)"
                         value={newSkill}
-                        onChange={(e) => setNewSkill(e.target.value)}
+                        onChange={(e) => {
+                          setNewSkill(e.target.value);
+                          setShowSuggestions(true);
+                          setSelectedSuggestionIndex(-1);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        onKeyDown={handleSkillKeyDown}
                         className={styles.skillInput}
                       />
-                      <button
-                        type="button"
-                        onClick={handleAddSkill}
-                        className={styles.addSkillBtn}
-                      >
-                        + Thêm tag
-                      </button>
+                      {showSuggestions && filteredSuggestions.length > 0 && (
+                        <div className={styles.suggestionsDropdown} ref={suggestionsRef}>
+                          {filteredSuggestions.map((suggestion, index) => (
+                            <div
+                              key={suggestion}
+                              className={`${styles.suggestionItem} ${
+                                index === selectedSuggestionIndex ? styles.suggestionActive : ""
+                              }`}
+                              onClick={() => handleAddSkill(suggestion)}
+                              onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                            >
+                              <span className={styles.suggestionIcon}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="blue" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag-icon lucide-tag"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="blue"/></svg></span>
+                              <span className={styles.suggestionText}>{suggestion}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                {isEditing && (
-                  <div className={styles.formActions}>
-                    <button type="submit" className={styles.saveSubmitBtn}>
-                      Lưu chuyên môn & Kỹ năng
+                    <button
+                      type="button"
+                      onClick={() => handleAddSkill()}
+                      className={styles.addSkillBtn}
+                    >
+                      + Thêm tag
                     </button>
                   </div>
-                )}
-              </form>
+                </div>
+              </div>
             </div>
           )}
 
@@ -579,116 +415,6 @@ const ProfilePage = () => {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tab 4: Security & Notification Settings */}
-          {activeTab === "security" && (
-            <div className={styles.tabContent}>
-              <div className={styles.contentHeader}>
-                <h2>Bảo mật & Cài đặt tài khoản</h2>
-              </div>
-
-              <div className={styles.settingsGrid}>
-                {/* Section A: Password change */}
-                <div className={styles.settingsSectionCard}>
-                  <h3><img src={shieldIcon} alt="" className={styles.sectionHeaderIcon} /> Thay đổi mật khẩu</h3>
-                  <form onSubmit={handlePasswordSubmit} className={styles.securityForm}>
-                    <div className={styles.formGroup}>
-                      <label>Mật khẩu hiện tại</label>
-                      <input
-                        type="password"
-                        value={security.currentPassword}
-                        onChange={(e) => setSecurity({ ...security, currentPassword: e.target.value })}
-                        placeholder="Nhập mật khẩu hiện tại"
-                        required
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Mật khẩu mới</label>
-                      <input
-                        type="password"
-                        value={security.newPassword}
-                        onChange={(e) => setSecurity({ ...security, newPassword: e.target.value })}
-                        placeholder="Mật khẩu mới (tối thiểu 6 ký tự)"
-                        required
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Xác nhận mật khẩu mới</label>
-                      <input
-                        type="password"
-                        value={security.confirmPassword}
-                        onChange={(e) => setSecurity({ ...security, confirmPassword: e.target.value })}
-                        placeholder="Xác nhận mật khẩu mới"
-                        required
-                      />
-                    </div>
-                    <button type="submit" className={styles.changePasswordBtn}>
-                      Cập nhật mật khẩu mới
-                    </button>
-                  </form>
-                </div>
-
-                {/* Section B: Toggles for notifications */}
-                <div className={styles.settingsSectionCard}>
-                  <h3><img src={notiIcon} alt="" className={styles.sectionHeaderIcon} /> Tùy chọn thông báo</h3>
-                  <p className={styles.settingsSubtext}>Đăng ký các kênh để cập nhật thông tin kịp thời nhất.</p>
-                  
-                  <div className={styles.toggleGroup}>
-                    <div className={styles.toggleItem}>
-                      <div className={styles.toggleText}>
-                        <h4>Thông báo qua Email</h4>
-                        <p>Nhận tóm tắt tuần và thông báo quan trọng qua địa chỉ email liên kết.</p>
-                      </div>
-                      <label className={styles.switch}>
-                        <input
-                          type="checkbox"
-                          checked={notifications.emailAlerts}
-                          onChange={(e) =>
-                            setNotifications({ ...notifications, emailAlerts: e.target.checked })
-                          }
-                        />
-                        <span className={styles.slider}></span>
-                      </label>
-                    </div>
-
-                    <div className={styles.toggleItem}>
-                      <div className={styles.toggleText}>
-                        <h4>Thông báo hoạt động CLB</h4>
-                        <p>Đăng ký tin tức sự kiện mới và các hoạt động của câu lạc bộ.</p>
-                      </div>
-                      <label className={styles.switch}>
-                        <input
-                          type="checkbox"
-                          checked={notifications.activityUpdates}
-                          onChange={(e) =>
-                            setNotifications({ ...notifications, activityUpdates: e.target.checked })
-                          }
-                        />
-                        <span className={styles.slider}></span>
-                      </label>
-                    </div>
-
-                    <div className={styles.toggleItem}>
-                      <div className={styles.toggleText}>
-                        <h4>Nhắc nhở đóng phí & Quỹ</h4>
-                        <p>Nhận cảnh báo khi có các đợt thu quỹ hoặc nghĩa vụ tài chính cần hoàn tất.</p>
-                      </div>
-                      <label className={styles.switch}>
-                        <input
-                          type="checkbox"
-                          checked={notifications.financeReminder}
-                          onChange={(e) =>
-                            setNotifications({ ...notifications, financeReminder: e.target.checked })
-                          }
-                        />
-                        <span className={styles.slider}></span>
-                      </label>
-                    </div>
-                  </div>                 
-                </div>
               </div>
             </div>
           )}

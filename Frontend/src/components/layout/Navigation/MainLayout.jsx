@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 import NavbarFM from "../Navbar/NavbarFM";
 
-const DashboardLayout = () => {
+const MainLayout = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
 
@@ -32,4 +32,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default MainLayout;

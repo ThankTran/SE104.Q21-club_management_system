@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Layout hiện tại của bạn
-import DashboardLayout from "./components/layout/Navigation/DashboardLayout";
+import MainLayout from "./components/layout/Navigation/MainLayout";
 
 // Public
 import LandingPage from "./pages/Public/LandingPage";
@@ -58,9 +58,8 @@ export default function App() {
         <Route path="/"     element={<LandingPage />} />
         <Route path="/signin" element={<SigninPage />} />
 
-        <Route element={<DashboardLayout />}>
+        <Route element={<MainLayout />}>
           <Route path="/home" element={<HomePage />} />          
-          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/memberuser"   element={<MemberUserPage />} />
           <Route path="/memberadmin"  element={<MemberAdminPage />} />

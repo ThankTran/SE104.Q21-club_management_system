@@ -11,9 +11,14 @@ import {
   CheckCheck,
   BellOff
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../../../store/auth-store";
 import styles from "./NotificationPopover.module.css";
 
 const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === "admin";
   const [activeTab, setActiveTab] = useState("all"); // "all" or "unread"
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const menuRef = useRef(null);
@@ -45,6 +50,32 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isUnread: false } : n))
     );
+  };
+
+  // Handle double-click navigation
+  const handleDoubleClick = (noti) => {
+    if (noti.isUnread) {
+      handleMarkAsRead(noti.id);
+    }
+    
+    let path = "/home";
+    switch (noti.type) {
+      case "document":
+        path = isAdmin ? "/resourcesadmin" : "/resourcesuser";
+        break;
+      case "new_member":
+        path = isAdmin ? "/memberadmin" : "/memberuser";
+        break;
+      case "new_event":
+      case "upcoming_event":
+        path = isAdmin ? "/eventadmin" : "/eventuser";
+        break;
+      default:
+        path = "/home";
+    }
+    
+    navigate(path);
+    onClose();
   };
 
   // Mark all as read
@@ -151,6 +182,7 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
                       noti={noti} 
                       onMarkRead={handleMarkAsRead}
                       onDelete={handleDeleteNotification}
+                      onDoubleClick={handleDoubleClick}
                     />
                   ))}
                 </div>
@@ -168,6 +200,7 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
                       noti={noti} 
                       onMarkRead={handleMarkAsRead}
                       onDelete={handleDeleteNotification}
+                      onDoubleClick={handleDoubleClick}
                     />
                   ))}
                 </div>
@@ -181,7 +214,7 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
 };
 
 // Sub-component for individual notification item
-const NotificationItem = ({ noti, onMarkRead, onDelete }) => {
+const NotificationItem = ({ noti, onMarkRead, onDelete, onDoubleClick }) => {
   // Generate a beautiful monochromatic illustration icon based on the type
   const getIllustrationIcon = (type) => {
     switch (type) {
@@ -202,6 +235,7 @@ const NotificationItem = ({ noti, onMarkRead, onDelete }) => {
     <div 
       className={`${styles.notiItem} ${noti.isUnread ? styles.unreadItem : ""}`}
       onClick={() => onMarkRead(noti.id)}
+      onDoubleClick={() => onDoubleClick(noti)}
     >
       {/* Monochromatic Illustration Container */}
       <div className={`${styles.illustrationWrapper} ${styles[`illustration_${noti.type}`]}`}>
