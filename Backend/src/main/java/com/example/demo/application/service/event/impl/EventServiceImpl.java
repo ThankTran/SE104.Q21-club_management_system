@@ -1,17 +1,21 @@
 package com.example.demo.application.service.event.impl;
 
+import com.example.demo.application.dto.request.event.EventEvaluationRequest;
 import com.example.demo.application.dto.request.event.EventRequest;
 import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
+import com.example.demo.application.dto.response.event.EventEvaluationResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import com.example.demo.application.mapper.event.EventMapper;
 import com.example.demo.domain.model.event.Event;
 import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.repository.event.EventOrganizerRepository;
+import com.example.demo.domain.repository.event.EventRegistrationRepository;
 import com.example.demo.domain.repository.event.EventRepository;
 import com.example.demo.domain.repository.finance.TransactionRepository;
 import com.example.demo.domain.repository.member.MemberRepository;
 import com.example.demo.domain.service.event.EventDomainService;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,6 +38,7 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
 
     private final EventRepository eventRepository;
     private final EventOrganizerRepository eventOrganizerRepository;
+    private final EventRegistrationRepository eventRegistrationRepository;
     private final TransactionRepository transactionRepository;
     private final MemberRepository memberRepository;
     private final EventMapper eventMapper;
@@ -42,12 +47,14 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
     public EventServiceImpl(
             EventRepository eventRepository,
             EventOrganizerRepository eventOrganizerRepository,
+            EventRegistrationRepository eventRegistrationRepository,
             TransactionRepository transactionRepository,
             MemberRepository memberRepository,
             EventMapper eventMapper,
             EventDomainService eventDomainService) {
         this.eventRepository = eventRepository;
         this.eventOrganizerRepository = eventOrganizerRepository;
+        this.eventRegistrationRepository = eventRegistrationRepository;
         this.transactionRepository = transactionRepository;
         this.memberRepository = memberRepository;
         this.eventMapper = eventMapper;
@@ -57,6 +64,9 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
     @CacheEvict(allEntries = true)
     public EventResponse create(EventRequest request) {
         eventDomainService.validateCreateRequest(request);
+        if (eventRepository.existsById(request.getEventId())) {
+            throw new IllegalArgumentException("Event ID already exists: " + request.getEventId());
+        }
         eventDomainService.validateEventNameUniqueness(
                 request.getEventName(),
                 eventRepository.existsByEventNameIgnoreCase(request.getEventName()));
@@ -67,18 +77,50 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Khong tim thay thanh vien danh gia: " + request.getEvaluatedById()));
         }
-        return eventMapper.toResponse(eventRepository.save(eventMapper.toEntity(request, evaluatedBy)));
+        return toResponse(eventRepository.save(eventMapper.toEntity(request, evaluatedBy)));
+    }
+
+    @CacheEvict(allEntries = true)
+    public EventResponse update(String id, EventRequest request) {
+        eventDomainService.validateUpdateRequest(id, request);
+
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + id));
+        eventRepository.findByEventNameIgnoreCase(request.getEventName())
+                .filter(existing -> !existing.getEventId().equals(id))
+                .ifPresent(existing -> {
+                    throw new IllegalArgumentException("Event name already exists: " + request.getEventName());
+                });
+
+        event.setEventName(request.getEventName());
+        event.setLocation(request.getLocation());
+        event.setEventDate(request.getEventDate());
+        event.setStartTime(request.getStartTime());
+        event.setEndTime(request.getEndTime());
+        event.setEstimatedCost(request.getEstimatedCost());
+        event.setCapacity(request.getCapacity());
+        event.setOrganizer(request.getOrganizer());
+        event.setTag(request.getTag());
+        if (request.getStatus() != null) {
+            event.setStatus(request.getStatus());
+        }
+        if (request.getReqStatus() != null) {
+            event.setReqStatus(request.getReqStatus());
+        }
+        event.setDescription(request.getDescription());
+
+        return toResponse(eventRepository.save(event));
     }
 
     @Cacheable(key = "'all'")
     public List<EventResponse> getAll() {
-        return eventRepository.findAll().stream().map(eventMapper::toResponse).toList();
+        return eventRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     @Cacheable(key = "'name:' + #eventName")
     public List<EventResponse> searchByName(String eventName) {
         return eventRepository.searchByName(eventName).stream()
-                .map(eventMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -86,13 +128,13 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
     public List<EventResponse> getByDateRange(LocalDate from, LocalDate to) {
         eventDomainService.validateDateRange(from, to);
         return eventRepository.findByEventDateRange(from, to).stream()
-                .map(eventMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
     @Cacheable(key = "'id:' + #id")
     public EventResponse getById(String id) {
-        return eventRepository.findById(id).map(eventMapper::toResponse)
+        return eventRepository.findById(id).map(this::toResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + id));
     }
 
@@ -128,20 +170,66 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
                 .build();
     }
 
+    @Override
+    @CacheEvict(allEntries = true)
+    public EventEvaluationResponse createOrUpdateEvaluation(EventEvaluationRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Evaluation request must not be empty");
+        }
+        if (request.getEventId() == null || request.getEventId().isBlank()) {
+            throw new IllegalArgumentException("Event ID must not be empty");
+        }
+        if (request.getEvaluationContent() == null || request.getEvaluationContent().isBlank()) {
+            throw new IllegalArgumentException("Evaluation content must not be empty");
+        }
+
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + request.getEventId()));
+        LocalDateTime evaluationDate = request.getEvaluationDate() == null
+                ? LocalDateTime.now()
+                : request.getEvaluationDate();
+        if (event.getEndTime() != null && !evaluationDate.isAfter(event.getEndTime())) {
+            throw new IllegalArgumentException("Evaluation date must be after event end time");
+        }
+
+        Member evaluatedBy = null;
+        if (request.getEvaluatedById() != null) {
+            evaluatedBy = memberRepository.findById(request.getEvaluatedById())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Khong tim thay thanh vien danh gia: " + request.getEvaluatedById()));
+        }
+
+        event.setEvaluatedBy(evaluatedBy);
+        event.setEvaluationDate(evaluationDate);
+        event.setEvaluationContent(request.getEvaluationContent());
+        return toEvaluationResponse(eventRepository.save(event));
+    }
+
+    @Override
+    public EventEvaluationResponse getEvaluationByEvent(String eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + eventId));
+        return toEvaluationResponse(event);
+    }
+
     @CacheEvict(allEntries = true)
     public void delete(String id) {
-        if (!eventRepository.existsById(id)) {
-            throw new IllegalArgumentException("Event not found: " + id);
-        }
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + id));
         if (eventOrganizerRepository.existsByEventEventId(id)) {
             throw new IllegalArgumentException(
                     "Cannot delete event because organizers still reference it.");
+        }
+        if (eventRegistrationRepository.existsByEventEventId(id)) {
+            throw new IllegalArgumentException(
+                    "Cannot delete event because registrations still reference it.");
         }
         if (transactionRepository.existsByEventEventId(id)) {
             throw new IllegalArgumentException(
                     "Cannot delete event because transactions still reference it.");
         }
-        eventRepository.deleteById(id);
+        event.setDeletedAt(LocalDateTime.now());
+        eventRepository.save(event);
     }
 
     @Async("applicationTaskExecutor")
@@ -176,5 +264,22 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
             details.append("Ma su kien: ").append(event.getEventId());
         }
         return details.toString();
+    }
+
+    private EventResponse toResponse(Event event) {
+        EventResponse response = eventMapper.toResponse(event);
+        response.setAttendance(eventRegistrationRepository.countByEventEventId(event.getEventId()));
+        return response;
+    }
+
+    private EventEvaluationResponse toEvaluationResponse(Event event) {
+        Long evaluatedById = event.getEvaluatedBy() == null ? null : event.getEvaluatedBy().getMemberId();
+        return EventEvaluationResponse.builder()
+                .eventId(event.getEventId())
+                .eventName(event.getEventName())
+                .evaluatedById(evaluatedById)
+                .evaluationDate(event.getEvaluationDate())
+                .evaluationContent(event.getEvaluationContent())
+                .build();
     }
 }

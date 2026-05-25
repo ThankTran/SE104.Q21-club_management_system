@@ -1,16 +1,25 @@
 package com.example.demo.application.service.finance.impl;
 
 import com.example.demo.application.dto.request.finance.TransactionRequest;
+import com.example.demo.application.dto.response.finance.MemberDueResponse;
 import com.example.demo.application.dto.response.finance.TransactionResponse;
 import com.example.demo.application.mapper.finance.TransactionMapper;
+import com.example.demo.domain.enums.ApprovalStatusEnum;
+import com.example.demo.domain.enums.TransactionStatus;
 import com.example.demo.domain.enums.TransactionType;
 import com.example.demo.domain.model.finance.Transaction;
+import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.repository.event.EventRepository;
 import com.example.demo.domain.repository.finance.TransactionRepository;
 import com.example.demo.domain.repository.member.MemberRepository;
 import com.example.demo.domain.service.finance.TransactionDomainService;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -23,6 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @CacheConfig(cacheNames = "transactions")
 public class TransactionServiceImpl implements com.example.demo.application.service.finance.interfaces.TransactionService {
+    private static final BigDecimal MONTHLY_FUND_AMOUNT = BigDecimal.valueOf(75_000L);
+    private static final DateTimeFormatter MONTH_ID_FORMAT = DateTimeFormatter.ofPattern("yyyyMM");
+
     private final TransactionRepository transactionRepository;
     private final EventRepository eventRepository;
     private final MemberRepository memberRepository;
@@ -42,16 +54,20 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
         this.transactionDomainService = transactionDomainService;
     }
 
-    @CacheEvict(allEntries = true)
+    @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
     public TransactionResponse create(TransactionRequest request) {
         TransactionType type = parseTransactionType(request == null ? null : request.getType());
         transactionDomainService.validateCreateRequest(request, type);
+        if (transactionRepository.existsById(request.getTransactionId())) {
+            throw new IllegalArgumentException("Transaction ID already exists: " + request.getTransactionId());
+        }
 
-        var event = request.getEventId() == null ? null
+        var event = request.getEventId() == null || request.getEventId().isBlank() ? null
                 : eventRepository.findById(request.getEventId())
                         .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + request.getEventId()));
-        var member = memberRepository.findById(request.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay thanh vien: " + request.getMemberId()));
+        var member = request.getMemberId() == null ? null
+                : memberRepository.findById(request.getMemberId())
+                        .orElseThrow(() -> new IllegalArgumentException("Khong tim thay thanh vien: " + request.getMemberId()));
         var createdBy = request.getCreatedById() == null ? null
                 : memberRepository.findById(request.getCreatedById())
                         .orElseThrow(() -> new IllegalArgumentException(
@@ -62,6 +78,47 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
                                 "Khong tim thay nguoi duyet: " + request.getApprovedById()));
         var entity = transactionMapper.toEntity(request, event, member, createdBy, approvedBy);
         return transactionMapper.toResponse(transactionRepository.save(entity));
+    }
+
+    @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
+    public TransactionResponse update(String id, TransactionRequest request) {
+        TransactionType type = parseTransactionType(request == null ? null : request.getType());
+        transactionDomainService.validateCreateRequest(request, type);
+        if (request.getTransactionId() != null && !request.getTransactionId().isBlank()
+                && !id.equals(request.getTransactionId())) {
+            throw new IllegalArgumentException("Transaction ID in path and body must match");
+        }
+
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay transaction: " + id));
+        var event = request.getEventId() == null || request.getEventId().isBlank() ? null
+                : eventRepository.findById(request.getEventId())
+                        .orElseThrow(() -> new IllegalArgumentException("Khong tim thay event: " + request.getEventId()));
+        var member = request.getMemberId() == null ? null
+                : memberRepository.findById(request.getMemberId())
+                        .orElseThrow(() -> new IllegalArgumentException("Khong tim thay thanh vien: " + request.getMemberId()));
+        var createdBy = request.getCreatedById() == null ? null
+                : memberRepository.findById(request.getCreatedById())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Khong tim thay nguoi tao: " + request.getCreatedById()));
+        var approvedBy = request.getApprovedById() == null ? null
+                : memberRepository.findById(request.getApprovedById())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Khong tim thay nguoi duyet: " + request.getApprovedById()));
+
+        transaction.setEvent(event);
+        transaction.setMember(member);
+        transaction.setCounterpartyName(request.getCounterpartyName());
+        transaction.setType(type);
+        transaction.setAmount(request.getAmount());
+        transaction.setDescription(request.getDescription());
+        transaction.setTransactionDate(request.getTransactionDate() == null ? LocalDateTime.now() : request.getTransactionDate());
+        transaction.setStatus(request.getStatus() == null ? transaction.getStatus() : request.getStatus());
+        transaction.setCreatedBy(createdBy);
+        transaction.setApprovedBy(approvedBy);
+        transaction.setApprovedAt(approvedBy == null ? null : LocalDateTime.now());
+
+        return transactionMapper.toResponse(transactionRepository.save(transaction));
     }
 
     @Cacheable(key = "'all'")
@@ -85,13 +142,62 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
                 .toList();
     }
 
+    @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
+    public List<TransactionResponse> getByMemberDues(Long memberId) {
+        if (memberId == null) {
+            throw new IllegalArgumentException("Member ID must not be empty");
+        }
+        var member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay thanh vien: " + memberId));
+
+        YearMonth currentMonth = YearMonth.now();
+        ensureMonthlyDue(member, currentMonth);
+
+        return transactionRepository.findActiveByMemberIdAndType(memberId, TransactionType.INCOME).stream()
+                .map(transactionMapper::toResponse)
+                .toList();
+    }
+
+    @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
+    public List<MemberDueResponse> getPendingMonthlyDues() {
+        YearMonth currentMonth = YearMonth.now();
+        String description = monthlyDueDescription(currentMonth);
+        Map<Long, Transaction> latestMonthlyTransactionByMember = new HashMap<>();
+        transactionRepository.findActiveByType(TransactionType.INCOME).stream()
+                .filter(transaction -> description.equals(transaction.getDescription()))
+                .forEach(transaction -> {
+                    if (transaction.getMember() != null) {
+                        latestMonthlyTransactionByMember.putIfAbsent(
+                                transaction.getMember().getMemberId(), transaction);
+                    }
+                });
+
+        return memberRepository.findByReqStatus(ApprovalStatusEnum.APPROVED).stream()
+                .filter(this::isMonthlyDueMember)
+                .filter(member -> !isMonthlyDuePaid(latestMonthlyTransactionByMember.get(member.getMemberId())))
+                .map(member -> toMemberDueResponse(member, latestMonthlyTransactionByMember.get(member.getMemberId()), currentMonth))
+                .toList();
+    }
+
     @Cacheable(key = "'id:' + #id")
     public TransactionResponse getById(String id) {
         return transactionRepository.findById(id).map(transactionMapper::toResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay transaction: " + id));
     }
 
-    @CacheEvict(allEntries = true)
+    @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
+    public TransactionResponse complete(String id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay transaction: " + id));
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setApprovedAt(LocalDateTime.now());
+        if (transaction.getTransactionDate() == null) {
+            transaction.setTransactionDate(LocalDateTime.now());
+        }
+        return transactionMapper.toResponse(transactionRepository.save(transaction));
+    }
+
+    @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
     public void delete(String id) {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay transaction: " + id));
@@ -106,5 +212,68 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
 
     private TransactionType parseTransactionType(String type) {
         return transactionMapper.parseTransactionType(type);
+    }
+
+    private void ensureMonthlyDue(Member member, YearMonth month) {
+        String description = monthlyDueDescription(month);
+        boolean hasMonthlyDue = transactionRepository
+                .findActiveByMemberIdAndType(member.getMemberId(), TransactionType.INCOME)
+                .stream()
+                .anyMatch(transaction -> description.equals(transaction.getDescription()));
+        if (hasMonthlyDue) {
+            return;
+        }
+
+        String transactionId = buildMonthlyDueId(month, member.getMemberId());
+        Transaction monthlyDue = Transaction.builder()
+                .transactionId(transactionId)
+                .member(member)
+                .counterpartyName(member.getFullName())
+                .type(TransactionType.INCOME)
+                .amount(MONTHLY_FUND_AMOUNT)
+                .description(description)
+                .transactionDate(month.atDay(1).atTime(12, 0))
+                .status(TransactionStatus.PENDING)
+                .build();
+        transactionRepository.save(monthlyDue);
+    }
+
+    private String buildMonthlyDueId(YearMonth month, Long memberId) {
+        String base = String.format("DUE-FUND-%s-%d", month.format(MONTH_ID_FORMAT), memberId);
+        if (!transactionRepository.existsById(base)) {
+            return base;
+        }
+        return String.format("%s-%d", base, System.currentTimeMillis() % 10_000L);
+    }
+
+    private String monthlyDueDescription(YearMonth month) {
+        return String.format("Đóng quỹ tháng %02d/%d", month.getMonthValue(), month.getYear());
+    }
+
+    private boolean isMonthlyDueMember(Member member) {
+        return member.getDeletedAt() == null
+                && member.getGraduatedStatus() != com.example.demo.domain.enums.GraduatedStatusEnum.GRADUATED
+                && member.getGraduatedStatus() != com.example.demo.domain.enums.GraduatedStatusEnum.INACTIVE;
+    }
+
+    private boolean isMonthlyDuePaid(Transaction transaction) {
+        return transaction != null
+                && (transaction.getStatus() == TransactionStatus.COMPLETED
+                    || transaction.getStatus() == TransactionStatus.APPROVED);
+    }
+
+    private MemberDueResponse toMemberDueResponse(Member member, Transaction transaction, YearMonth month) {
+        return MemberDueResponse.builder()
+                .transactionId(transaction == null ? null : transaction.getTransactionId())
+                .memberId(member.getMemberId())
+                .studentId(member.getStudentId())
+                .memberName(member.getFullName())
+                .roleName(member.getRole() == null ? "Thành viên" : member.getRole().getRoleName())
+                .month(String.format("Tháng %d", month.getMonthValue()))
+                .amount(transaction == null || transaction.getAmount() == null
+                        ? MONTHLY_FUND_AMOUNT
+                        : transaction.getAmount())
+                .status(TransactionStatus.PENDING)
+                .build();
     }
 }
