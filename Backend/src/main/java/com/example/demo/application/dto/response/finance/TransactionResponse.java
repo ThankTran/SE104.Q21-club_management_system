@@ -17,9 +17,12 @@ public class TransactionResponse {
     private String transactionId;
     private String eventId;
     private Long memberId;
+    private String memberName;
+    private String counterpartyName;
     private TransactionType type;
     private BigDecimal amount;
     private String description;
+    private LocalDateTime transactionDate;
     private TransactionStatus status;
     private Long createdById;
     private Long approvedById;

@@ -7,6 +7,7 @@ import com.example.demo.domain.enums.TransactionType;
 import com.example.demo.domain.model.event.Event;
 import com.example.demo.domain.model.finance.Transaction;
 import com.example.demo.domain.model.member.Member;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,9 +23,11 @@ public class TransactionMapper {
                 .transactionId(request.getTransactionId())
                 .event(event)
                 .member(member)
+                .counterpartyName(request.getCounterpartyName())
                 .type(parseTransactionType(request.getType()))
                 .amount(request.getAmount())
                 .description(request.getDescription())
+                .transactionDate(request.getTransactionDate() == null ? LocalDateTime.now() : request.getTransactionDate())
                 .status(request.getStatus() != null ? request.getStatus() : TransactionStatus.PENDING)
                 .createdBy(createdBy)
                 .approvedBy(approvedBy)
@@ -36,9 +39,12 @@ public class TransactionMapper {
                 .transactionId(entity.getTransactionId())
                 .eventId(entity.getEvent() == null ? null : entity.getEvent().getEventId())
                 .memberId(entity.getMember() == null ? null : entity.getMember().getMemberId())
+                .memberName(entity.getMember() == null ? entity.getCounterpartyName() : entity.getMember().getFullName())
+                .counterpartyName(entity.getCounterpartyName())
                 .type(entity.getType())
                 .amount(entity.getAmount())
                 .description(entity.getDescription())
+                .transactionDate(entity.getTransactionDate())
                 .status(entity.getStatus())
                 .createdById(entity.getCreatedBy() == null ? null : entity.getCreatedBy().getMemberId())
                 .approvedById(entity.getApprovedBy() == null ? null : entity.getApprovedBy().getMemberId())

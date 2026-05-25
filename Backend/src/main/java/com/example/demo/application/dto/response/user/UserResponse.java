@@ -16,6 +16,13 @@ public class UserResponse {
     private String studentId;
     private String fullName;
     private String email;
+    private Long departmentId;
+    private String departmentName;
+    private Long roleId;
+    private String roleName;
+    private Integer rolePriority;
+    private String reqStatus;
+    private String graduatedStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

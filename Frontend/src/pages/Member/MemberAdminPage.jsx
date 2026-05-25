@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import MemberTable from '../../components/sections/Member/MemberTable';
-import MemberForm, { DEPARTMENTS } from '../../components/sections/Member/MemberForm';
+import MemberForm from '../../components/sections/Member/MemberForm';
 import MemberFilter from '../../components/sections/Member/MemberFilter';
 import MemberStatCard from '../../components/sections/Member/MemberStatCard';
 import MemberDetailModal from '../../components/sections/Member/MemberDetailModal';
 import MemberHistoryModal from '../../components/sections/Member/MemberHistoryModal';
 import MemberReviewModal from '../../components/sections/Member/MemberReviewModal';
 import MemberDeleteConfirmModal from '../../components/sections/Member/MemberDeleteConfirmModal';
-import { MOCK_MEMBERS } from '../../data/Member/memberMockData';
+import useAuthStore from '../../store/auth-store';
+import { getMeAPI } from '../../services/auth-services';
 import {
   approveMemberAPI,
   getMemberDepartmentsAPI,
@@ -22,11 +23,44 @@ import {
 import styles from './MemberAdminPage.module.css';
 
 const PAGE_SIZE = 8;
+const STUDENT_ID_KEY = 'id';
+const STATUS = {
+  pending: 'Đang xét duyệt',
+  approved: 'Đã duyệt',
+  rejected: 'Từ chối',
+};
+
+const normalizeSearchText = (value) =>
+  String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+const matchesMemberSearch = (member, query) => {
+  if (!query) return true;
+
+  const normalizedQuery = normalizeSearchText(query);
+  if (/^\d/.test(normalizedQuery)) {
+    return normalizeSearchText(member[STUDENT_ID_KEY]).includes(normalizedQuery);
+  }
+
+  return Object.entries(member).some(([key, value]) => (
+    key !== STUDENT_ID_KEY &&
+    value !== null &&
+    typeof value !== 'object' &&
+    normalizeSearchText(value).includes(normalizedQuery)
+  ));
+};
 
 export default function MemberAdminPage() {
-  const [members, setMembers] = useState(MOCK_MEMBERS);
+  const currentUser = useAuthStore((state) => state.user);
+  const updateCurrentUser = useAuthStore((state) => state.updateUser);
+  const currentMemberId = currentUser?.memberId;
+
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState('');
-  const [departmentOptions, setDepartmentOptions] = useState(DEPARTMENTS);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
   const [activeTab, setActiveTab] = useState('review');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -38,6 +72,8 @@ export default function MemberAdminPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [reviewTarget, setReviewTarget] = useState(null);
   const [reviewType, setReviewType] = useState('approve');
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -50,14 +86,11 @@ export default function MemberAdminPage() {
       .then(([membersResult, departmentsResult]) => {
         if (ignore) return;
 
-        if (membersResult.status === 'fulfilled') {
-          const nextMembers = Array.isArray(membersResult.value)
-            ? membersResult.value.map(normalizeMemberFromApi)
-            : [];
-          setMembers(nextMembers.length ? nextMembers : MOCK_MEMBERS);
+        if (membersResult.status === 'fulfilled' && Array.isArray(membersResult.value)) {
+          setMembers(membersResult.value.map(normalizeMemberFromApi));
           setApiError('');
         } else {
-          setMembers(MOCK_MEMBERS);
+          setMembers([]);
           setApiError(membersResult.reason?.message || 'Không tải được danh sách thành viên từ API.');
         }
 
@@ -68,7 +101,18 @@ export default function MemberAdminPage() {
               name: department.departmentName,
             })),
           );
+        } else {
+          setDepartmentOptions([]);
         }
+      })
+      .catch((error) => {
+        if (ignore) return;
+        setMembers([]);
+        setDepartmentOptions([]);
+        setApiError(error?.message || 'Không tải được danh sách thành viên từ API.');
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
       });
 
     return () => {
@@ -77,39 +121,36 @@ export default function MemberAdminPage() {
   }, []);
 
   const departmentNames = useMemo(
-    () => departmentOptions.map((department) => department.name || department),
+    () => departmentOptions.map((department) => department.name).filter(Boolean),
     [departmentOptions],
   );
 
   const getDepartmentId = (departmentName) => {
-    const department = departmentOptions.find((item) => (item.name || item) === departmentName);
+    const department = departmentOptions.find((item) => item.name === departmentName);
     return department?.id || null;
   };
-  const statuses = useMemo(() => [...new Set(members.map((m) => m.requestStatus))], [members]);
-  const roles = useMemo(() => [...new Set(members.map((m) => m.role))], [members]);
+
+  const statuses = useMemo(() => [...new Set(members.map((m) => m.requestStatus).filter(Boolean))], [members]);
+  const roles = useMemo(() => [...new Set(members.map((m) => m.role).filter(Boolean))], [members]);
 
   const stats = useMemo(() => {
     const total = members.length;
-    const pending = members.filter((m) => m.requestStatus === 'Đang xét duyệt').length;
-    const approved = members.filter((m) => m.requestStatus === 'Đã duyệt').length;
-    const rejected = members.filter((m) => m.requestStatus === 'Từ chối').length;
+    const pending = members.filter((m) => m.requestStatus === STATUS.pending).length;
+    const approved = members.filter((m) => m.requestStatus === STATUS.approved).length;
+    const rejected = members.filter((m) => m.requestStatus === STATUS.rejected).length;
     return { total, pending, approved, rejected };
   }, [members]);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim();
     return members
       .filter((m) => {
-        const matchSearch = !q ||
-          m.name.toLowerCase().includes(q) ||
-          m.id.includes(q) ||
-          m.email.toLowerCase().includes(q) ||
-          m.department.toLowerCase().includes(q);
+        const matchSearch = matchesMemberSearch(m, q);
         const matchDepartment = !departmentFilter || m.department === departmentFilter;
         const matchesTab =
           activeTab === 'review'
-            ? m.requestStatus === 'Đang xét duyệt'
-            : m.requestStatus === 'Đã duyệt';
+            ? m.requestStatus === STATUS.pending
+            : m.requestStatus === STATUS.approved;
         const matchStatus = activeTab === 'review' || activeTab === 'lookup' || !statusFilter || m.requestStatus === statusFilter;
         const matchRole = !roleFilter || m.role === roleFilter;
         return matchesTab && matchSearch && matchDepartment && matchStatus && matchRole;
@@ -123,7 +164,7 @@ export default function MemberAdminPage() {
 
   const historyMembers = useMemo(
     () => members
-      .filter((member) => member.requestStatus === 'Đã duyệt' || member.requestStatus === 'Từ chối')
+      .filter((member) => member.requestStatus === STATUS.approved || member.requestStatus === STATUS.rejected)
       .sort((a, b) => new Date(b.reviewedAt || b.registeredAt) - new Date(a.reviewedAt || a.registeredAt)),
     [members],
   );
@@ -150,9 +191,9 @@ export default function MemberAdminPage() {
       });
 
       if (editTarget) {
-        const updated = await updateMemberAPI(editTarget.memberId || editTarget.id, payload);
+        const updated = await updateMemberAPI(editTarget.memberId, payload);
         setMembers((prev) => prev.map((m) => (
-          m.id === editTarget.id ? normalizeMemberFromApi(updated) : m
+          m.memberId === editTarget.memberId ? normalizeMemberFromApi(updated) : m
         )));
       } else {
         const created = await registerMemberAPI(payload);
@@ -171,27 +212,70 @@ export default function MemberAdminPage() {
   const openReview = (member, type) => {
     setReviewTarget(member);
     setReviewType(type);
+    setReviewError('');
+  };
+
+  const closeReview = () => {
+    if (reviewLoading) return;
+    setReviewTarget(null);
+    setReviewError('');
+  };
+
+  const resolveCurrentMemberId = async () => {
+    if (currentMemberId) return currentMemberId;
+
+    const me = await getMeAPI();
+    if (me?.memberId) {
+      updateCurrentUser(me);
+      return me.memberId;
+    }
+
+    return null;
   };
 
   const confirmReview = async (member, reviewData) => {
+    if (!member.memberId) {
+      const message = 'Không xác định được memberId của hồ sơ cần xét duyệt.';
+      setReviewError(message);
+      setApiError(message);
+      return;
+    }
+
+    setReviewLoading(true);
+    setReviewError('');
     try {
-      if (member.memberId) {
-        await approveMemberAPI(toApprovalPayload(member, reviewData));
-      } else {
-        // TODO(BE): Dữ liệu mock không có memberId nên không thể gọi /api/members/approve.
+      const approverMemberId = await resolveCurrentMemberId();
+      if (!approverMemberId) {
+        throw new Error('Không xác định được memberId của tài khoản đang đăng nhập.');
       }
-      setMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, ...reviewData } : m)));
+
+      const nextReviewData = {
+        ...reviewData,
+        approvedBy: approverMemberId,
+      };
+      const updated = await approveMemberAPI(toApprovalPayload(member, nextReviewData));
+      const nextMember = {
+        ...normalizeMemberFromApi(updated),
+        reviewedBy: currentUser?.fullName || reviewData.reviewedBy,
+        reviewedAt: reviewData.reviewedAt,
+        reviewNote: reviewData.reviewNote,
+      };
+
+      setMembers((prev) => prev.map((m) => (m.memberId === member.memberId ? nextMember : m)));
       setReviewTarget(null);
       setApiError('');
     } catch (error) {
-      setApiError(error?.message || 'Không cập nhật được trạng thái xét duyệt.');
+      const message = error?.message || 'Không cập nhật được trạng thái xét duyệt.';
+      setReviewError(message);
+      setApiError(message);
+    } finally {
+      setReviewLoading(false);
     }
   };
 
   const confirmDelete = () => {
-    // TODO(BE): Chưa có DELETE /api/members/{id}; tạm xoá local.
-    setMembers((prev) => prev.filter((m) => m.id !== deleteConfirm.id));
     setDeleteConfirm(null);
+    setApiError('Backend chưa hỗ trợ xóa thành viên, nên thao tác xóa chưa được thực hiện.');
   };
 
   return (
@@ -318,6 +402,7 @@ export default function MemberAdminPage() {
           showReviewActions={activeTab === 'review'}
           showContact={activeTab !== 'review'}
           showRegisteredAt={activeTab === 'review'}
+          loading={loading}
         />
       </div>
 
@@ -347,8 +432,10 @@ export default function MemberAdminPage() {
       <MemberReviewModal
         member={reviewTarget}
         type={reviewType}
-        onClose={() => setReviewTarget(null)}
+        onClose={closeReview}
         onConfirm={confirmReview}
+        loading={reviewLoading}
+        serverError={reviewError}
       />
       <MemberDeleteConfirmModal
         member={deleteConfirm}

@@ -21,6 +21,8 @@ public interface UserService {
 
     UserResponse changePassword(Long userId, ChangePasswordRequest request);
 
+    UserResponse updatePasswordForAdmin(Long userId, String newPassword);
+
     UserPasswordResponse getPasswordHashForAdmin(Long userId);
 
     CompletableFuture<UserResponse> getUserByIdAsync(Long userId);

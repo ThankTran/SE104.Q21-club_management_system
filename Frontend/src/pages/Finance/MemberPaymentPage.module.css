@@ -61,6 +61,17 @@
   font-size: 15px;
 }
 
+.apiError {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .section {
   margin-top: 18px;
   padding: 20px;

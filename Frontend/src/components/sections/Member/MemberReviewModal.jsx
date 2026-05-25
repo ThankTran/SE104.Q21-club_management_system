@@ -5,7 +5,14 @@ import styles from './MemberReviewModal.module.css';
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
-export default function MemberReviewModal({ member, type, onClose, onConfirm }) {
+export default function MemberReviewModal({
+  member,
+  type,
+  onClose,
+  onConfirm,
+  loading = false,
+  serverError = '',
+}) {
   const [reviewedBy, setReviewedBy] = useState('Admin CLB');
   const [reviewedAt, setReviewedAt] = useState(TODAY);
   const [note, setNote] = useState('');
@@ -67,11 +74,11 @@ export default function MemberReviewModal({ member, type, onClose, onConfirm }) 
           {isReject ? 'Lý do từ chối' : 'Ghi chú'}
           <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder={isReject ? 'Nhập lý do từ chối hồ sơ...' : 'Ghi chú xét duyệt nếu có...'} />
         </label>
-        {error && <p className={styles.reviewError}>{error}</p>}
+        {(error || serverError) && <p className={styles.reviewError}>{error || serverError}</p>}
         <div className={styles.modalActions}>
-          <button type="button" className={styles.secondaryBtn} onClick={onClose}>Hủy</button>
-          <button type="submit" className={isReject ? styles.dangerBtn : styles.primaryBtn}>
-            {isReject ? 'Xác nhận từ chối' : 'Xác nhận duyệt'}
+          <button type="button" className={styles.secondaryBtn} onClick={onClose} disabled={loading}>Hủy</button>
+          <button type="submit" className={isReject ? styles.dangerBtn : styles.primaryBtn} disabled={loading}>
+            {loading ? 'Đang xử lý...' : isReject ? 'Xác nhận từ chối' : 'Xác nhận duyệt'}
           </button>
         </div>
       </form>

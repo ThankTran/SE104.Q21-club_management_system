@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import styles from './FinancePage.module.css';
 
-import { MOCK_THU, MOCK_CHI } from '../../data/Finance/financeMockData';
 import { getThang } from '../../utils/Finance/financeUtils';
 
 import FinanceHeader from '../../components/sections/Finance/FinanceHeader';
@@ -27,16 +26,21 @@ import {
 import {
   createTransactionAPI,
   deleteTransactionAPI,
+  getPendingMonthlyDuesAPI,
   getTransactionsAPI,
+  normalizeMemberDueFromApi,
   normalizeTransactionFromApi,
   toExpensePayload,
   toIncomePayload,
+  updateTransactionAPI,
 } from '../../services/finance-service';
 
 export default function FinancePage() {
-  const [thuList, setThuList] = useState(() => mergeIncomeReceipts(MOCK_THU));
-  const [chiList, setChiList] = useState(MOCK_CHI);
+  const [thuList, setThuList] = useState(() => mergeIncomeReceipts([]));
+  const [chiList, setChiList] = useState([]);
   const [transferDues, setTransferDues] = useState(() => getTransferDues());
+  const [pendingDues, setPendingDues] = useState([]);
+  const [pendingDuesLoading, setPendingDuesLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
   const [thuFilters, setThuFilters] = useState({
@@ -75,23 +79,31 @@ export default function FinancePage() {
 
   useEffect(() => {
     let ignore = false;
+    setPendingDuesLoading(true);
 
-    getTransactionsAPI()
-      .then((data) => {
+    Promise.all([getTransactionsAPI(), getPendingMonthlyDuesAPI()])
+      .then(([data, dueData]) => {
         if (ignore) return;
         const transactions = Array.isArray(data) ? data.map(normalizeTransactionFromApi) : [];
-        const income = transactions.filter((item) => item.raw?.type === 'INCOME');
+        const income = transactions.filter((item) =>
+          item.raw?.type === 'INCOME' && ['COMPLETED', 'APPROVED'].includes(String(item.raw?.status || '').toUpperCase())
+        );
         const expense = transactions.filter((item) => item.raw?.type !== 'INCOME');
 
-        setThuList(income.length ? mergeIncomeReceipts(income) : mergeIncomeReceipts(MOCK_THU));
-        setChiList(expense.length ? expense : MOCK_CHI);
+        setThuList(mergeIncomeReceipts(income));
+        setChiList(expense);
+        setPendingDues(Array.isArray(dueData) ? dueData.map(normalizeMemberDueFromApi) : []);
         setApiError('');
       })
       .catch((error) => {
         if (ignore) return;
-        setThuList(mergeIncomeReceipts(MOCK_THU));
-        setChiList(MOCK_CHI);
+        setThuList(mergeIncomeReceipts([]));
+        setChiList([]);
+        setPendingDues([]);
         setApiError(error?.message || 'Không tải được dữ liệu thu chi từ API.');
+      })
+      .finally(() => {
+        if (!ignore) setPendingDuesLoading(false);
       });
 
     return () => {
@@ -211,8 +223,8 @@ export default function FinancePage() {
     setFormLoading(true);
     try {
       if (editThu) {
-        // TODO(BE): Chưa có PUT/PATCH /api/transactions/{id}; tạm cập nhật local.
-        setThuList(p => p.map(r => r.id === editThu.id ? { ...r, ...data } : r));
+        const updated = await updateTransactionAPI(editThu.id, toIncomePayload({ ...editThu, ...data }));
+        setThuList(p => p.map(r => r.id === editThu.id ? normalizeTransactionFromApi(updated) : r));
       } else if (data?.mode === 'transfer' || (Array.isArray(data) && data[0]?.mode === 'transfer')) {
         const records = Array.isArray(data) ? data : [data];
         setTransferDues((prev) => {
@@ -248,8 +260,8 @@ export default function FinancePage() {
     setFormLoading(true);
     try {
       if (editChi) {
-        // TODO(BE): Chưa có PUT/PATCH /api/transactions/{id}; tạm cập nhật local.
-        setChiList(p => p.map(r => r.id === editChi.id ? { ...r, ...data } : r));
+        const updated = await updateTransactionAPI(editChi.id, toExpensePayload({ ...editChi, ...data }));
+        setChiList(p => p.map(r => r.id === editChi.id ? normalizeTransactionFromApi(updated) : r));
       } else {
         const localRecord = { ...data, id: data.id || `CHI${String(chiList.length + 1).padStart(3, '0')}` };
         const created = await createTransactionAPI(toExpensePayload(localRecord));
@@ -269,8 +281,8 @@ export default function FinancePage() {
     if (!deleteTarget) return;
     try {
       await deleteTransactionAPI(deleteTarget.id);
-      if (deleteTarget.id.startsWith('THU')) setThuList(p => p.filter(r => r.id !== deleteTarget.id));
-      else setChiList(p => p.filter(r => r.id !== deleteTarget.id));
+      setThuList(p => p.filter(r => r.id !== deleteTarget.id));
+      setChiList(p => p.filter(r => r.id !== deleteTarget.id));
       setDeleteTarget(null);
       setApiError('');
     } catch (error) {
@@ -306,6 +318,8 @@ export default function FinancePage() {
         <FinanceOverview
           thuList={thuList}
           chiList={chiList}
+          pendingDues={pendingDues}
+          pendingDuesLoading={pendingDuesLoading}
           setTab={setTab}
         />
       )}

@@ -132,6 +132,23 @@
   font-weight: 800;
 }
 
+.apiError {
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.loadingText {
+  padding: 40px 20px;
+  color: var(--gray-500);
+  font-size: 14px;
+  text-align: center;
+}
+
 .tableSubtitle {
   margin: 4px 0 0;
   color: var(--gray-500);

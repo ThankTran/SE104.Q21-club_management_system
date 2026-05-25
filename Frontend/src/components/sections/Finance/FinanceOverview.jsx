@@ -3,7 +3,7 @@ import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
 import FinanceCharts from './FinanceCharts';
 import PendingDuesList from './PendingDuesList';
 
-export default function OverviewPanel({ thuList, chiList, setTab }) {
+export default function OverviewPanel({ thuList, chiList, pendingDues = [], pendingDuesLoading = false, setTab }) {
   return (
     <div className={styles.overviewGrid}>
       <div className={`${styles.overviewPanel} ${styles.incomePanel}`}>
@@ -42,7 +42,7 @@ export default function OverviewPanel({ thuList, chiList, setTab }) {
         <FinanceCharts thuList={thuList} chiList={chiList} />
       </div>
       <div className={styles.duesPanel}>
-        <PendingDuesList />
+        <PendingDuesList members={pendingDues} loading={pendingDuesLoading} />
       </div>
     </div>
   );

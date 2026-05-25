@@ -27,6 +27,21 @@ public class EventRoleServiceImpl implements com.example.demo.application.servic
 
     @CacheEvict(allEntries = true)
     public EventRoleResponse create(EventRoleRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Event role request must not be empty");
+        }
+        if (request.getRoleId() == null) {
+            throw new IllegalArgumentException("Event role ID must not be empty");
+        }
+        if (request.getRoleName() == null || request.getRoleName().isBlank()) {
+            throw new IllegalArgumentException("Event role name must not be empty");
+        }
+        if (eventRoleRepository.existsById(request.getRoleId())) {
+            throw new IllegalArgumentException("Event role ID already exists: " + request.getRoleId());
+        }
+        if (eventRoleRepository.findByRoleNameIgnoreCase(request.getRoleName()).isPresent()) {
+            throw new IllegalArgumentException("Event role name already exists: " + request.getRoleName());
+        }
         return eventRoleMapper.toResponse(eventRoleRepository.save(eventRoleMapper.toEntity(request)));
     }
 

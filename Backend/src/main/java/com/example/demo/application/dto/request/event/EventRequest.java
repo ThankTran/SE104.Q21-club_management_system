@@ -16,6 +16,9 @@ public class EventRequest {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private BigDecimal estimatedCost;
+    private Integer capacity;
+    private String organizer;
+    private String tag;
     private EventStatusEnum status;
     private ApprovalStatusEnum reqStatus;
     private String description;

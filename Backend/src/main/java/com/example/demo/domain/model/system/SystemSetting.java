@@ -31,7 +31,7 @@ public class SystemSetting {
     @Column(name = "setting_value")
     private String settingValue;
 
-    @Column(name = "description", columnDefinition = "text")
+    @Column(name = "description", columnDefinition = "nvarchar(max)")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)

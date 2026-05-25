@@ -79,7 +79,12 @@ public class EventOrganizerServiceImpl implements com.example.demo.application.s
     @CacheEvict(allEntries = true)
     public void delete(String eventId, Long memberId) {
         eventOrganizerDomainService.validateDelete(eventId, memberId);
-        eventOrganizerRepository.deleteById(new EventOrganizerId(eventId, memberId));
+        EventOrganizerId id = new EventOrganizerId(eventId, memberId);
+        if (!eventOrganizerRepository.existsById(id)) {
+            throw new IllegalArgumentException(
+                    "Khong tim thay phan cong organizer cho event " + eventId + " va member " + memberId);
+        }
+        eventOrganizerRepository.deleteById(id);
     }
 
     @Async("applicationTaskExecutor")

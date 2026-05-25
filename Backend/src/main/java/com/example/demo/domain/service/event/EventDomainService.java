@@ -6,6 +6,8 @@ import java.time.LocalDate;
 public interface EventDomainService {
     void validateCreateRequest(EventRequest request);
 
+    void validateUpdateRequest(String eventId, EventRequest request);
+
     void validateEventNameUniqueness(String eventName, boolean exists);
 
     void validateDateRange(LocalDate from, LocalDate to);

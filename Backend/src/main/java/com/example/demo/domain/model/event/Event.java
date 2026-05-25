@@ -58,6 +58,15 @@ public class Event {
     @Column(name = "estimated_cost")
     private BigDecimal estimatedCost;
 
+    @Column(name = "capacity")
+    private Integer capacity;
+
+    @Column(name = "organizer", length = 255)
+    private String organizer;
+
+    @Column(name = "tag", length = 50)
+    private String tag;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 50)
     @Builder.Default
@@ -68,7 +77,7 @@ public class Event {
     @Builder.Default
     private ApprovalStatusEnum reqStatus = ApprovalStatusEnum.PENDING;
 
-    @Column(name = "description", columnDefinition = "text")
+    @Column(name = "description", columnDefinition = "nvarchar(max)")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -78,7 +87,7 @@ public class Event {
     @Column(name = "evaluation_date")
     private LocalDateTime evaluationDate;
 
-    @Column(name = "evaluation_content", columnDefinition = "text")
+    @Column(name = "evaluation_content", columnDefinition = "nvarchar(max)")
     private String evaluationContent;
 
 

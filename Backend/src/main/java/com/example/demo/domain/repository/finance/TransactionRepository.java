@@ -1,6 +1,7 @@
 package com.example.demo.domain.repository.finance;
 
 import com.example.demo.domain.enums.TransactionType;
+import com.example.demo.domain.enums.TransactionStatus;
 import com.example.demo.domain.model.finance.Transaction;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +20,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             SELECT t
             FROM Transaction t
             WHERE t.deletedAt IS NULL
-            ORDER BY t.createdAt DESC
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
             """)
     List<Transaction> findActive();
 
@@ -29,7 +30,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             FROM Transaction t
             WHERE t.deletedAt IS NULL
               AND t.type = :type
-            ORDER BY t.createdAt DESC
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
             """)
     List<Transaction> findActiveByType(@Param("type") TransactionType type);
 
@@ -39,7 +40,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             FROM Transaction t
             WHERE t.deletedAt IS NULL
               AND t.event.eventId = :eventId
-            ORDER BY t.createdAt DESC
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
             """)
     List<Transaction> findActiveByEventId(@Param("eventId") String eventId);
 
@@ -48,9 +49,38 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             SELECT t
             FROM Transaction t
             WHERE t.deletedAt IS NULL
+              AND t.member.memberId = :memberId
+              AND t.type = :type
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
+            """)
+    List<Transaction> findActiveByMemberIdAndType(
+            @Param("memberId") Long memberId, @Param("type") TransactionType type);
+
+    @EntityGraph(attributePaths = {"event", "member", "createdBy", "approvedBy"})
+    @Query("""
+            SELECT t
+            FROM Transaction t
+            WHERE t.deletedAt IS NULL
+              AND t.member.memberId = :memberId
+              AND t.event.eventId = :eventId
+              AND t.type = :type
+              AND t.status = :status
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
+            """)
+    List<Transaction> findActiveByMemberIdAndEventIdAndTypeAndStatus(
+            @Param("memberId") Long memberId,
+            @Param("eventId") String eventId,
+            @Param("type") TransactionType type,
+            @Param("status") TransactionStatus status);
+
+    @EntityGraph(attributePaths = {"event", "member", "createdBy", "approvedBy"})
+    @Query("""
+            SELECT t
+            FROM Transaction t
+            WHERE t.deletedAt IS NULL
               AND t.type = :type
               AND t.event.eventId = :eventId
-            ORDER BY t.createdAt DESC
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
             """)
     List<Transaction> findActiveByTypeAndEventId(
             @Param("type") TransactionType type, @Param("eventId") String eventId);
@@ -60,8 +90,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             SELECT t
             FROM Transaction t
             WHERE t.deletedAt IS NULL
-              AND t.createdAt BETWEEN :from AND :to
-            ORDER BY t.createdAt DESC
+              AND COALESCE(t.transactionDate, t.createdAt) BETWEEN :from AND :to
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
             """)
     List<Transaction> findActiveByCreatedAtBetween(
             @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
@@ -72,8 +102,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             FROM Transaction t
             WHERE t.deletedAt IS NULL
               AND t.type = :type
-              AND t.createdAt BETWEEN :from AND :to
-            ORDER BY t.createdAt DESC
+              AND COALESCE(t.transactionDate, t.createdAt) BETWEEN :from AND :to
+            ORDER BY COALESCE(t.transactionDate, t.createdAt) DESC
             """)
     List<Transaction> findActiveByTypeAndCreatedAtBetween(
             @Param("type") TransactionType type,

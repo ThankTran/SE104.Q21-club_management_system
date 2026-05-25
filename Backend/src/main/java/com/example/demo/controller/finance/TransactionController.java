@@ -42,13 +42,56 @@ public class TransactionController {
     }
 
     @GetMapping("/by-type")
-    public ResponseEntity<List<TransactionResponse>> byType(@RequestParam String type) {
-        return ResponseEntity.ok(transactionService.getByType(type));
+    public ResponseEntity<?> byType(@RequestParam String type) {
+        try {
+            return ResponseEntity.ok(transactionService.getByType(type));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable String id, @RequestBody TransactionRequest request) {
+        try {
+            return ResponseEntity.ok(transactionService.update(id, request));
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().startsWith("Khong tim thay transaction")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/by-event/{eventId}")
     public ResponseEntity<List<TransactionResponse>> byEvent(@PathVariable String eventId) {
         return ResponseEntity.ok(transactionService.getByEvent(eventId));
+    }
+
+    @GetMapping("/member-dues/{memberId}")
+    public ResponseEntity<?> memberDues(@PathVariable Long memberId) {
+        try {
+            return ResponseEntity.ok(transactionService.getByMemberDues(memberId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/monthly-dues/pending")
+    public ResponseEntity<?> pendingMonthlyDues() {
+        try {
+            return ResponseEntity.ok(transactionService.getPendingMonthlyDues());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<?> complete(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(transactionService.complete(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

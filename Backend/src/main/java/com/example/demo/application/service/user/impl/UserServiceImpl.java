@@ -111,6 +111,16 @@ public class UserServiceImpl implements com.example.demo.application.service.use
     }
 
     @Override
+    @CacheEvict(allEntries = true)
+    public UserResponse updatePasswordForAdmin(Long userId, String newPassword) {
+        validateNewPassword(newPassword);
+
+        User user = findUserById(userId);
+        userDomainService.changePassword(user, newPassword);
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Override
     @Cacheable(key = "'password:' + #userId")
     public UserPasswordResponse getPasswordHashForAdmin(Long userId) {
         return userMapper.toPasswordResponse(findUserById(userId));
@@ -143,5 +153,14 @@ public class UserServiceImpl implements com.example.demo.application.service.use
     private User findUserByMemberId(Long memberId) {
         return userRepository.findByMemberMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay tai khoan cua member ID: " + memberId));
+    }
+
+    private void validateNewPassword(String newPassword) {
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new IllegalArgumentException("Mat khau moi khong duoc de trong");
+        }
+        if (newPassword.length() < 6) {
+            throw new IllegalArgumentException("Mat khau moi phai co it nhat 6 ky tu");
+        }
     }
 }

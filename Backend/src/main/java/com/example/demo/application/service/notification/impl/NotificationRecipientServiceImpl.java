@@ -8,6 +8,7 @@ import com.example.demo.domain.repository.member.MemberRepository;
 import com.example.demo.domain.repository.notification.NotificationRecipientRepository;
 import com.example.demo.domain.repository.notification.NotificationRepository;
 import com.example.demo.domain.service.notification.NotificationRecipientDomainService;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.cache.annotation.CacheConfig;
@@ -70,6 +71,18 @@ public class NotificationRecipientServiceImpl implements com.example.demo.applic
         return notificationRecipientRepository.findByMemberMemberId(memberId).stream()
                 .map(notificationRecipientMapper::toResponse)
                 .toList();
+    }
+
+    @CacheEvict(allEntries = true)
+    public NotificationRecipientResponse markAsRead(Long notificationId, Long memberId) {
+        var id = new NotificationRecipientId(notificationId, memberId);
+        var recipient = notificationRecipientRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Khong tim thay notification recipient: " + notificationId + "/" + memberId));
+
+        recipient.setIsRead(true);
+        recipient.setReadAt(LocalDateTime.now());
+        return notificationRecipientMapper.toResponse(notificationRecipientRepository.save(recipient));
     }
 
     @CacheEvict(allEntries = true)

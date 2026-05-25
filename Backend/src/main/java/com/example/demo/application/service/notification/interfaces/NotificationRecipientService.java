@@ -12,6 +12,8 @@ public interface NotificationRecipientService {
 
     List<NotificationRecipientResponse> getByMember(Long memberId);
 
+    NotificationRecipientResponse markAsRead(Long notificationId, Long memberId);
+
     void delete(Long notificationId, Long memberId);
 
     CompletableFuture<List<NotificationRecipientResponse>> getByMemberAsync(Long memberId);
