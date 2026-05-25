@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -49,6 +50,9 @@ public class Transaction {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(name = "counterparty_name", length = 255)
+    private String counterpartyName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)
     private TransactionType type;
@@ -56,8 +60,11 @@ public class Transaction {
     @Column(name = "amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "description", columnDefinition = "text")
+    @Column(name = "description", columnDefinition = "nvarchar(max)")
     private String description;
+
+    @Column(name = "transaction_date")
+    private LocalDateTime transactionDate;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -86,4 +93,11 @@ public class Transaction {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (transactionDate == null) {
+            transactionDate = LocalDateTime.now();
+        }
+    }
 }

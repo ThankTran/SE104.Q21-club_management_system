@@ -38,8 +38,12 @@ public class EventOrganizerController {
     }
 
     @DeleteMapping("/{eventId}/members/{memberId}")
-    public ResponseEntity<Void> delete(@PathVariable String eventId, @PathVariable Long memberId) {
-        eventOrganizerService.delete(eventId, memberId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable String eventId, @PathVariable Long memberId) {
+        try {
+            eventOrganizerService.delete(eventId, memberId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

@@ -9,20 +9,36 @@ import org.springframework.stereotype.Service;
 public class EventDomainServiceImpl implements EventDomainService {
     @Override
     public void validateCreateRequest(EventRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Event request must not be empty");
-        }
+        validateEventPayload(request, true);
         if (request.getEventId() == null || request.getEventId().isBlank()) {
             throw new IllegalArgumentException("Event ID must not be empty");
+        }
+        if (request.getEventDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Event date must be today or later");
+        }
+    }
+
+    @Override
+    public void validateUpdateRequest(String eventId, EventRequest request) {
+        if (eventId == null || eventId.isBlank()) {
+            throw new IllegalArgumentException("Event ID must not be empty");
+        }
+        validateEventPayload(request, false);
+        if (request.getEventId() != null && !request.getEventId().isBlank()
+                && !eventId.equals(request.getEventId())) {
+            throw new IllegalArgumentException("Event ID in path and body must match");
+        }
+    }
+
+    private void validateEventPayload(EventRequest request, boolean validateEvaluationDate) {
+        if (request == null) {
+            throw new IllegalArgumentException("Event request must not be empty");
         }
         if (request.getEventName() == null || request.getEventName().isBlank()) {
             throw new IllegalArgumentException("Event name must not be empty");
         }
         if (request.getEventDate() == null) {
             throw new IllegalArgumentException("Event date must not be empty");
-        }
-        if (request.getEventDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Event date must be today or later");
         }
         if (request.getStartTime() == null || request.getEndTime() == null) {
             throw new IllegalArgumentException("Start time and end time must not be empty");
@@ -33,7 +49,12 @@ public class EventDomainServiceImpl implements EventDomainService {
         if (request.getEstimatedCost() != null && request.getEstimatedCost().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Estimated cost must not be negative");
         }
-        if (request.getEvaluationDate() != null && !request.getEvaluationDate().isAfter(request.getEndTime())) {
+        if (request.getCapacity() != null && request.getCapacity() < 0) {
+            throw new IllegalArgumentException("Capacity must not be negative");
+        }
+        if (validateEvaluationDate
+                && request.getEvaluationDate() != null
+                && !request.getEvaluationDate().isAfter(request.getEndTime())) {
             throw new IllegalArgumentException("Evaluation date must be after event end time");
         }
     }

@@ -36,6 +36,8 @@ public interface EventRepository extends JpaRepository<Event, String> {
             """)
     List<Event> findByEventDateRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
+    Optional<Event> findByEventNameIgnoreCase(String eventName);
+
     boolean existsByEventNameIgnoreCase(String eventName);
 
     boolean existsByEvaluatedByMemberId(Long memberId);

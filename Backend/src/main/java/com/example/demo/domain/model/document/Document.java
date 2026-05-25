@@ -70,7 +70,7 @@ public class Document {
     @Column(name = "source", length = 255)
     private String source;
 
-    @Column(name = "note", columnDefinition = "text")
+    @Column(name = "note", columnDefinition = "nvarchar(max)")
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)

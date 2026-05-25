@@ -30,6 +30,18 @@ public class EventController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable String id, @RequestBody EventRequest request) {
+        try {
+            return ResponseEntity.ok(eventService.update(id, request));
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().startsWith("Khong tim thay event")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<EventResponse>> getAll() {
         return ResponseEntity.ok(eventService.getAll());
@@ -50,6 +62,9 @@ public class EventController {
             EventCalendarLinkResponse response = eventService.getGoogleCalendarLink(id);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().startsWith("Khong tim thay event")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -67,8 +82,15 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        eventService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable String id) {
+        try {
+            eventService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().startsWith("Khong tim thay event")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }
