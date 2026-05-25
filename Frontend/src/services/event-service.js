@@ -15,9 +15,11 @@ const toDateTime = (date, time) => {
 
 const mapEventStatusToUi = (status, reqStatus) => {
   if (reqStatus === 'PENDING') return 'draft'
+  if (status === 'NotStarted') return 'upcoming'
+  if (status === 'InProgress') return 'published'
   if (status === 'Finished') return 'completed'
   if (status === 'Cancelled') return 'cancelled'
-  return 'published'
+  return 'upcoming'
 }
 
 const mapEventStatusToApi = (status) => {
@@ -56,12 +58,15 @@ export const toEventPayload = (event = {}) => ({
   startTime: toDateTime(event.date, event.time),
   endTime: toDateTime(event.date, event.endTime),
   estimatedCost: Number(event.estimatedCost || 0),
+  capacity: event.capacity ? Number(event.capacity) : null,
+  organizer: event.organizer || '',
+  tag: event.tag || 'OTHER',
   status: mapEventStatusToApi(event.status),
   reqStatus: event.status === 'draft' ? 'PENDING' : 'APPROVED',
   description: event.description || '',
-  evaluatedById: event.evaluatedById || null,
-  evaluationDate: event.evaluationDate ? `${event.evaluationDate}T00:00:00` : null,
-  evaluationContent: event.evaluation || '',
+  evaluatedById: null,
+  evaluationDate: null,
+  evaluationContent: null,
 })
 
 export const getEventsAPI = () =>
@@ -79,11 +84,11 @@ export const getEventsByDateRangeAPI = (from, to) =>
 export const createEventAPI = (payload) =>
   api.post('events', payload)
 
+export const updateEventAPI = (id, payload) =>
+  api.put(`events/${id}`, payload)
+
 export const deleteEventAPI = (id) =>
   api.delete(`events/${id}`)
-
-// Add PUT/PATCH /api/events/{id} for editing events.
-// Add endpoints for registration/attendance/evaluation if those workflows must persist.
 
 export const createEventOrganizerAPI = (payload) =>
   api.post('event-organizers', payload)
@@ -96,6 +101,25 @@ export const getEventOrganizersByMemberAPI = (memberId) =>
 
 export const deleteEventOrganizerAPI = (eventId, memberId) =>
   api.delete(`event-organizers/${eventId}/members/${memberId}`)
+
+export const normalizeEventRegistrationFromApi = (registration = {}) => ({
+  id: `${registration.eventId}-${registration.memberId}`,
+  eventId: registration.eventId,
+  memberId: registration.memberId,
+  memberCode: registration.studentId || '',
+  name: registration.fullName || '',
+  className: registration.departmentName || '',
+  email: registration.email || '',
+  registeredAt: toDatePart(registration.registeredAt),
+  attended: Boolean(registration.attended),
+  attendedAt: toDatePart(registration.attendedAt),
+})
+
+export const getEventRegistrationsByEventAPI = (eventId) =>
+  api.get(`events/${eventId}/registrations`)
+
+export const getEventRegistrationsByMemberAPI = (memberId) =>
+  api.get(`events/registrations/by-member/${memberId}`)
 
 export const createEventRoleAPI = (payload) =>
   api.post('event-roles', payload)

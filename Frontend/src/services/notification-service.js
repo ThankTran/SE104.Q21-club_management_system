@@ -27,8 +27,10 @@ export const getNotificationRecipientsAPI = (notificationId) =>
 export const getNotificationsByMemberAPI = (memberId) =>
   api.get(`notification-recipients/by-member/${memberId}`)
 
+export const markNotificationRecipientAsReadAPI = (notificationId, memberId) =>
+  api.patch(`notification-recipients/${notificationId}/members/${memberId}/read`)
+
 export const deleteNotificationRecipientAPI = (notificationId, memberId) =>
   api.delete(`notification-recipients/${notificationId}/members/${memberId}`)
 
-// Add mark-as-read endpoint, e.g. PATCH /api/notification-recipients/{notificationId}/members/{memberId}/read.
 // Add update notification endpoint if admins can edit sent/draft notifications.
