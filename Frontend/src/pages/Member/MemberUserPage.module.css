@@ -54,6 +54,13 @@
   letter-spacing: 0.5px;
 }
 
+.errorText {
+  margin: -8px 0 0;
+  color: #c53030;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 @media (max-width: 600px) {
   .pageHeader {
     flex-direction: column;

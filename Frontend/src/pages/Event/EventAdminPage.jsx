@@ -13,23 +13,23 @@ import EventRosterTable from '../../components/sections/Event/EventRosterTable';
 import exportEventRegistrationsExcel from '../../utils/Export/exportEventRegistrationsExcel';
 import {
   createEventAPI,
+  createEventEvaluationAPI,
   deleteEventAPI,
+  getEventRegistrationsByEventAPI,
   getEventsAPI,
+  normalizeEventRegistrationFromApi,
   normalizeEventFromApi,
   toEventPayload,
+  updateEventAPI,
 } from '../../services/event-service';
 import {
-  MOCK_EVENTS,
   PAGE_SIZE,
-  REGISTERED_MEMBER_POOL,
   STATUS_LABEL,
   TAG_FILTERS,
   TAG_LABEL,
 } from '../../data/Event/eventAdminData';
 import {
-  buildRegisteredMembers,
   createEvaluationCode,
-  normalizeEvent,
 } from '../../utils/Event/eventAdminUtils';
 import styles from './EventAdminPage.module.css';
 
@@ -39,8 +39,19 @@ const getTodayDateInputValue = () => {
   return localDate.toISOString().slice(0, 10);
 };
 
+const buildEvaluationsFromEvents = (events) =>
+  events
+    .filter((event) => event.evaluation)
+    .map((event, index) => ({
+      id: createEvaluationCode(event.eventCode, index),
+      eventCode: event.eventCode,
+      eventTitle: event.title,
+      evaluationDate: event.evaluationDate,
+      evaluation: event.evaluation,
+    }));
+
 export default function EventAdminPage() {
-  const [events, setEvents] = useState(() => MOCK_EVENTS.map(normalizeEvent));
+  const [events, setEvents] = useState([]);
   const [apiError, setApiError] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -58,6 +69,7 @@ export default function EventAdminPage() {
   const [evaluations, setEvaluations] = useState([]);
   const [evaluationHistoryOpen, setEvaluationHistoryOpen] = useState(false);
   const [registrationTarget, setRegistrationTarget] = useState(null);
+  const [registeredMembers, setRegisteredMembers] = useState([]);
 
   useEffect(() => {
     let ignore = false;
@@ -66,19 +78,44 @@ export default function EventAdminPage() {
       .then((data) => {
         if (ignore) return;
         const nextEvents = Array.isArray(data) ? data.map(normalizeEventFromApi) : [];
-        setEvents(nextEvents.length ? nextEvents : MOCK_EVENTS.map(normalizeEvent));
+        setEvents(nextEvents);
+        setEvaluations(buildEvaluationsFromEvents(nextEvents));
         setApiError('');
       })
       .catch((error) => {
         if (ignore) return;
         setApiError(error?.message || 'Không tải được danh sách sự kiện từ API.');
-        setEvents(MOCK_EVENTS.map(normalizeEvent));
+        setEvents([]);
+        setEvaluations([]);
       });
 
     return () => {
       ignore = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!registrationTarget) {
+      setRegisteredMembers([]);
+      return;
+    }
+
+    let ignore = false;
+    getEventRegistrationsByEventAPI(registrationTarget.id)
+      .then((data) => {
+        if (ignore) return;
+        setRegisteredMembers(Array.isArray(data) ? data.map(normalizeEventRegistrationFromApi) : []);
+      })
+      .catch((error) => {
+        if (ignore) return;
+        setRegisteredMembers([]);
+        setApiError(error?.message || 'Khong tai duoc danh sach dang ky su kien.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [registrationTarget]);
 
   const totalEstimated = events.reduce((sum, event) => sum + (Number(event.estimatedCost) || 0), 0);
   const totalActual = events
@@ -118,11 +155,6 @@ export default function EventAdminPage() {
 
     return { activityCount, totalAttendance, attendanceRate };
   }, [filtered]);
-  const registeredMembers = useMemo(
-    () => buildRegisteredMembers(registrationTarget, REGISTERED_MEMBER_POOL),
-    [registrationTarget],
-  );
-
   const openAdd = () => {
     setEditTarget(null);
     setFormOpen(true);
@@ -137,9 +169,9 @@ export default function EventAdminPage() {
     setFormLoading(true);
     try {
       if (editTarget) {
-        // TODO(BE): Chưa có PUT/PATCH /api/events/{id}; tạm cập nhật local.
+        const updated = await updateEventAPI(editTarget.id, toEventPayload(formData));
         setEvents((prev) =>
-          prev.map((event) => (event.id === editTarget.id ? { ...event, ...formData } : event)),
+          prev.map((event) => (event.id === editTarget.id ? normalizeEventFromApi(updated) : event)),
         );
       } else {
         const created = await createEventAPI(toEventPayload({ ...formData, status: 'draft' }));
@@ -157,11 +189,19 @@ export default function EventAdminPage() {
     }
   };
 
-  const updateEventStatus = (eventId, status) => {
-    // TODO(BE): Chưa có endpoint cập nhật trạng thái sự kiện; tạm cập nhật local.
-    setEvents((prev) =>
-      prev.map((event) => (event.id === eventId ? { ...event, status } : event)),
-    );
+  const updateEventStatus = async (eventId, status) => {
+    const current = events.find((event) => event.id === eventId);
+    if (!current) return;
+
+    try {
+      const updated = await updateEventAPI(eventId, toEventPayload({ ...current, status }));
+      setEvents((prev) =>
+        prev.map((event) => (event.id === eventId ? normalizeEventFromApi(updated) : event)),
+      );
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Khong cap nhat duoc trang thai su kien.');
+    }
   };
 
   const confirmDelete = async () => {
@@ -209,11 +249,11 @@ export default function EventAdminPage() {
     setEvaluationErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
-  const submitEvaluation = () => {
+  const submitEvaluation = async () => {
     const errs = {};
-    const today = getTodayDateInputValue();
+    const selectedDate = evaluationForm.evaluationDate || getTodayDateInputValue();
     const eventEndDate = evaluationTarget?.date ? new Date(evaluationTarget.date) : null;
-    const evaluationDate = new Date(today);
+    const evaluationDate = new Date(selectedDate);
 
     if (eventEndDate && evaluationDate && evaluationDate <= eventEndDate) {
       errs.evaluationDate = 'Ngày đánh giá phải lớn hơn ngày kết thúc sự kiện';
@@ -225,21 +265,38 @@ export default function EventAdminPage() {
       return;
     }
 
-    setEvaluations((prev) => {
-      const existed = prev.find((item) => item.eventCode === evaluationTarget.eventCode);
+    try {
+      const saved = await createEventEvaluationAPI({
+        eventId: evaluationTarget.id,
+        evaluationDate: `${selectedDate}T23:59:59`,
+        evaluationContent: evaluationForm.evaluation.trim(),
+      });
       const nextItem = {
-        id: existed?.id || createEvaluationCode(evaluationTarget.eventCode, prev.length),
-        eventCode: evaluationTarget.eventCode,
-        eventTitle: evaluationTarget.title,
-        evaluationDate: today,
-        evaluation: evaluationForm.evaluation.trim(),
+        id: createEvaluationCode(evaluationTarget.eventCode, evaluations.length),
+        eventCode: saved.eventId,
+        eventTitle: saved.eventName || evaluationTarget.title,
+        evaluationDate: saved.evaluationDate ? String(saved.evaluationDate).slice(0, 10) : selectedDate,
+        evaluation: saved.evaluationContent || evaluationForm.evaluation.trim(),
       };
 
-      return existed
-        ? prev.map((item) => (item.eventCode === evaluationTarget.eventCode ? nextItem : item))
-        : [...prev, nextItem];
-    });
-    closeEvaluation();
+      setEvaluations((prev) => {
+        const existed = prev.find((item) => item.eventCode === evaluationTarget.eventCode);
+        return existed
+          ? prev.map((item) => (item.eventCode === evaluationTarget.eventCode ? { ...nextItem, id: item.id } : item))
+          : [...prev, nextItem];
+      });
+      setEvents((prev) =>
+        prev.map((event) =>
+          event.id === evaluationTarget.id
+            ? { ...event, evaluationDate: nextItem.evaluationDate, evaluation: nextItem.evaluation }
+            : event,
+        ),
+      );
+      closeEvaluation();
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Khong luu duoc danh gia su kien.');
+    }
   };
 
   return (
