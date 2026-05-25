@@ -1,36 +1,40 @@
 import { useEffect, useState } from "react";
-import { KeyRound, Monitor, Save, Trash2 } from "lucide-react";
+import { KeyRound, Monitor, Save, X } from "lucide-react";
 import styles from "./AccountDetailPanel.module.css";
 
-export default function AccountDetailPanel({ account, onAccountUpdate, onDelete }) {
+export default function AccountDetailPanel({ account, onAccountUpdate, saving = false }) {
   const [editingAccount, setEditingAccount] = useState(false);
-  const [usernameDraft, setUsernameDraft] = useState("");
   const [passwordDraft, setPasswordDraft] = useState("");
   const [accountSaved, setAccountSaved] = useState(false);
 
   useEffect(() => {
-    setUsernameDraft(account?.username || "");
-    setPasswordDraft(account?.password || "");
+    setPasswordDraft("");
     setEditingAccount(false);
     setAccountSaved(false);
-  }, [account?.id, account?.username, account?.password]);
+  }, [account?.id]);
 
   if (!account) {
     return null;
   }
 
-  const handleAccountAction = () => {
+  const handleAccountAction = async () => {
     if (!editingAccount) {
       setEditingAccount(true);
+      setAccountSaved(false);
       return;
     }
 
-    onAccountUpdate({
-      username: usernameDraft.trim(),
-      password: passwordDraft,
-    });
+    const saved = await onAccountUpdate({ password: passwordDraft });
+    if (!saved) return;
+
     setEditingAccount(false);
+    setPasswordDraft("");
     setAccountSaved(true);
+  };
+
+  const cancelEdit = () => {
+    setEditingAccount(false);
+    setPasswordDraft("");
   };
 
   return (
@@ -46,37 +50,34 @@ export default function AccountDetailPanel({ account, onAccountUpdate, onDelete 
       <div className={styles.infoGrid}>
         <div>
           <span>Email</span>
-          <strong>{account.email}</strong>
+          <strong>{account.email || "Chưa cập nhật"}</strong>
         </div>
         <div>
           <span>Khoa</span>
-          <strong>{formatDepartment(account.department)}</strong>
+          <strong>{formatDepartment(account.department) || "Chưa cập nhật"}</strong>
         </div>
         <div>
           <span>Tên đăng nhập</span>
-          {editingAccount ? (
-            <input
-              className={styles.accountInput}
-              value={usernameDraft}
-              onChange={(event) => setUsernameDraft(event.target.value)}
-              autoFocus
-            />
-          ) : (
-            <strong className={styles.monoValue}>{account.username}</strong>
-          )}
+          <strong className={styles.monoValue}>{account.username || "Chưa cập nhật"}</strong>
         </div>
         <div>
           <span>Mật khẩu</span>
-          {editingAccount ? (
+          <strong className={styles.monoValue}>
+            {account.password || "Đã mã hóa trong hệ thống"}
+          </strong>
+        </div>
+        {editingAccount && (
+          <div>
+            <span>Mật khẩu mới</span>
             <input
               className={styles.accountInput}
               value={passwordDraft}
+              type="password"
               onChange={(event) => setPasswordDraft(event.target.value)}
+              autoFocus
             />
-          ) : (
-            <strong className={styles.monoValue}>{account.password}</strong>
-          )}
-        </div>
+          </div>
+        )}
         <div>
           <span>Ngày tạo</span>
           <strong>{account.createdAt}</strong>
@@ -84,14 +85,16 @@ export default function AccountDetailPanel({ account, onAccountUpdate, onDelete 
       </div>
 
       <div className={styles.actions}>
-        <button className={styles.actionBtn} type="button" onClick={handleAccountAction}>
+        <button className={styles.actionBtn} type="button" onClick={handleAccountAction} disabled={saving}>
           {editingAccount ? <Save size={15} /> : <KeyRound size={15} />}
-          {editingAccount ? "Cập nhật tài khoản" : accountSaved ? "Sửa tài khoản" : "Sửa thông tin tài khoản"}
+          {editingAccount ? "Cập nhật mật khẩu" : accountSaved ? "Sửa tiếp mật khẩu" : "Sửa mật khẩu"}
         </button>
-        <button className={`${styles.actionBtn} ${styles.deleteBtn}`} type="button" onClick={onDelete}>
-          <Trash2 size={15} />
-          Xóa tài khoản
-        </button>
+        {editingAccount && (
+          <button className={styles.actionBtn} type="button" onClick={cancelEdit} disabled={saving}>
+            <X size={15} />
+            Hủy
+          </button>
+        )}
       </div>
 
       <div className={styles.section}>
@@ -114,7 +117,7 @@ export default function AccountDetailPanel({ account, onAccountUpdate, onDelete 
               </div>
             ))
           ) : (
-            <p className={styles.emptyText}>Không có phiên đăng nhập đang hoạt động.</p>
+            <p className={styles.emptyText}>Chưa có dữ liệu phiên đăng nhập từ hệ thống.</p>
           )}
         </div>
       </div>
@@ -126,12 +129,14 @@ function formatDepartment(department) {
   return department?.replace(/^Khoa\s+/i, "") || "";
 }
 
-function getInitials(name) {
-  return name
+function getInitials(name = "") {
+  const initials = name
     .split(" ")
     .filter(Boolean)
     .slice(-2)
     .map((part) => part.charAt(0))
     .join("")
     .toUpperCase();
+
+  return initials || "NA";
 }

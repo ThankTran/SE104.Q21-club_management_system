@@ -1,14 +1,15 @@
 ﻿import { DEPARTMENTS } from './MemberForm';
 import styles from './MemberUserFilterBar.module.css';
 
-const DEPT_OPTIONS = ['Tất cả', ...DEPARTMENTS];
-
 export default function MemberUserFilterBar({
   search,
   onSearchChange,
   dept,
   onDeptChange,
+  departments = DEPARTMENTS,
 }) {
+  const deptOptions = ['Tất cả', ...departments];
+
   return (
     <div className={styles.filterBar}>
       <div className={styles.searchWrap}>
@@ -24,7 +25,7 @@ export default function MemberUserFilterBar({
       </div>
 
       <div className={styles.deptTabs}>
-        {DEPT_OPTIONS.map((item) => (
+        {deptOptions.map((item) => (
           <button
             key={item}
             className={`${styles.deptTab} ${dept === item ? styles.deptTabActive : ''}`}

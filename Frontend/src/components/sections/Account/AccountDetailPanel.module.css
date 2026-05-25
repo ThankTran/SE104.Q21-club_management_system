@@ -79,6 +79,13 @@
   letter-spacing: 0.1px;
 }
 
+.hashValue {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
 .accountInput {
   width: 100%;
   height: 34px;
@@ -126,6 +133,11 @@
   border-color: var(--primary-300);
   background: var(--primary-100);
   color: var(--primary-700);
+}
+
+.actionBtn:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .deleteBtn:hover {
