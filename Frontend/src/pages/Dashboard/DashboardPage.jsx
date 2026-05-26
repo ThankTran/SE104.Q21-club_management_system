@@ -66,7 +66,7 @@ const DashboardPage = () => {
       {/* Hero */}
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Bảng điều khiển</h1>
+          <h1 className={styles.pageTitle}>Bảng thống kê</h1>
           <p className={styles.pageSubtitle}>
             Tổng quan nhanh về hoạt động, thành viên và sự kiện của câu lạc bộ.
           </p>

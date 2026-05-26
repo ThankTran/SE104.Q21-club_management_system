@@ -8,8 +8,8 @@ const TABS = [
   { key: "docs",    label: "Tài liệu" },
 ];
 
-const W = 560, H = 200;
-const PAD_L = 36, PAD_R = 16, PAD_T = 24, PAD_B = 32;
+const W = 600, H = 350;
+const PAD_L = 36, PAD_R = 16, PAD_T = 36, PAD_B = 32;
 const chartW = W - PAD_L - PAD_R;
 const chartH = H - PAD_T - PAD_B;
 
@@ -31,7 +31,7 @@ function SingleBar({ data, key2, color, animate }) {
   const barW = Math.max(18, step * 0.45);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={animate ? styles.fadeIn : ""} style={{ display: "block", overflow: "visible" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={animate ? styles.fadeIn : ""} style={{ display: "block" }}>
       {[0, 0.25, 0.5, 0.75, 1].map((r) => {
         const y = PAD_T + chartH * (1 - r);
         return (
@@ -73,7 +73,7 @@ function SingleLine({ data, animate }) {
   }).join(" ");
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={animate ? styles.fadeIn : ""} style={{ display: "block", overflow: "visible" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={animate ? styles.fadeIn : ""} style={{ display: "block" }}>
       {[0, 0.25, 0.5, 0.75, 1].map((r) => {
         const y = PAD_T + chartH * (1 - r);
         return (
@@ -123,7 +123,7 @@ function AllChart({ data, animate }) {
   }).join(" ");
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={animate ? styles.fadeIn : ""} style={{ display: "block", overflow: "visible" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={animate ? styles.fadeIn : ""} style={{ display: "block" }}>
       {[0, 0.25, 0.5, 0.75, 1].map((r) => {
         const y = PAD_T + chartH * (1 - r);
         return (
