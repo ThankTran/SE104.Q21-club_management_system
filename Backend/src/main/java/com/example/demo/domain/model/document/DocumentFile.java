@@ -35,7 +35,7 @@ public class DocumentFile {
     @JoinColumn(name = "document_id")
     private Document document;
 
-    @Column(name = "file_url", columnDefinition = "text", nullable = false)
+    @Column(name = "file_url", columnDefinition = "nvarchar(max)", nullable = false)
     private String fileUrl; // phải có service để lấy fileURRL và lưu trữ ảnh nếu như sử dụng onl
 
     @Column(name = "file_name", nullable = false)

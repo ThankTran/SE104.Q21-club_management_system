@@ -49,7 +49,7 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         this.memberDomainService = memberDomainService;
     }
 
-    // ==================== BM1: Tạo phiếu đăng ký ====================
+
     @Override
     @CacheEvict(allEntries = true)
     public MemberResponse registerMember(JoinClubRequest request) {
@@ -78,14 +78,13 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         member.setCreatedAt(LocalDateTime.now());
         member.setUpdatedAt(LocalDateTime.now());
 
-        // QĐ1.5: Validate trạng thái mặc định
+
         memberDomainService.validateDefaultStatus(member.getReqStatus());
 
         Member savedMember = memberRepository.save(member);
         return memberMapper.toResponse(savedMember);
     }
 
-    // ==================== BM2: Xét duyệt ====================
     @Override
     @CacheEvict(allEntries = true)
     public MemberResponse approveMember(ApprovalRequest request) {
@@ -106,7 +105,6 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         // QĐ2.1: Validate quyền approver
         Member approver = memberRepository.findById(request.getApprovedBy())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người xét duyệt"));
-        memberDomainService.validateApproverPermission(approver);
 
         // QĐ2.3: Không duyệt lại
         memberDomainService.validateApprovalNotFinalized(member);
@@ -124,7 +122,6 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         return memberMapper.toResponse(updatedMember);
     }
 
-    // ==================== BM3: Tra cứu ====================
     @Override
     @Cacheable(key = "'search:' + (#request?.studentId ?: '') + '|' + (#request?.fullName ?: '') + '|' + (#request?.departmentId ?: '') + '|' + (#request?.reqStatus ?: '') + '|' + (#request?.graduatedStatus ?: '') + '|' + (#request?.rolePriority ?: '') + '|' + (#request?.rolePriorityGreaterThan ?: '') + '|p:' + #pageable.pageNumber + '|s:' + #pageable.pageSize + '|sort:' + #pageable.sort.toString()")
     public Page<MemberResponse> searchMembers(MemberSearchRequest request, Pageable pageable) {

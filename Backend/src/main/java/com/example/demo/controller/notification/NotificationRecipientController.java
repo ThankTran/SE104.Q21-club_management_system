@@ -37,6 +37,15 @@ public class NotificationRecipientController {
         return ResponseEntity.ok(notificationRecipientService.getByMember(memberId));
     }
 
+    @PatchMapping("/{notificationId}/members/{memberId}/read")
+    public ResponseEntity<?> markAsRead(@PathVariable Long notificationId, @PathVariable Long memberId) {
+        try {
+            return ResponseEntity.ok(notificationRecipientService.markAsRead(notificationId, memberId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{notificationId}/members/{memberId}")
     public ResponseEntity<Void> delete(@PathVariable Long notificationId, @PathVariable Long memberId) {
         notificationRecipientService.delete(notificationId, memberId);

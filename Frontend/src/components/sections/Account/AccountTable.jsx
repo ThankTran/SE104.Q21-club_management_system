@@ -3,10 +3,10 @@ import { Eye, EyeOff } from "lucide-react";
 import styles from "./AccountTable.module.css";
 
 const roleStyle = {
-  "Chủ nhiệm": { background: "#dff0f7", color: "#1a6b8a" },
-  "Phó chủ nhiệm": { background: "#e8f4e8", color: "#276749" },
-  "Trưởng ban học thuật": { background: "#ede8f8", color: "#5b3fa8" },
-  "Trưởng ban truyền thông": { background: "#fef3c7", color: "#92400e" },
+  "Chu nhiem": { background: "#dff0f7", color: "#1a6b8a" },
+  "Pho chu nhiem": { background: "#e8f4e8", color: "#276749" },
+  "Trưởng ban học tập": { background: "#ede8f8", color: "#5b3fa8" },
+  "Trưởng ban sự kiện": { background: "#fef3c7", color: "#92400e" },
   "Thành viên": { background: "#e8ecf2", color: "#3a4a5c" },
 };
 
@@ -49,6 +49,7 @@ export default function AccountTable({ accounts, selectedId, onSelect, sortDirec
         <tbody>
           {accounts.map((account) => {
             const isPasswordVisible = visiblePasswords[account.id];
+            const passwordValue = account.password || "";
 
             return (
               <tr
@@ -60,17 +61,19 @@ export default function AccountTable({ accounts, selectedId, onSelect, sortDirec
                   <div className={styles.accountCell}>
                     <div className={styles.avatar}>{getInitials(account.name)}</div>
                     <div>
-                      <p className={styles.name}>{account.name}</p>
-                      <p className={styles.meta}>MSSV: {account.memberId}</p>
+                      <p className={styles.name}>{account.name || "Chưa cập nhật"}</p>
+                      <p className={styles.meta}>MSSV: {account.memberId || "Chưa cập nhật"}</p>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <span className={styles.username}>{account.username}</span>
+                  <span className={styles.username}>{account.username || "Chưa cập nhật"}</span>
                 </td>
                 <td>
                   <div className={styles.passwordCell} onClick={(event) => event.stopPropagation()}>
-                    <span>{isPasswordVisible ? account.password : maskPassword(account.password)}</span>
+                    <span title={isPasswordVisible ? passwordValue : ""}>
+                      {isPasswordVisible ? passwordValue || "Đã mã hóa" : maskPassword(passwordValue)}
+                    </span>
                     <button
                       className={styles.eyeBtn}
                       type="button"
@@ -102,15 +105,17 @@ export default function AccountTable({ accounts, selectedId, onSelect, sortDirec
 }
 
 function maskPassword(password) {
-  return "•".repeat(Math.max(password?.length || 8, 8));
+  return "•".repeat(password ? 12 : 8);
 }
 
-function getInitials(name) {
-  return name
+function getInitials(name = "") {
+  const initials = name
     .split(" ")
     .filter(Boolean)
     .slice(-2)
     .map((part) => part.charAt(0))
     .join("")
     .toUpperCase();
+
+  return initials || "NA";
 }

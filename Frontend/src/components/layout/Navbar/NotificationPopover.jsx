@@ -1,37 +1,46 @@
 import React, { useState, useRef, useEffect } from "react";
-import { 
-  FileText, 
-  UserPlus, 
-  CalendarPlus, 
-  Clock, 
-  MoreHorizontal, 
-  Check, 
-  Trash2, 
-  Settings, 
+import {
+  FileText,
+  UserPlus,
+  CalendarPlus,
+  Clock,
+  MoreHorizontal,
+  Trash2,
+  Settings,
   CheckCheck,
-  BellOff
+  BellOff,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../../store/auth-store";
+import {
+  deleteNotificationRecipientAPI,
+  markNotificationRecipientAsReadAPI,
+} from "../../../services/notification-service";
 import styles from "./NotificationPopover.module.css";
 
-const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
+const NotificationPopover = ({
+  notifications,
+  setNotifications,
+  isLoading = false,
+  error = "",
+  onClose,
+}) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
-  const [activeTab, setActiveTab] = useState("all"); // "all" or "unread"
+  const roleValue = `${user?.role || ""} ${user?.roleName || ""}`.toLowerCase();
+  const isAdmin = roleValue.includes("admin") || roleValue.includes("quản trị");
+  const memberId = user?.memberId;
+  const [activeTab, setActiveTab] = useState("all");
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const menuRef = useRef(null);
   const popoverRef = useRef(null);
 
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMoreMenu(false);
       }
       if (popoverRef.current && !popoverRef.current.contains(event.target)) {
-        // Only close popover if not clicking the bell button itself
         const bellBtn = document.querySelector('[data-bell-button="true"]');
         if (bellBtn && !bellBtn.contains(event.target)) {
           onClose();
@@ -45,11 +54,16 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
     };
   }, [onClose]);
 
-  // Toggle single notification unread status
+  const persistRead = (id) => {
+    if (!memberId || !id) return;
+    markNotificationRecipientAsReadAPI(id, memberId).catch(() => {});
+  };
+
   const handleMarkAsRead = (id) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isUnread: false } : n))
     );
+    persistRead(id);
   };
 
   // Handle single-click: mark as read AND navigate
@@ -57,7 +71,7 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
     if (noti.isUnread) {
       handleMarkAsRead(noti.id);
     }
-    
+
     let path = "/home";
     switch (noti.type) {
       case "document":
@@ -73,55 +87,64 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
       default:
         path = "/home";
     }
-    
+
     navigate(path);
     onClose();
   };
 
-  // Mark all as read
   const handleMarkAllAsRead = () => {
+    const unreadIds = notifications.filter((n) => n.isUnread).map((n) => n.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
+    unreadIds.forEach(persistRead);
     setShowMoreMenu(false);
   };
 
-  // Clear all notifications
   const handleClearAll = () => {
+    if (memberId) {
+      notifications.forEach((item) => {
+        deleteNotificationRecipientAPI(item.id, memberId).catch(() => {});
+      });
+    }
     setNotifications([]);
     setShowMoreMenu(false);
   };
 
-  // Delete a specific notification
   const handleDeleteNotification = (id, e) => {
-    e.stopPropagation(); // prevent triggering read event
+    e.stopPropagation();
+    if (memberId) {
+      deleteNotificationRecipientAPI(id, memberId).catch(() => {});
+    }
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-
-
-  // Filter notifications based on tab
   const filteredNotifications = notifications.filter((n) => {
     if (activeTab === "unread") return n.isUnread;
     return true;
   });
 
-  // Group notifications by category ("Hôm nay" vs "Trước đó")
-  const todayNotis = filteredNotifications.filter((n) => n.category === "Hôm nay");
-  const earlierNotis = filteredNotifications.filter((n) => n.category === "Trước đó");
+  const todayNotis = filteredNotifications.filter(
+    (n) => n.category === "today" || n.category === "Hôm nay"
+  );
+  const earlierNotis = filteredNotifications.filter(
+    (n) => n.category === "earlier" || n.category === "Trước đó"
+  );
+  const ungroupedNotis = filteredNotifications.filter(
+    (n) => !todayNotis.includes(n) && !earlierNotis.includes(n)
+  );
 
   return (
     <div className={styles.popoverContainer} ref={popoverRef}>
-      {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.title}>Thông báo</h2>
         <div className={styles.moreMenuContainer} ref={menuRef}>
-          <button 
-            className={styles.moreBtn} 
+          <button
+            className={styles.moreBtn}
             onClick={() => setShowMoreMenu(!showMoreMenu)}
             title="Tùy chọn thông báo"
           >
             <MoreHorizontal size={20} />
           </button>
-          
+
           {showMoreMenu && (
             <div className={styles.moreDropdown}>
               <button className={styles.menuItem} onClick={handleMarkAllAsRead}>
@@ -141,15 +164,14 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className={styles.tabs}>
-        <button 
+        <button
           className={`${styles.tab} ${activeTab === "all" ? styles.activeTab : ""}`}
           onClick={() => setActiveTab("all")}
         >
           Tất cả
         </button>
-        <button 
+        <button
           className={`${styles.tab} ${activeTab === "unread" ? styles.activeTab : ""}`}
           onClick={() => setActiveTab("unread")}
         >
@@ -162,16 +184,23 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
         </button>
       </div>
 
-      {/* List container */}
       <div className={styles.listScroll}>
-        {filteredNotifications.length === 0 ? (
+        {isLoading ? (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyText}>Đang tải thông báo...</p>
+          </div>
+        ) : error ? (
+          <div className={styles.emptyState}>
+            <BellOff size={48} className={styles.emptyIcon} />
+            <p className={styles.emptyText}>{error}</p>
+          </div>
+        ) : filteredNotifications.length === 0 ? (
           <div className={styles.emptyState}>
             <BellOff size={48} className={styles.emptyIcon} />
             <p className={styles.emptyText}>Không có thông báo nào</p>
           </div>
         ) : (
           <>
-            {/* Today Section */}
             {todayNotis.length > 0 && (
               <div className={styles.section}>
                 <h3 className={styles.sectionHeader}>Hôm nay</h3>
@@ -188,7 +217,6 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
               </div>
             )}
 
-            {/* Earlier Section */}
             {earlierNotis.length > 0 && (
               <div className={styles.section}>
                 <h3 className={styles.sectionHeader}>Trước đó</h3>
@@ -230,21 +258,19 @@ const NotificationItem = ({ noti, onDelete, onClick }) => {
   };
 
   return (
-    <div 
+    <div
       className={`${styles.notiItem} ${noti.isUnread ? styles.unreadItem : ""}`}
       onClick={() => onClick(noti)}
       style={{ cursor: "pointer" }}
     >
-      {/* Monochromatic Illustration Container */}
       <div className={`${styles.illustrationWrapper} ${styles[`illustration_${noti.type}`]}`}>
         {getIllustrationIcon(noti.type)}
       </div>
 
-      {/* Notification Text content */}
       <div className={styles.contentWrapper}>
         <p className={styles.notiText}>
           <span className={styles.actorName}>{noti.actorName}</span>
-          {" "}{noti.content}{" "}
+          {noti.content && <> {noti.content} </>}
           {noti.highlight && (
             <span className={styles.highlightText}>{noti.highlight}</span>
           )}
@@ -254,11 +280,10 @@ const NotificationItem = ({ noti, onDelete, onClick }) => {
         </span>
       </div>
 
-      {/* Unread status indicator and Actions */}
       <div className={styles.rightActions}>
         {noti.isUnread && <div className={styles.unreadDot}></div>}
-        <button 
-          className={styles.deleteItemBtn} 
+        <button
+          className={styles.deleteItemBtn}
           onClick={(e) => onDelete(noti.id, e)}
           title="Xóa thông báo"
         >

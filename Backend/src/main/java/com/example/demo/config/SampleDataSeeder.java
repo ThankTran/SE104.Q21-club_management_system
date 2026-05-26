@@ -45,6 +45,8 @@ import com.example.demo.domain.service.user.PasswordHasher;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
@@ -53,6 +55,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class SampleDataSeeder implements CommandLineRunner {
+    private static final BigDecimal MONTHLY_FUND_AMOUNT = BigDecimal.valueOf(75_000L);
+    private static final DateTimeFormatter MONTH_ID_FORMAT = DateTimeFormatter.ofPattern("yyyyMM");
+
     private final RoleRepository roleRepository;
     private final DepartmentRepository departmentRepository;
     private final SubjectRepository subjectRepository;
@@ -146,24 +151,28 @@ public class SampleDataSeeder implements CommandLineRunner {
 
     private List<Department> seedDepartments() {
         List<Department> departments = List.of(
-                Department.builder().departmentName("CNPM").build(),
-                Department.builder().departmentName("KHMT").build(),
-                Department.builder().departmentName("HTTT").build());
+                Department.builder().departmentName("Công nghệ phần mềm").build(),
+                Department.builder().departmentName("Khoa học máy tính").build(),
+                Department.builder().departmentName("Hệ thống thông tin").build(),
+                Department.builder().departmentName("Mạng máy tính").build(),
+                Department.builder().departmentName("Trí tuệ nhân tạo").build());
         return departmentRepository.saveAll(departments);
     }
 
     private List<Subject> seedSubjects() {
         List<String> names = List.of(
-                "CTRR",
-                "XSTK",
-                "NMLT",
-                "Triết",
+                "Cấu trúc rời rạc",
+                "Xác suất thống kê",
+                "Nhập môn lập trình",
                 "Triết học Mác - Lênin",
                 "Lập trình hướng đối tượng",
                 "Cơ sở dữ liệu",
                 "Phân tích thiết kế hệ thống",
                 "Kiến trúc phần mềm",
-                "An toàn thông tin");
+                "An toàn thông tin",
+                "Trí tuệ nhân tạo",
+                "Mạng máy tính",
+                "Công nghệ phần mềm nâng cao");
 
         List<Subject> subjects = new ArrayList<>();
         for (String name : names) {
@@ -179,6 +188,7 @@ public class SampleDataSeeder implements CommandLineRunner {
                 "Tài liệu tham khảo",
                 "Đề thi",
                 "Bài tập",
+                "Báo cáo mẫu",
                 "Khác");
 
         List<DocumentType> types = new ArrayList<>();
@@ -193,38 +203,62 @@ public class SampleDataSeeder implements CommandLineRunner {
         Role eventHead = roles.get(1);
         Role memberRole = roles.get(2);
 
-        Department cnpm = departments.get(0);
-        Department khmt = departments.get(1);
-        Department httt = departments.get(2);
+        Department software = departments.get(0);
+        Department computerScience = departments.get(1);
+        Department informationSystem = departments.get(2);
+        Department networking = departments.get(3);
+        Department ai = departments.get(4);
 
         List<MemberSeed> seeds = List.of(
-                new MemberSeed("22130001", "Nguyễn Minh Anh", cnpm, "minhanh@club.local", "0901000001", GenderEnum.FEMALE, LocalDate.of(2004, 1, 15), studyHead),
-                new MemberSeed("22130002", "Trần Quốc Bảo", cnpm, "quocbao@club.local", "0901000002", GenderEnum.MALE, LocalDate.of(2004, 2, 18), eventHead),
-                new MemberSeed("22130003", "Lê Hoàng Nam", cnpm, "hoangnam@club.local", "0901000003", GenderEnum.MALE, LocalDate.of(2004, 3, 12), memberRole),
-                new MemberSeed("22130004", "Phạm Gia Hân", cnpm, "giahan@club.local", "0901000004", GenderEnum.FEMALE, LocalDate.of(2004, 5, 9), memberRole),
-                new MemberSeed("22130005", "Võ Đức Tài", cnpm, "ductai@club.local", "0901000005", GenderEnum.MALE, LocalDate.of(2004, 7, 21), memberRole),
-                new MemberSeed("22130006", "Hoàng Trung Kiên", cnpm, "trungkien@club.local", "0901000006", GenderEnum.MALE, LocalDate.of(2004, 8, 3), memberRole),
-                new MemberSeed("22130007", "Đặng Minh Khôi", cnpm, "minhkhoi@club.local", "0901000007", GenderEnum.MALE, LocalDate.of(2004, 4, 27), memberRole),
-                new MemberSeed("22130008", "Bùi Thị Tuyết", cnpm, "thituyet@club.local", "0901000008", GenderEnum.FEMALE, LocalDate.of(2004, 11, 11), memberRole),
-                new MemberSeed("22130009", "Nguyễn Văn Hùng", cnpm, "vanhung@club.local", "0901000009", GenderEnum.MALE, LocalDate.of(2004, 6, 14), memberRole),
-                new MemberSeed("22130010", "Lê Thu Thảo", cnpm, "thuthao@club.local", "0901000010", GenderEnum.FEMALE, LocalDate.of(2005, 2, 22), memberRole),
-                new MemberSeed("22130011", "Đỗ Anh Tuấn", cnpm, "anhtuan@club.local", "0901000011", GenderEnum.MALE, LocalDate.of(2004, 9, 16), memberRole),
-                new MemberSeed("22130012", "Nguyễn Hoài Nam", cnpm, "hoainam@club.local", "0901000012", GenderEnum.MALE, LocalDate.of(2005, 1, 5), memberRole),
-                new MemberSeed("22130013", "Phan Văn Tài", cnpm, "phanvantai@club.local", "0901000013", GenderEnum.MALE, LocalDate.of(2004, 12, 19), memberRole),
-                new MemberSeed("22130014", "Vũ Thị Hà", cnpm, "vuha@club.local", "0901000014", GenderEnum.FEMALE, LocalDate.of(2005, 3, 1), memberRole),
-                new MemberSeed("22130015", "Trần Thanh Sơn", khmt, "thanhson@club.local", "0901000015", GenderEnum.MALE, LocalDate.of(2004, 10, 6), memberRole),
-                new MemberSeed("22130016", "Lý Mỹ Linh", khmt, "mylinh@club.local", "0901000016", GenderEnum.FEMALE, LocalDate.of(2004, 1, 30), memberRole),
-                new MemberSeed("22130017", "Phạm Đức Long", khmt, "duclong@club.local", "0901000017", GenderEnum.MALE, LocalDate.of(2004, 8, 28), memberRole),
-                new MemberSeed("22130018", "Ngô Hải Đăng", httt, "haidang@club.local", "0901000018", GenderEnum.MALE, LocalDate.of(2004, 4, 8), memberRole),
-                new MemberSeed("22130019", "Mai Khánh Vy", httt, "khanhvy@club.local", "0901000019", GenderEnum.FEMALE, LocalDate.of(2005, 5, 25), memberRole),
-                new MemberSeed("22130020", "Đinh Quốc Cường", httt, "quoccuong@club.local", "0901000020", GenderEnum.MALE, LocalDate.of(2004, 7, 7), memberRole));
+                new MemberSeed("22130001", "Nguyễn Minh Anh", software, "minhanh@club.local", "0901000001", GenderEnum.FEMALE, LocalDate.of(2004, 1, 15), studyHead),
+                new MemberSeed("22130002", "Trần Quốc Bảo", software, "quocbao@club.local", "0901000002", GenderEnum.MALE, LocalDate.of(2004, 2, 18), eventHead),
+                new MemberSeed("22130003", "Lê Hoàng Nam", software, "hoangnam@club.local", "0901000003", GenderEnum.MALE, LocalDate.of(2004, 3, 12), memberRole),
+                new MemberSeed("22130004", "Phạm Gia Hân", software, "giahan@club.local", "0901000004", GenderEnum.FEMALE, LocalDate.of(2004, 5, 9), memberRole),
+                new MemberSeed("22130005", "Võ Đức Tài", software, "ductai@club.local", "0901000005", GenderEnum.MALE, LocalDate.of(2004, 7, 21), memberRole),
+                new MemberSeed("22130006", "Hoàng Trung Kiên", software, "trungkien@club.local", "0901000006", GenderEnum.MALE, LocalDate.of(2004, 8, 3), memberRole),
+                new MemberSeed("22130007", "Đặng Minh Khôi", software, "minhkhoi@club.local", "0901000007", GenderEnum.MALE, LocalDate.of(2004, 4, 27), memberRole),
+                new MemberSeed("22130008", "Bùi Thị Tuyết", software, "thituyet@club.local", "0901000008", GenderEnum.FEMALE, LocalDate.of(2004, 11, 11), memberRole),
+                new MemberSeed("22130009", "Nguyễn Văn Hùng", computerScience, "vanhung@club.local", "0901000009", GenderEnum.MALE, LocalDate.of(2004, 6, 14), memberRole),
+                new MemberSeed("22130010", "Lê Thu Thảo", computerScience, "thuthao@club.local", "0901000010", GenderEnum.FEMALE, LocalDate.of(2005, 2, 22), memberRole),
+                new MemberSeed("22130011", "Đỗ Anh Tuấn", computerScience, "anhtuan@club.local", "0901000011", GenderEnum.MALE, LocalDate.of(2004, 9, 16), memberRole),
+                new MemberSeed("22130012", "Nguyễn Hoài Nam", computerScience, "hoainam@club.local", "0901000012", GenderEnum.MALE, LocalDate.of(2005, 1, 5), memberRole),
+                new MemberSeed("22130013", "Phan Vân Tài", computerScience, "phanvantai@club.local", "0901000013", GenderEnum.MALE, LocalDate.of(2004, 12, 19), memberRole),
+                new MemberSeed("22130014", "Vũ Thị Hà", computerScience, "vuha@club.local", "0901000014", GenderEnum.FEMALE, LocalDate.of(2005, 3, 1), memberRole),
+                new MemberSeed("22130015", "Trần Thanh Sơn", informationSystem, "thanhson@club.local", "0901000015", GenderEnum.MALE, LocalDate.of(2004, 10, 6), memberRole),
+                new MemberSeed("22130016", "Lý Mỹ Linh", informationSystem, "mylinh@club.local", "0901000016", GenderEnum.FEMALE, LocalDate.of(2004, 1, 30), memberRole),
+                new MemberSeed("22130017", "Phạm Đức Long", informationSystem, "duclong@club.local", "0901000017", GenderEnum.MALE, LocalDate.of(2004, 8, 28), memberRole),
+                new MemberSeed("22130018", "Ngô Hải Đăng", informationSystem, "haidang@club.local", "0901000018", GenderEnum.MALE, LocalDate.of(2004, 4, 8), memberRole),
+                new MemberSeed("22130019", "Mai Khánh Vy", networking, "khanhvy@club.local", "0901000019", GenderEnum.FEMALE, LocalDate.of(2005, 5, 25), memberRole),
+                new MemberSeed("22130020", "Đinh Quốc Cường", networking, "quoccuong@club.local", "0901000020", GenderEnum.MALE, LocalDate.of(2004, 7, 7), memberRole),
+                new MemberSeed("23130021", "Huỳnh Ngọc Mai", networking, "ngocmai@club.local", "0901000021", GenderEnum.FEMALE, LocalDate.of(2005, 6, 4), memberRole),
+                new MemberSeed("23130022", "Tạ Minh Quân", networking, "minhquan@club.local", "0901000022", GenderEnum.MALE, LocalDate.of(2005, 8, 13), memberRole),
+                new MemberSeed("23130023", "Cao Phương Nhi", ai, "phuongnhi@club.local", "0901000023", GenderEnum.FEMALE, LocalDate.of(2005, 9, 17), memberRole),
+                new MemberSeed("23130024", "Trương Nhật Minh", ai, "nhatminh@club.local", "0901000024", GenderEnum.MALE, LocalDate.of(2005, 11, 2), memberRole),
+                new MemberSeed("23130025", "Đoàn Bảo Châu", ai, "baochau@club.local", "0901000025", GenderEnum.FEMALE, LocalDate.of(2005, 12, 20), memberRole),
+                new MemberSeed("23130026", "Hồ Gia Bảo", software, "giabao@club.local", "0901000026", GenderEnum.MALE, LocalDate.of(2005, 3, 18), memberRole),
+                new MemberSeed("23130027", "Nguyễn Hà My", computerScience, "hamy@club.local", "0901000027", GenderEnum.FEMALE, LocalDate.of(2005, 4, 9), memberRole),
+                new MemberSeed("23130028", "Lâm Tuấn Kiệt", informationSystem, "tuankiet@club.local", "0901000028", GenderEnum.MALE, LocalDate.of(2005, 7, 29), memberRole),
+                new MemberSeed("24130029", "Phùng Minh Khang", networking, "minhkhang@club.local", "0901000029", GenderEnum.MALE, LocalDate.of(2006, 1, 6), memberRole),
+                new MemberSeed("24130030", "Đỗ Khánh Linh", ai, "khanhlinh@club.local", "0901000030", GenderEnum.FEMALE, LocalDate.of(2006, 2, 14), memberRole),
+                new MemberSeed("24130031", "Nguyễn Nhật Hạ", software, "nhatha@club.local", "0901000031", GenderEnum.FEMALE, LocalDate.of(2006, 5, 23), memberRole),
+                new MemberSeed("24130032", "Trần Duy Phúc", computerScience, "duyphuc@club.local", "0901000032", GenderEnum.MALE, LocalDate.of(2006, 8, 8), memberRole),
+                new MemberSeed("24130033", "Lê Bảo Ngọc", informationSystem, "baongoc@club.local", "0901000033", GenderEnum.FEMALE, LocalDate.of(2006, 9, 10), memberRole),
+                new MemberSeed("24130034", "Võ Minh Triết", networking, "minhtriet@club.local", "0901000034", GenderEnum.MALE, LocalDate.of(2006, 10, 12), memberRole),
+                new MemberSeed("24130035", "Phạm Hoài An", ai, "hoaian@club.local", "0901000035", GenderEnum.FEMALE, LocalDate.of(2006, 11, 15), memberRole),
+                new MemberSeed("24130036", "Bùi Quang Huy", software, "quanghuy@club.local", "0901000036", GenderEnum.MALE, LocalDate.of(2006, 12, 3), memberRole),
+                new MemberSeed("24130037", "Ngô Thùy Dương", computerScience, "thuyduong@club.local", "0901000037", GenderEnum.FEMALE, LocalDate.of(2006, 4, 26), memberRole),
+                new MemberSeed("24130038", "Đặng Quốc Việt", informationSystem, "quocviet@club.local", "0901000038", GenderEnum.MALE, LocalDate.of(2006, 6, 18), memberRole),
+                new MemberSeed("24130039", "Lương Gia Huy", networking, "giahuy@club.local", "0901000039", GenderEnum.MALE, LocalDate.of(2006, 7, 21), memberRole),
+                new MemberSeed("24130040", "Tô Minh Nguyệt", ai, "minhnguyet@club.local", "0901000040", GenderEnum.FEMALE, LocalDate.of(2006, 9, 28), memberRole));
 
         List<Member> members = new ArrayList<>();
-        LocalDateTime baseTime = LocalDateTime.now().minusDays(45);
+        YearMonth currentMonth = YearMonth.now();
         for (int index = 0; index < seeds.size(); index++) {
             MemberSeed seed = seeds.get(index);
             Member approver = index < 2 ? null : members.get(index % 2);
-            LocalDateTime createdAt = baseTime.plusDays(index);
+            YearMonth joinedMonth = currentMonth.minusMonths(5L - (index % 6));
+            int joinedDay = Math.min(joinedMonth.lengthOfMonth(), 2 + ((index * 3) % 24));
+            LocalDateTime createdAt = joinedMonth.atDay(joinedDay).atTime(8 + (index % 8), (index * 11) % 60);
             members.add(Member.builder()
                     .studentId(seed.studentId())
                     .fullName(seed.fullName())
@@ -269,10 +303,12 @@ public class SampleDataSeeder implements CommandLineRunner {
 
     private List<Event> seedEvents(List<Member> members) {
         List<Event> events = new ArrayList<>();
-        LocalDate baseDate = LocalDate.now().minusDays(20);
-        for (int index = 1; index <= 20; index++) {
+        YearMonth currentMonth = YearMonth.now();
+        for (int index = 1; index <= 36; index++) {
             Member evaluator = members.get(index % 2);
-            LocalDate eventDate = baseDate.plusDays(index * 2L);
+            YearMonth eventMonth = currentMonth.minusMonths(5L - ((index - 1) % 6));
+            int eventDay = Math.min(eventMonth.lengthOfMonth(), 4 + (((index - 1) / 6) * 4) + (index % 3));
+            LocalDate eventDate = eventMonth.atDay(eventDay);
             events.add(Event.builder()
                     .eventId(String.format("EVT%03d", index))
                     .eventName("Sự kiện học thuật số " + index)
@@ -281,6 +317,9 @@ public class SampleDataSeeder implements CommandLineRunner {
                     .startTime(eventDate.atTime(8 + (index % 3), 0))
                     .endTime(eventDate.atTime(11 + (index % 3), 30))
                     .estimatedCost(BigDecimal.valueOf(2_000_000L + index * 150_000L))
+                    .capacity(50 + index * 5)
+                    .organizer(index % 2 == 0 ? "Ban học thuật" : "Ban sự kiện")
+                    .tag(pickEventTag(index))
                     .status(pickEventStatus(index))
                     .reqStatus(index % 4 == 0 ? ApprovalStatusEnum.PENDING : ApprovalStatusEnum.APPROVED)
                     .description("Hoạt động chuyên môn, workshop và chia sẻ học tập đợt " + index)
@@ -296,9 +335,9 @@ public class SampleDataSeeder implements CommandLineRunner {
 
     private void seedEventOrganizers(List<Event> events, List<Member> members, List<EventRole> eventRoles) {
         List<EventOrganizer> organizers = new ArrayList<>();
-        for (int index = 0; index < 20; index++) {
+        for (int index = 0; index < events.size(); index++) {
             Event event = events.get(index);
-            Member member = members.get(index);
+            Member member = members.get(index % members.size());
             EventRole role = eventRoles.get(index % eventRoles.size());
             organizers.add(EventOrganizer.builder()
                     .id(new EventOrganizerId(event.getEventId(), member.getMemberId()))
@@ -312,10 +351,13 @@ public class SampleDataSeeder implements CommandLineRunner {
 
     private List<Document> seedDocuments(List<Member> members, List<Subject> subjects, List<DocumentType> documentTypes) {
         List<Document> documents = new ArrayList<>();
-        LocalDateTime baseTime = LocalDateTime.now().minusDays(30);
-        for (int index = 1; index <= 20; index++) {
+        YearMonth currentMonth = YearMonth.now();
+        for (int index = 1; index <= 30; index++) {
             Member proposer = members.get(index % members.size());
             Member approver = members.get(index % 2);
+            YearMonth documentMonth = currentMonth.minusMonths(5L - ((index - 1) % 6));
+            int documentDay = Math.min(documentMonth.lengthOfMonth(), 3 + (((index - 1) / 6) * 4));
+            LocalDateTime createdAt = documentMonth.atDay(documentDay).atTime(10 + (index % 6), (index * 9) % 60);
             documents.add(Document.builder()
                     .documentName("Tài liệu học tập số " + index)
                     .type(documentTypes.get((index - 1) % documentTypes.size()))
@@ -327,9 +369,9 @@ public class SampleDataSeeder implements CommandLineRunner {
                     .note("Tài liệu mẫu phục vụ kiểm thử hệ thống số " + index)
                     .proposedBy(proposer)
                     .approvedBy(index % 3 == 0 ? null : approver)
-                    .approvedAt(index % 3 == 0 ? null : baseTime.plusDays(index).plusHours(2))
-                    .createdAt(baseTime.plusDays(index))
-                    .updatedAt(baseTime.plusDays(index).plusHours(3))
+                    .approvedAt(index % 3 == 0 ? null : createdAt.plusHours(2))
+                    .createdAt(createdAt)
+                    .updatedAt(createdAt.plusHours(3))
                     .build());
         }
         return documentRepository.saveAll(documents);
@@ -344,12 +386,12 @@ public class SampleDataSeeder implements CommandLineRunner {
                 "image/png");
 
         List<DocumentFile> files = new ArrayList<>();
-        for (int index = 0; index < 20; index++) {
+        for (int index = 0; index < documents.size(); index++) {
             String extension = extensionFromMimeType(mimeTypes.get(index % mimeTypes.size()));
             files.add(DocumentFile.builder()
                     .document(documents.get(index))
                     .fileUrl("https://drive.google.com/sample-file-" + (index + 1))
-                    .fileName("tai-lieu-" + (index + 1) + "." + extension)
+                    .fileName("tai-lieu-hoc-tap-" + (index + 1) + "." + extension)
                     .fileSize(500_000L + (index * 25_000L))
                     .mimeType(mimeTypes.get(index % mimeTypes.size()))
                     .uploadedAt(LocalDateTime.now().minusDays(20 - index))
@@ -366,7 +408,7 @@ public class SampleDataSeeder implements CommandLineRunner {
                     .title("Thông báo hoạt động số " + index)
                     .content("Nội dung thông báo mẫu cho thành viên đợt " + index)
                     .sender(members.get(index % 2))
-                    .targetType(index % 2 == 0 ? "ALL_MEMBERS" : "CNPM")
+                    .targetType(index % 2 == 0 ? "ALL_MEMBERS" : "Công nghệ phần mềm")
                     .sendMethod(index % 3 == 0 ? "EMAIL" : "SYSTEM")
                     .sentAt(baseTime.plusDays(index))
                     .build());
@@ -393,26 +435,77 @@ public class SampleDataSeeder implements CommandLineRunner {
 
     private void seedTransactions(List<Event> events, List<Member> members) {
         List<Transaction> transactions = new ArrayList<>();
-        LocalDateTime baseTime = LocalDateTime.now().minusDays(18);
-        for (int index = 1; index <= 20; index++) {
+        YearMonth currentMonth = YearMonth.now();
+
+        for (int monthOffset = 5; monthOffset >= 0; monthOffset--) {
+            YearMonth dueMonth = currentMonth.minusMonths(monthOffset);
+            String description = monthlyDueDescription(dueMonth);
+            for (int index = 0; index < members.size(); index++) {
+                Member member = members.get(index);
+                Member creator = members.get(index % 2);
+                TransactionStatus status = pickMonthlyDueStatus(monthOffset, index);
+                Member approver = isPaidStatus(status) ? members.get((index + 1) % 2) : null;
+                int payDay = Math.min(26, 3 + ((index * 2 + monthOffset) % 24));
+                LocalDateTime transactionDate = dueMonth.atDay(payDay).atTime(8 + (index % 9), (index * 7) % 60);
+
+                transactions.add(Transaction.builder()
+                        .transactionId(String.format("DUE-FUND-%s-%03d", dueMonth.format(MONTH_ID_FORMAT), member.getMemberId()))
+                        .member(member)
+                        .counterpartyName(member.getFullName())
+                        .type(TransactionType.INCOME)
+                        .amount(MONTHLY_FUND_AMOUNT)
+                        .description(description)
+                        .transactionDate(transactionDate)
+                        .status(status)
+                        .createdBy(creator)
+                        .approvedBy(approver)
+                        .createdAt(transactionDate)
+                        .updatedAt(transactionDate.plusHours(2))
+                        .approvedAt(approver == null ? null : transactionDate.plusHours(5))
+                        .build());
+            }
+        }
+
+        for (int index = 1; index <= events.size(); index++) {
+            Event event = events.get(index - 1);
             Member owner = members.get((index + 3) % members.size());
             Member creator = members.get(index % 2);
-            Member approver = index % 3 == 0 ? null : members.get((index + 1) % 2);
-            TransactionStatus status = pickTransactionStatus(index);
-            LocalDateTime createdAt = baseTime.plusDays(index);
+            Member approver = members.get((index + 1) % 2);
+            LocalDateTime incomeAt = event.getEventDate().minusDays(2).atTime(9 + (index % 6), (index * 5) % 60);
+            LocalDateTime expenseAt = event.getEventDate().plusDays(1).atTime(10 + (index % 6), (index * 7) % 60);
+
             transactions.add(Transaction.builder()
-                    .transactionId(String.format("TRX%03d", index))
-                    .event(events.get((index - 1) % events.size()))
+                    .transactionId(String.format("TRX-EVT-%03d-IN", index))
+                    .event(event)
                     .member(owner)
-                    .type(index % 2 == 0 ? TransactionType.INCOME : TransactionType.Expense)
-                    .amount(BigDecimal.valueOf(350_000L + index * 75_000L))
-                    .description("Giao dịch mẫu số " + index)
-                    .status(status)
+                    .counterpartyName(owner.getFullName())
+                    .type(TransactionType.INCOME)
+                    .amount(BigDecimal.valueOf(120_000L + index * 20_000L))
+                    .description("Thu phí tham gia " + event.getEventName())
+                    .transactionDate(incomeAt)
+                    .status(index % 12 == 0 ? TransactionStatus.PENDING : TransactionStatus.COMPLETED)
                     .createdBy(creator)
-                    .approvedBy(approver)
-                    .createdAt(createdAt)
-                    .updatedAt(createdAt.plusHours(2))
-                    .approvedAt(approver == null ? null : createdAt.plusHours(6))
+                    .approvedBy(index % 12 == 0 ? null : approver)
+                    .createdAt(incomeAt)
+                    .updatedAt(incomeAt.plusHours(2))
+                    .approvedAt(index % 12 == 0 ? null : incomeAt.plusHours(6))
+                    .build());
+
+            transactions.add(Transaction.builder()
+                    .transactionId(String.format("TRX-EVT-%03d-OUT", index))
+                    .event(event)
+                    .member(owner)
+                    .counterpartyName(pickVendorName(index))
+                    .type(TransactionType.Expense)
+                    .amount(BigDecimal.valueOf(450_000L + index * 65_000L))
+                    .description("Chi phí tổ chức " + event.getEventName())
+                    .transactionDate(expenseAt)
+                    .status(index % 10 == 0 ? TransactionStatus.PENDING : TransactionStatus.COMPLETED)
+                    .createdBy(creator)
+                    .approvedBy(index % 10 == 0 ? null : approver)
+                    .createdAt(expenseAt)
+                    .updatedAt(expenseAt.plusHours(2))
+                    .approvedAt(index % 10 == 0 ? null : expenseAt.plusHours(6))
                     .build());
         }
         transactionRepository.saveAll(transactions);
@@ -420,8 +513,8 @@ public class SampleDataSeeder implements CommandLineRunner {
 
     private void seedSystemSettings(List<Member> members) {
         List<SystemSetting> settings = List.of(
-                SystemSetting.builder().settingKey("club.name").settingValue("CLB Học Thuật CNTT").description("Tên hiển thị của câu lạc bộ").updatedBy(members.get(0)).updatedAt(LocalDateTime.now().minusDays(5)).build(),
-                SystemSetting.builder().settingKey("member.defaultRole").settingValue("Thành viên").description("Role mặc định khi duyệt thành viên").updatedBy(members.get(0)).updatedAt(LocalDateTime.now().minusDays(5)).build(),
+                SystemSetting.builder().settingKey("club.name").settingValue("CLB Học thuật CNTT").description("Tên hiển thị của câu lạc bộ").updatedBy(members.get(0)).updatedAt(LocalDateTime.now().minusDays(5)).build(),
+                SystemSetting.builder().settingKey("member.defaultRole").settingValue("Thành viên").description("Vai trò mặc định khi duyệt thành viên").updatedBy(members.get(0)).updatedAt(LocalDateTime.now().minusDays(5)).build(),
                 SystemSetting.builder().settingKey("document.approvalRequired").settingValue("true").description("Tài liệu mới cần qua duyệt").updatedBy(members.get(0)).updatedAt(LocalDateTime.now().minusDays(4)).build(),
                 SystemSetting.builder().settingKey("event.autoArchiveDays").settingValue("30").description("Số ngày tự động lưu trữ sự kiện").updatedBy(members.get(1)).updatedAt(LocalDateTime.now().minusDays(4)).build(),
                 SystemSetting.builder().settingKey("notification.defaultMethod").settingValue("SYSTEM").description("Kênh gửi mặc định").updatedBy(members.get(1)).updatedAt(LocalDateTime.now().minusDays(3)).build(),
@@ -457,6 +550,16 @@ public class SampleDataSeeder implements CommandLineRunner {
         };
     }
 
+    private String pickEventTag(int index) {
+        return switch (index % 5) {
+            case 0 -> "TECH";
+            case 1 -> "ACAD";
+            case 2 -> "SOCIAL";
+            case 3 -> "CERT";
+            default -> "OTHER";
+        };
+    }
+
     private DocumentStatus pickDocumentStatus(int index) {
         return switch (index % 3) {
             case 0 -> DocumentStatus.WORKING;
@@ -481,6 +584,34 @@ public class SampleDataSeeder implements CommandLineRunner {
             case 2 -> TransactionStatus.REJECTED;
             case 3 -> TransactionStatus.COMPLETED;
             default -> TransactionStatus.CANCELLED;
+        };
+    }
+
+    private TransactionStatus pickMonthlyDueStatus(int monthOffset, int memberIndex) {
+        if (monthOffset == 0 && memberIndex % 7 == 0) {
+            return TransactionStatus.PENDING;
+        }
+        if (monthOffset == 0 && memberIndex % 11 == 0) {
+            return TransactionStatus.REJECTED;
+        }
+        return memberIndex % 5 == 0 ? TransactionStatus.APPROVED : TransactionStatus.COMPLETED;
+    }
+
+    private boolean isPaidStatus(TransactionStatus status) {
+        return status == TransactionStatus.APPROVED || status == TransactionStatus.COMPLETED;
+    }
+
+    private String monthlyDueDescription(YearMonth month) {
+        return String.format("Đóng quỹ tháng %02d/%d", month.getMonthValue(), month.getYear());
+    }
+
+    private String pickVendorName(int index) {
+        return switch (index % 5) {
+            case 0 -> "Nhà sách Đại học";
+            case 1 -> "Cửa hàng Văn phòng phẩm Minh Tâm";
+            case 2 -> "Dịch vụ in ấn Hồng Phát";
+            case 3 -> "Trung tâm thiết bị sự kiện Sài Gòn";
+            default -> "Quán nước Thanh Xuân";
         };
     }
 

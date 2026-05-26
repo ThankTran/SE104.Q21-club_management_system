@@ -34,7 +34,7 @@ public class Notification {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "content", columnDefinition = "text")
+    @Column(name = "content", columnDefinition = "nvarchar(max)")
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)

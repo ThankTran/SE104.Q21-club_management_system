@@ -8,6 +8,8 @@ const toDateTimeParam = (value, fallbackTime) => {
 }
 
 export const normalizeTransactionFromApi = (transaction = {}) => {
+  const displayName = transaction.memberName || transaction.counterpartyName || transaction.memberId
+  const transactionDate = transaction.transactionDate || transaction.createdAt
   const base = {
     id: transaction.transactionId,
     maSuKien: transaction.eventId || null,
@@ -19,28 +21,42 @@ export const normalizeTransactionFromApi = (transaction = {}) => {
   if (isIncome(transaction.type)) {
     return {
       ...base,
-      nguoiNop: transaction.memberName || transaction.memberId ? String(transaction.memberName || transaction.memberId) : '',
+      nguoiNop: displayName ? String(displayName) : '',
       lyDo: transaction.description || '',
-      hinhThuc: 'Tiền mặt',
-      ngayThu: transaction.createdAt ? String(transaction.createdAt).slice(0, 10) : '',
+      hinhThuc: 'Tien mat',
+      ngayThu: transactionDate ? String(transactionDate).slice(0, 10) : '',
     }
   }
 
   return {
     ...base,
-    nguoiNhan: transaction.memberName || transaction.memberId ? String(transaction.memberName || transaction.memberId) : '',
+    nguoiNhan: displayName ? String(displayName) : '',
     noiDung: transaction.description || '',
-    ngayLap: transaction.createdAt ? String(transaction.createdAt).slice(0, 10) : '',
+    ngayLap: transactionDate ? String(transactionDate).slice(0, 10) : '',
   }
 }
+
+export const normalizeMemberDueFromApi = (due = {}) => ({
+  id: due.studentId || String(due.memberId || ''),
+  transactionId: due.transactionId,
+  memberId: due.memberId,
+  name: due.memberName || '',
+  role: due.roleName || 'Thành viên',
+  month: due.month || '',
+  amount: Number(due.amount || 0),
+  status: due.status,
+  raw: due,
+})
 
 export const toIncomePayload = (item = {}) => ({
   transactionId: item.id,
   eventId: item.maSuKien || null,
   memberId: item.memberId || null,
+  counterpartyName: item.nguoiNop || '',
   type: 'INCOME',
   amount: Number(item.soTien || 0),
   description: item.lyDo,
+  transactionDate: item.ngayThu ? `${item.ngayThu}T12:00:00` : null,
   status: item.status || 'COMPLETED',
   createdById: item.createdById || null,
   approvedById: item.approvedById || null,
@@ -50,9 +66,11 @@ export const toExpensePayload = (item = {}) => ({
   transactionId: item.id,
   eventId: item.maSuKien || null,
   memberId: item.memberId || null,
+  counterpartyName: item.nguoiNhan || '',
   type: 'Expense',
   amount: Number(item.soTien || 0),
   description: item.noiDung,
+  transactionDate: item.ngayLap ? `${item.ngayLap}T12:00:00` : null,
   status: item.status || 'COMPLETED',
   createdById: item.createdById || null,
   approvedById: item.approvedById || null,
@@ -103,12 +121,23 @@ export const getTransactionsByTypeAPI = (type) =>
 export const getTransactionsByEventAPI = (eventId) =>
   api.get(`transactions/by-event/${eventId}`)
 
+export const getMemberDuesAPI = (memberId) =>
+  api.get(`transactions/member-dues/${memberId}`)
+
+export const getPendingMonthlyDuesAPI = () =>
+  api.get('transactions/monthly-dues/pending')
+
 export const createTransactionAPI = (payload) =>
   api.post('transactions', payload)
+
+export const updateTransactionAPI = (id, payload) =>
+  api.put(`transactions/${id}`, payload)
+
+export const completeTransactionAPI = (id) =>
+  api.patch(`transactions/${id}/complete`)
 
 export const deleteTransactionAPI = (id) =>
   api.delete(`transactions/${id}`)
 
-// Add PUT/PATCH /api/transactions/{id} for editing finance records.
 // Add approve/reject transaction endpoints if finance approval is required.
 // Add monthly report endpoint for BM12 with month validation and balance.

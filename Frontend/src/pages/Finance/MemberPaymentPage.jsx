@@ -1,49 +1,88 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './MemberPaymentPage.module.css';
 import { fmtMoney } from '../../utils/Finance/financeUtils';
 import {
-  getTransferDues,
-  markTransferDuePaid,
-  MEMBER_PAYMENT_PROFILE,
-} from '../../utils/Finance/transferDues';
+  completeTransactionAPI,
+  getMemberDuesAPI,
+} from '../../services/finance-service';
+import useAuthStore from '../../store/auth-store';
 
 export default function MemberPaymentPage() {
-  const [dues, setDues] = useState(() => getTransferDues());
+  const currentUser = useAuthStore((state) => state.user);
+  const memberId = currentUser?.memberId;
+  const memberName = currentUser?.fullName || 'Thành viên';
+  const memberCode = currentUser?.studentId || (memberId ? `TV${String(memberId).padStart(3, '0')}` : '');
+
+  const [dues, setDues] = useState([]);
   const [activeDue, setActiveDue] = useState(null);
+  const [apiError, setApiError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const myDues = useMemo(
-    () => dues.filter((due) => !due.targetName || due.targetName === MEMBER_PAYMENT_PROFILE.name),
-    [dues],
-  );
-  const pending = useMemo(() => myDues.filter((due) => due.status === 'pending'), [myDues]);
-  const paid = useMemo(() => myDues.filter((due) => due.status === 'paid'), [myDues]);
+  const loadDues = useCallback(() => {
+    if (!memberId) {
+      setDues([]);
+      setApiError('Khong xac dinh duoc thanh vien dang dang nhap.');
+      return;
+    }
 
-  const handlePay = (id) => {
-    setDues(markTransferDuePaid(id));
-    setActiveDue(null);
+    setLoading(true);
+    getMemberDuesAPI(memberId)
+      .then((data) => {
+        const next = Array.isArray(data)
+          ? data.map(normalizeDueFromTransaction).filter(Boolean)
+          : [];
+        setDues(next);
+        setApiError('');
+      })
+      .catch((error) => {
+        setDues([]);
+        setApiError(error?.message || 'Khong tai duoc danh sach khoan can dong.');
+      })
+      .finally(() => setLoading(false));
+  }, [memberId]);
+
+  useEffect(() => {
+    loadDues();
+  }, [loadDues]);
+
+  const pending = useMemo(() => dues.filter((due) => due.status === 'pending'), [dues]);
+  const paid = useMemo(() => dues.filter((due) => due.status === 'paid'), [dues]);
+
+  const handlePay = async (id) => {
+    try {
+      const completed = await completeTransactionAPI(id);
+      const normalized = normalizeDueFromTransaction(completed);
+      setDues((prev) => prev.map((due) => (due.id === id ? normalized : due)).filter(Boolean));
+      setActiveDue(null);
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Khong ghi nhan duoc thanh toan.');
+    }
   };
 
   return (
     <div className={styles.page}>
+      {apiError && <div className={styles.apiError}>{apiError}</div>}
+
       <div className={styles.hero}>
         <div>
           <h1 className={styles.title}>Danh sách các khoản cần thanh toán</h1>
           <p className={styles.subtitle}>
-            Thành viên xem các khoản đang chờ đóng, quét QR và hệ thống ghi nhận tên cùng thời gian thanh toán.
+            Thành viên xem phí sự kiện đã đăng ký và quỹ tháng hiện tại từ dữ liệu tài chính của hệ thống.
           </p>
         </div>
         <div className={styles.memberCard}>
           <span>Đang đăng nhập</span>
-          <strong>{MEMBER_PAYMENT_PROFILE.name}</strong>
-          <small>{MEMBER_PAYMENT_PROFILE.id}</small>
+          <strong>{memberName}</strong>
+          <small>{memberCode}</small>
         </div>
       </div>
 
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2>Khoản cần đóng</h2>
-          <button type="button" className={styles.refreshBtn} onClick={() => setDues(getTransferDues())}>
-            Làm mới
+          <button type="button" className={styles.refreshBtn} onClick={loadDues} disabled={loading}>
+            {loading ? 'Đang tải...' : 'Làm mới'}
           </button>
         </div>
 
@@ -75,7 +114,7 @@ export default function MemberPaymentPage() {
                 </div>
                 <div className={styles.paidMeta}>
                   <span>{fmtMoney(due.soTien)}</span>
-                  <small>{new Date(due.paidAt).toLocaleString('vi-VN')}</small>
+                  <small>{due.paidAt ? new Date(due.paidAt).toLocaleString('vi-VN') : 'Đã ghi nhận'}</small>
                 </div>
               </div>
             ))}
@@ -86,6 +125,8 @@ export default function MemberPaymentPage() {
       {activeDue && (
         <QrPaymentModal
           due={activeDue}
+          memberName={memberName}
+          memberCode={memberCode}
           onClose={() => setActiveDue(null)}
           onConfirm={() => handlePay(activeDue.id)}
         />
@@ -104,6 +145,7 @@ function PaymentCard({ due, onPay }) {
         </div>
         <p className={styles.contentLabel}>Nội dung</p>
         <h3>{due.lyDo}</h3>
+        <p>{fmtMoney(due.soTien)}</p>
         <button type="button" className={styles.payBtn} onClick={() => onPay(due)}>
           Nộp tiền
         </button>
@@ -112,7 +154,7 @@ function PaymentCard({ due, onPay }) {
   );
 }
 
-function QrPaymentModal({ due, onClose, onConfirm }) {
+function QrPaymentModal({ due, memberName, memberCode, onClose, onConfirm }) {
   return (
     <div className={styles.modalOverlay} role="presentation" onClick={onClose}>
       <div
@@ -128,7 +170,7 @@ function QrPaymentModal({ due, onClose, onConfirm }) {
             <h2 id="qr-payment-title">Quét QR để nộp tiền</h2>
           </div>
           <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Đóng">
-            ×
+            x
           </button>
         </div>
 
@@ -168,7 +210,7 @@ function QrPaymentModal({ due, onClose, onConfirm }) {
             )}
             <div>
               <span>Người nộp</span>
-              <strong>{MEMBER_PAYMENT_PROFILE.name} - {MEMBER_PAYMENT_PROFILE.id}</strong>
+              <strong>{memberName} - {memberCode}</strong>
             </div>
           </div>
         </div>
@@ -178,10 +220,29 @@ function QrPaymentModal({ due, onClose, onConfirm }) {
             Để sau
           </button>
           <button type="button" className={styles.confirmBtn} onClick={onConfirm}>
-            Thanh toán 
+            Thanh toán
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+function normalizeDueFromTransaction(transaction = {}) {
+  const status = String(transaction.status || '').toUpperCase();
+  if (!['PENDING', 'COMPLETED', 'APPROVED'].includes(status)) {
+    return null;
+  }
+
+  return {
+    id: transaction.transactionId,
+    transferCode: `${transaction.eventId || 'QUY'}-${transaction.transactionId}`,
+    lyDo: transaction.description || 'Khoản cần đóng',
+    soTien: Number(transaction.amount || 0),
+    maSuKien: transaction.eventId || '',
+    status: status === 'PENDING' ? 'pending' : 'paid',
+    paidAt: transaction.approvedAt || transaction.updatedAt || '',
+    targetName: transaction.memberName || transaction.counterpartyName || '',
+    raw: transaction,
+  };
 }

@@ -18,17 +18,15 @@ public class TransactionDomainServiceImpl implements TransactionDomainService {
         if (type == null) {
             throw new IllegalArgumentException("Transaction type must not be empty");
         }
-        if (request.getMemberId() == null) {
-            throw new IllegalArgumentException("Transaction member is required");
+        if (request.getMemberId() == null
+                && (request.getCounterpartyName() == null || request.getCounterpartyName().isBlank())) {
+            throw new IllegalArgumentException("Transaction member or counterparty name is required");
         }
         if (request.getDescription() == null || request.getDescription().isBlank()) {
             throw new IllegalArgumentException("Transaction description must not be empty");
         }
         if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Transaction amount must be greater than zero");
-        }
-        if (type == TransactionType.Expense && (request.getEventId() == null || request.getEventId().isBlank())) {
-            throw new IllegalArgumentException("Expense transaction must reference an event");
         }
     }
 }

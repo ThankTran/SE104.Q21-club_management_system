@@ -53,6 +53,7 @@ const DashboardPage = () => {
             ...prev,
             stats: data.stats,
             activities: data.activities ?? prev.activities,
+            chartData: data.chartData ?? prev.chartData,
           }));
         }
       })
