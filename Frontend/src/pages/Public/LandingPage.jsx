@@ -12,20 +12,17 @@ import MemberF from '../../components/sections/Member/MemberForm'
 import MemberT from '../../components/sections/Member/MemberTable'
 
 import LoginModal from '../../components/common/Modals/LoginModal/LoginModal'
-import RegisterModal from '../../components/common/Modals/RegisterModal/RegisterModal'
 import useScrollReveal from '../../hooks/useScrollReveal'
  
 export default function LandingPage() {
   const [showLogin, setShowLogin] = useState(false)
-  const [showRegister, setshowRegister] = useState(false)
   useScrollReveal()
 
   return (
     <>
-      <div className={`landing-wrapper ${showLogin || showRegister ? "landing-blur" : ""}`}>
+      <div className={`landing-wrapper ${showLogin ? "landing-blur" : ""}`}>
         <NavbarLanding
           onLoginClick={() => setShowLogin(true)} 
-          onRegisterClick={() => setshowRegister(true)}
         />
         <Hero />
         <About />
@@ -40,14 +37,6 @@ export default function LandingPage() {
       {showLogin && (
         <LoginModal 
           onClose={() => setShowLogin(false)}
-          onSwitchToRegister={() => { setShowLogin(false); setshowRegister(true) }}
-        />
-      )}
-
-      {showRegister && (
-        <RegisterModal 
-          onClose={() => setshowRegister(false)} 
-          onSwitchToLogin={() => { setshowRegister(false); setShowLogin(true) }}
         />
       )}
     </>

@@ -74,6 +74,12 @@
   transition: background 0.15s;
 }
 .heroBtnPrimary:hover { background: var(--primary-100); }
+.heroBtnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: rgba(255,255,255,0.82);
+}
+.heroBtnPrimary:disabled:hover { background: rgba(255,255,255,0.82); }
 
 .heroBtnSecondary {
   padding: 9px 22px;
@@ -249,6 +255,17 @@
 }
 .highlightItemSmall:last-child { border-bottom: none; }
 .highlightItemSmall:hover { background: #f8faff; }
+
+.emptyState {
+  border: 1px dashed var(--gray-300);
+  border-radius: 12px;
+  background: var(--white-hard);
+  color: var(--gray-500);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 18px;
+  text-align: center;
+}
 
 .hlBadge {
   display: flex;

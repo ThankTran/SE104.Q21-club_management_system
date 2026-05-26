@@ -42,6 +42,7 @@ export default function EventRosterTable({
   tagLabels,
   tagFilters,
   evaluations,
+  memberCount = 0,
   onEdit,
   onEvaluate,
   onViewRegistrations,
@@ -127,8 +128,9 @@ export default function EventRosterTable({
               const status = statusLabels[event.status] || statusLabels.upcoming;
               const tag = tagLabels[event.tag] || tagLabels.OTHER;
               const date = new Date(event.date);
-              const percent = event.capacity > 0
-                ? Math.round((event.attendance / event.capacity) * 100)
+              const registeredCount = Number(event.attendance || 0);
+              const percent = memberCount > 0
+                ? Math.round((registeredCount / memberCount) * 100)
                 : 0;
               const isCompleted = event.status === 'completed';
               const hasEvaluation = evaluations.some((item) => item.eventCode === event.eventCode);
@@ -155,7 +157,7 @@ export default function EventRosterTable({
                     {date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
                   <td>
-                    <span className={styles.attendance}>{event.attendance} / {event.capacity}</span>
+                    <span className={styles.attendance}>{registeredCount} / {memberCount}</span>
                   <div className={styles.attBar}>
                     <div className={styles.attBarFill} style={{ width: `${percent}%` }} />
                   </div>

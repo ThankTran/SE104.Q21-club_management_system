@@ -13,7 +13,89 @@ import styles from './EventUserPage.module.css';
 
 const PAGE_SIZE = 5;
 const HL_PAGE_SIZE = 4;
-const TAGS = ['Tat ca', 'ACAD', 'TECH', 'CERT', 'SOCIAL', 'OTHER'];
+const ALL_TAG = 'ALL';
+const TAGS = [
+  { value: ALL_TAG, label: 'Tất cả' },
+  { value: 'ACAD', label: 'ACAD' },
+  { value: 'TECH', label: 'TECH' },
+  { value: 'CERT', label: 'CERT' },
+  { value: 'SOCIAL', label: 'SOCIAL' },
+  { value: 'OTHER', label: 'OTHER' },
+];
+
+const pad2 = (value) => String(value).padStart(2, '0');
+
+const parseLocalDateTime = (date, time = '00:00') => {
+  if (!date) return null;
+  const [year, month, day] = String(date).split('-').map(Number);
+  const [hour = 0, minute = 0] = String(time || '00:00').split(':').map(Number);
+  if (![year, month, day].every(Number.isFinite)) return null;
+  return new Date(year, month - 1, day, hour, minute, 0);
+};
+
+const formatIcsDate = (date) =>
+  `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}`;
+
+const formatIcsDateTime = (date) =>
+  `${formatIcsDate(date)}T${pad2(date.getHours())}${pad2(date.getMinutes())}${pad2(date.getSeconds())}`;
+
+const formatIcsTimestamp = (date = new Date()) =>
+  `${date.getUTCFullYear()}${pad2(date.getUTCMonth() + 1)}${pad2(date.getUTCDate())}T${pad2(date.getUTCHours())}${pad2(date.getUTCMinutes())}${pad2(date.getUTCSeconds())}Z`;
+
+const escapeIcsText = (value = '') =>
+  String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,');
+
+const buildRegisteredEventsIcs = (registeredEvents) => {
+  const dtstamp = formatIcsTimestamp();
+  const items = registeredEvents
+    .map((event) => {
+      const start = parseLocalDateTime(event.date, event.time);
+      if (!start) return null;
+
+      const lines = [
+        'BEGIN:VEVENT',
+        `UID:${escapeIcsText(event.id || event.title)}@thmn-academic-club`,
+        `DTSTAMP:${dtstamp}`,
+        `SUMMARY:${escapeIcsText(event.title || 'Sự kiện câu lạc bộ')}`,
+      ];
+
+      if (event.time) {
+        const end = event.endTime
+          ? parseLocalDateTime(event.date, event.endTime)
+          : new Date(start.getTime() + 60 * 60 * 1000);
+        const safeEnd = end && end > start ? end : new Date(start.getTime() + 60 * 60 * 1000);
+        lines.push(`DTSTART:${formatIcsDateTime(start)}`);
+        lines.push(`DTEND:${formatIcsDateTime(safeEnd)}`);
+      } else {
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+        lines.push(`DTSTART;VALUE=DATE:${formatIcsDate(start)}`);
+        lines.push(`DTEND;VALUE=DATE:${formatIcsDate(end)}`);
+      }
+
+      if (event.location) lines.push(`LOCATION:${escapeIcsText(event.location)}`);
+      if (event.description) lines.push(`DESCRIPTION:${escapeIcsText(event.description)}`);
+      lines.push('END:VEVENT');
+      return lines.join('\r\n');
+    })
+    .filter(Boolean);
+
+  if (!items.length) return '';
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//THMN Academic Club//Registered Events//VI',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    ...items,
+    'END:VCALENDAR',
+  ].join('\r\n');
+};
 
 function PaginationControls({ current, total, pageSize = PAGE_SIZE, onPageChange }) {
   const totalPages = Math.ceil(total / pageSize);
@@ -32,7 +114,7 @@ export default function EventUserPage() {
   const memberId = currentUser?.memberId;
 
   const [events, setEvents] = useState([]);
-  const [activeTag, setActiveTag] = useState('Tat ca');
+  const [activeTag, setActiveTag] = useState(ALL_TAG);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [registeredIds, setRegisteredIds] = useState(new Set());
@@ -67,7 +149,7 @@ export default function EventUserPage() {
         setEvents([]);
         setRegisteredIds(new Set());
         setApiSuccess('');
-        setApiError(error?.message || 'Khong tai duoc danh sach su kien.');
+        setApiError(error?.message || 'Không tải được danh sách sự kiện.');
       });
 
     return () => {
@@ -78,7 +160,7 @@ export default function EventUserPage() {
   const filtered = useMemo(() => {
     const query = search.toLowerCase();
     return events.filter((event) => {
-      const matchTag = activeTag === 'Tat ca' || event.tag === activeTag;
+      const matchTag = activeTag === ALL_TAG || event.tag === activeTag;
       const matchSearch = !query || event.title.toLowerCase().includes(query);
       return matchTag && matchSearch;
     });
@@ -96,9 +178,30 @@ export default function EventUserPage() {
 
   const isRegistered = (id) => registeredIds.has(id);
 
+  const handleDownloadCalendar = () => {
+    const icsContent = buildRegisteredEventsIcs(registeredEvents);
+    if (!icsContent) {
+      setApiSuccess('');
+      setApiError('Không có sự kiện đã đăng ký hợp lệ để thêm vào lịch.');
+      return;
+    }
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'su-kien-da-dang-ky.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setApiError('');
+    setApiSuccess('Đã tải file lịch cho các sự kiện đã đăng ký.');
+  };
+
   const handleRegister = async (event) => {
     if (!memberId) {
-      setApiError('Khong xac dinh duoc thanh vien dang dang nhap.');
+      setApiError('Không xác định được thành viên đang đăng nhập.');
       return;
     }
     try {
@@ -114,13 +217,13 @@ export default function EventUserPage() {
       setApiSuccess('Đăng ký sự kiện thành công. Khoản phí nếu có đã được thêm vào mục Đóng quỹ.');
     } catch (error) {
       setApiSuccess('');
-      setApiError(error?.message || 'Khong dang ky duoc su kien.');
+      setApiError(error?.message || 'Không đăng ký được sự kiện.');
     }
   };
 
   const handleUnregister = async (eventId) => {
     if (!memberId) {
-      setApiError('Khong xac dinh duoc thanh vien dang dang nhap.');
+      setApiError('Không xác định được thành viên đang đăng nhập.');
       return;
     }
     try {
@@ -142,7 +245,7 @@ export default function EventUserPage() {
       setApiSuccess('Đã hủy đăng ký sự kiện.');
     } catch (error) {
       setApiSuccess('');
-      setApiError(error?.message || 'Khong huy dang ky duoc su kien.');
+      setApiError(error?.message || 'Không hủy đăng ký được sự kiện.');
     }
   };
 
@@ -154,12 +257,53 @@ export default function EventUserPage() {
       <div className={styles.hero}>
         <div className={styles.heroText}>
           <h1 className={styles.heroTitle}>
-            Kham pha <span className={styles.heroAccent}>Su kien</span>
+            Khám phá <span className={styles.heroAccent}>Sự kiện</span>
           </h1>
           <p className={styles.heroSub}>
-            Cac workshop va seminar cua cau lac bo duoc tai truc tiep tu he thong.
+            Các workshop và seminar của câu lạc bộ được tải trực tiếp từ hệ thống.
           </p>
+          <div className={styles.heroActions}>
+            <button
+              type="button"
+              className={styles.heroBtnPrimary}
+              onClick={handleDownloadCalendar}
+              disabled={registeredEvents.length === 0}
+            >
+              Thêm vào lịch
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div className={styles.sectionSmall}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Các sự kiện đã đăng ký ({registeredEvents.length})</h2>
+        </div>
+        {registeredEvents.length > 0 ? (
+          <>
+            <div className={styles.highlightList}>
+              {paginate(registeredEvents, regPage).map((event) => (
+                <div key={event.id} className={styles.highlightItemSmall} onClick={() => setSelected(event)}>
+                  <div className={styles.hlContent}>
+                    <p className={styles.hlTitle}>{event.title}</p>
+                  </div>
+                  <button
+                    className={styles.hlUnregisterBtn}
+                    onClick={(clickEvent) => {
+                      clickEvent.stopPropagation();
+                      handleUnregister(event.id);
+                    }}
+                  >
+                    Hủy
+                  </button>
+                </div>
+              ))}
+            </div>
+            <PaginationControls current={regPage} total={registeredEvents.length} onPageChange={setRegPage} />
+          </>
+        ) : (
+          <div className={styles.emptyState}>Bạn chưa đăng ký sự kiện nào.</div>
+        )}
       </div>
 
       <div className={styles.filterRow}>
@@ -169,7 +313,7 @@ export default function EventUserPage() {
           </svg>
           <input
             className={styles.searchInput}
-            placeholder="Tim su kien..."
+            placeholder="Tìm sự kiện..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -178,46 +322,19 @@ export default function EventUserPage() {
         <div className={styles.tags}>
           {TAGS.map((tag) => (
             <button
-              key={tag}
-              className={`${styles.tag} ${activeTag === tag ? styles.tagActive : ''}`}
-              onClick={() => setActiveTag(tag)}
+              key={tag.value}
+              className={`${styles.tag} ${activeTag === tag.value ? styles.tagActive : ''}`}
+              onClick={() => setActiveTag(tag.value)}
             >
-              {tag}
+              {tag.label}
             </button>
           ))}
         </div>
       </div>
 
-      {registeredEvents.length > 0 && (
-        <div className={styles.sectionSmall}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Hoat dong da dang ky ({registeredEvents.length})</h2>
-          </div>
-          <div className={styles.highlightList}>
-            {paginate(registeredEvents, regPage).map((event) => (
-              <div key={event.id} className={styles.highlightItemSmall} onClick={() => setSelected(event)}>
-                <div className={styles.hlContent}>
-                  <p className={styles.hlTitle}>{event.title}</p>
-                </div>
-                <button
-                  className={styles.hlUnregisterBtn}
-                  onClick={(clickEvent) => {
-                    clickEvent.stopPropagation();
-                    handleUnregister(event.id);
-                  }}
-                >
-                  Huy
-                </button>
-              </div>
-            ))}
-          </div>
-          <PaginationControls current={regPage} total={registeredEvents.length} onPageChange={setRegPage} />
-        </div>
-      )}
-
       <div className={styles.upcomingsection}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Sap dien ra</h2>
+          <h2 className={styles.sectionTitle}>Sắp diễn ra</h2>
         </div>
         <div className={styles.cardList}>
           {paginate(upcoming, upPage).map((event) => (
@@ -237,7 +354,7 @@ export default function EventUserPage() {
       {highlights.length > 0 && (
         <div className={styles.sectionspecial}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Hoat dong noi bat</h2>
+            <h2 className={styles.sectionTitle}>Hoạt động nổi bật</h2>
           </div>
           <div className={styles.highlightList}>
             {paginate(highlights, hlPage, HL_PAGE_SIZE).map((event) => {
@@ -270,7 +387,7 @@ export default function EventUserPage() {
       {completed.length > 0 && (
         <div className={styles.sectionEnd}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Da ket thuc</h2>
+            <h2 className={styles.sectionTitle}>Đã kết thúc</h2>
           </div>
           <div className={styles.cardList}>
             {paginate(completed, endPage).map((event) => (
@@ -284,7 +401,7 @@ export default function EventUserPage() {
       {selected && (
         <div className={styles.overlay} onClick={() => setSelected(null)}>
           <div className={styles.detailBox} onClick={(event) => event.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setSelected(null)}>x</button>
+            <button className={styles.closeBtn} onClick={() => setSelected(null)}>×</button>
 
             <div className={styles.detailDate}>
               {new Date(selected.date).toLocaleDateString('vi-VN', {
@@ -298,8 +415,8 @@ export default function EventUserPage() {
             <p className={styles.detailDesc}>{selected.description}</p>
 
             <div className={styles.detailMeta}>
-              <span>Suc chua: {selected.capacity || 0} nguoi</span>
-              <span>Da dang ky: {selected.attendance || 0}</span>
+              <span>Sức chứa: {selected.capacity || 0} người</span>
+              <span>Đã đăng ký: {selected.attendance || 0}</span>
               {selected.estimatedCost > 0 && (
                 <span>{Number(selected.estimatedCost).toLocaleString('vi-VN')} VND</span>
               )}
@@ -314,7 +431,7 @@ export default function EventUserPage() {
                     : handleRegister(selected)
                 }
               >
-                {isRegistered(selected.id) ? 'Huy dang ky' : 'Dang ky tham gia'}
+                {isRegistered(selected.id) ? 'Hủy đăng ký' : 'Đăng ký tham gia'}
               </button>
             )}
           </div>

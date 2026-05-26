@@ -1,10 +1,37 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  getEventsAPI,
+  normalizeEventFromApi,
+} from '../../../../services/event-service';
 import { eventsData } from '../../../../data/Public/content';
 import styles from './Event.module.css';
 
+const INITIAL_VISIBLE = 3;
+const ACTIVE_STATUSES = new Set(['upcoming', 'published']);
+
+const formatEventDescription = (event) => {
+  const parts = [];
+  if (event.date) {
+    parts.push(new Date(event.date).toLocaleDateString('vi-VN'));
+  }
+  if (event.location) {
+    parts.push(event.location);
+  }
+
+  if (event.description) {
+    return parts.length ? `${parts.join(' • ')} - ${event.description}` : event.description;
+  }
+
+  return parts.join(' • ') || 'Sự kiện đang được cập nhật thông tin chi tiết.';
+};
+
 export default function Events() {
-  const { title, description, items, cta } = eventsData;
+  const { title, description, cta } = eventsData;
   const [inView, setInView] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState('');
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -16,15 +43,53 @@ export default function Events() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    let ignore = false;
+
+    getEventsAPI()
+      .then((data) => {
+        if (ignore) return;
+        const nextEvents = Array.isArray(data)
+          ? data
+            .map(normalizeEventFromApi)
+            .filter((event) => ACTIVE_STATUSES.has(event.status))
+            .sort((a, b) => {
+              const aTime = a.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER;
+              const bTime = b.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER;
+              return aTime - bTime;
+            })
+          : [];
+
+        setEvents(nextEvents);
+        setApiError('');
+      })
+      .catch((error) => {
+        if (ignore) return;
+        setEvents([]);
+        setApiError(error?.message || 'Không tải được danh sách sự kiện.');
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const visibleEvents = useMemo(
+    () => (showAll ? events : events.slice(0, INITIAL_VISIBLE)),
+    [events, showAll]
+  );
+
+  const hasMore = events.length > INITIAL_VISIBLE;
+
   return (
     <section className={styles.events} id="events" ref={sectionRef}>
-      {/* Floating shape giống như About */}
       <div className={styles.shape} />
 
       <div className={styles.inner}>
-        {/* Left image box slide từ trái */}
         <div className={`${styles.imgBox} ${inView ? styles.imgVisible : ''}`}>
-          {/* Pulse ring */}
           <div className={styles.pulseRing} />
           <div className={styles.pulseRing2} />
 
@@ -38,32 +103,41 @@ export default function Events() {
           </svg>
         </div>
 
-        {/* Right content slide từ phải */}
         <div className={`${styles.content} ${inView ? styles.contentVisible : ''}`}>
           <h2 className={styles.sectionTitle}>{title}</h2>
           <p className={styles.desc}>{description}</p>
 
+          {apiError && <p className={styles.stateText}>{apiError}</p>}
+          {loading && <p className={styles.stateText}>Đang tải sự kiện...</p>}
+
+          {!loading && !apiError && visibleEvents.length === 0 && (
+            <p className={styles.stateText}>Chưa có sự kiện đang hoạt động hoặc sắp tới.</p>
+          )}
+
           <ul className={styles.list}>
-            {items.map((item, i) => (
+            {visibleEvents.map((event, i) => (
               <li
-                key={i}
+                key={event.id || `${event.title}-${i}`}
                 className={`${styles.item} ${inView ? styles.itemVisible : ''}`}
                 style={{ transitionDelay: `${0.3 + i * 0.12}s` }}
               >
                 <span className={styles.dot} />
                 <div>
-                  <strong className={styles.itemTitle}>{item.title}</strong>
-                  <p className={styles.itemDesc}>{item.desc}</p>
+                  <strong className={styles.itemTitle}>{event.title}</strong>
+                  <p className={styles.itemDesc}>{formatEventDescription(event)}</p>
                 </div>
               </li>
             ))}
           </ul>
 
-          <button
-            className={`${styles.cta} ${inView ? styles.ctaVisible : ''}`}
-          >
-            {cta} →
-          </button>
+          {hasMore && (
+            <button
+              className={`${styles.cta} ${inView ? styles.ctaVisible : ''}`}
+              onClick={() => setShowAll((current) => !current)}
+            >
+              {showAll ? 'Thu gọn sự kiện' : cta} →
+            </button>
+          )}
         </div>
       </div>
     </section>

@@ -55,6 +55,13 @@
 }
 .stageVisible { opacity: 1; transform: translateY(0); }
 
+.stateText {
+  color: var(--gray-700);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Card */
 .card {
   position: absolute;

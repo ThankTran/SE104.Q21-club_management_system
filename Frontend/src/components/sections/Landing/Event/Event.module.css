@@ -136,6 +136,13 @@
   line-height: 1.65; font-weight: 400;
 }
 
+.stateText {
+  color: var(--gray-700);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
 /* CTA button */
 .cta {
   display: inline-flex; align-items: center; gap: 8px;

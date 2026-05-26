@@ -1,14 +1,12 @@
 // src/components/LoginModal.jsx
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import useAuth from '../../../../hooks/useAuth'
 import styles from './LoginModal.module.css'
 
-const LoginModal = ({ onClose, onSwitchToRegister }) => {
+const LoginModal = ({ onClose }) => {
   const { login, loading, error } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ username: '', password: '' })
   const [errors, setErrors] = useState({})
-  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -17,12 +15,10 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
 
   const validate = () => {
     const newErrors = {}
-    if (!form.email.trim())
-      newErrors.email = 'Please enter email'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      newErrors.email = 'Invalid email address'
+    if (!form.username.trim())
+      newErrors.username = 'Vui lòng nhập tên đăng nhập'
     if (!form.password)
-      newErrors.password = 'Please enter password'
+      newErrors.password = 'Vui lòng nhập mật khẩu'
     return newErrors
   }
 
@@ -32,42 +28,39 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
       setErrors(newErrors)
       return
     }
-    await login(form)
-    navigate('/home')
+    await login({
+      username: form.username.trim(),
+      password: form.password,
+    })
   }
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.card} onClick={(e) => e.stopPropagation()}>
 
-        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        <button className={styles.closeBtn} onClick={onClose}>×</button>
 
-        {/* Header */}
         <div className={styles.header}>
           <h2 className={styles.title}>Đăng nhập</h2>
           <p className={styles.subtitle}>Chào mừng trở lại!</p>
         </div>
 
-        {/* Server error */}
         {error && <div className={styles.serverError}>{error}</div>}
 
-        {/* Form */}
         <div className={styles.form}>
-          {/* Email */}
           <div className={styles.field}>
-            <label className={styles.label}>Email</label>
+            <label className={styles.label}>Tên đăng nhập</label>
             <input
-              name="email"
-              type="email"
-              placeholder="example@gmail.com"
-              value={form.email}
+              name="username"
+              type="text"
+              placeholder="Nhập MSSV"
+              value={form.username}
               onChange={handleChange}
-              className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+              className={`${styles.input} ${errors.username ? styles.inputError : ''}`}
             />
-            {errors.email && <p className={styles.errorMsg}>{errors.email}</p>}
+            {errors.username && <p className={styles.errorMsg}>{errors.username}</p>}
           </div>
 
-          {/* Password */}
           <div className={styles.field}>
             <label className={styles.label}>Mật khẩu</label>
             <input
@@ -81,7 +74,6 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
             {errors.password && <p className={styles.errorMsg}>{errors.password}</p>}
           </div>
 
-          {/* Submit */}
           <button
             className={styles.submitBtn}
             onClick={handleSubmit}
@@ -89,14 +81,6 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
           >
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
-
-          {/* Switch to register */}
-          <p className={styles.footer}>
-            Chưa có tài khoản?{' '}
-            <span className={styles.footerLink} onClick={onSwitchToRegister}>
-              Đăng ký
-            </span>
-          </p>
         </div>
       </div>
     </div>

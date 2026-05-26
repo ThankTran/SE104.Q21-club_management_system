@@ -1,12 +1,27 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ResourceCard from '../../components/sections/Resource/ResourceCard';
 import ResourceForm from '../../components/sections/Resource/ResourceForm';
 import ResourceFolderView from '../../components/sections/Resource/ResourceFolderView';
 import { RESOURCE_LEAF_FOLDERS } from '../../data/Resource/resourceFolderData';
-import { INITIAL_MEMBER_SUBMISSIONS, MEMBER_PROFILE, MOCK_RESOURCES, PAGE_SIZE, FORMAT_OPTIONS, SOURCE_OPTIONS, TYPE_TABS } from '../../data/Resource/resourceUserData';
+import { INITIAL_MEMBER_SUBMISSIONS, MOCK_RESOURCES, PAGE_SIZE, FORMAT_OPTIONS, SOURCE_OPTIONS, TYPE_TABS } from '../../data/Resource/resourceUserData';
+import {
+  createResourceAPI,
+  createResourceFileAPI,
+  getResourceTypesAPI,
+  getResourcesAPI,
+  normalizeResourceFromApi,
+  toResourcePayload,
+} from '../../services/resource-service';
+import { getSubjectsAPI } from '../../services/subject-service';
+import useAuthStore from '../../store/auth-store';
 import styles from './ResourceUserPage.module.css';
 
 export default function ResourceUserPage() {
+  const currentUser = useAuthStore((state) => state.user);
+  const [resources, setResources] = useState(MOCK_RESOURCES);
+  const [resourceTypes, setResourceTypes] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
+  const [apiError, setApiError] = useState('');
   // Filters
   const [search, setSearch]       = useState('');
   const [activeType, setActiveType]     = useState('Tất cả');
@@ -27,12 +42,71 @@ export default function ResourceUserPage() {
   const [submissionsOpen, setSubmissionsOpen] = useState(false);
   const [memberSubmissions, setMemberSubmissions] = useState(INITIAL_MEMBER_SUBMISSIONS);
 
+  const loadResources = () =>
+    getResourcesAPI()
+      .then((data) => {
+        const nextResources = Array.isArray(data)
+          ? data.map(normalizeResourceFromApi)
+          : [];
+        setResources(nextResources.length ? nextResources : MOCK_RESOURCES);
+        if (currentUser?.memberId) {
+          setMemberSubmissions(
+            nextResources
+              .filter((resource) => resource.memberId === currentUser.memberId)
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+          );
+        }
+        setApiError('');
+      })
+      .catch((error) => {
+        setResources(MOCK_RESOURCES);
+        setApiError(error?.message || 'Không tải được kho tài liệu từ API.');
+      });
+
+  useEffect(() => {
+    let ignore = false;
+
+    Promise.allSettled([getResourcesAPI(), getResourceTypesAPI(), getSubjectsAPI()])
+      .then(([resourcesResult, typesResult, subjectsResult]) => {
+        if (ignore) return;
+
+        if (resourcesResult.status === 'fulfilled') {
+          const nextResources = Array.isArray(resourcesResult.value)
+            ? resourcesResult.value.map(normalizeResourceFromApi)
+            : [];
+          setResources(nextResources.length ? nextResources : MOCK_RESOURCES);
+          if (currentUser?.memberId) {
+            setMemberSubmissions(
+              nextResources
+                .filter((resource) => resource.memberId === currentUser.memberId)
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+            );
+          }
+          setApiError('');
+        } else {
+          setResources(MOCK_RESOURCES);
+          setApiError(resourcesResult.reason?.message || 'Không tải được kho tài liệu từ API.');
+        }
+
+        if (typesResult.status === 'fulfilled' && Array.isArray(typesResult.value)) {
+          setResourceTypes(typesResult.value);
+        }
+        if (subjectsResult.status === 'fulfilled' && Array.isArray(subjectsResult.value)) {
+          setSubjectOptions(subjectsResult.value);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [currentUser?.memberId]);
+
   // Derived data
   const subjects = useMemo(
-    () => ['Tất cả', ...new Set(MOCK_RESOURCES.map((r) => r.subject))].sort((a, b) =>
+    () => ['Tất cả', ...new Set(resources.map((r) => r.subject).filter(Boolean))].sort((a, b) =>
       a === 'Tất cả' ? -1 : b === 'Tất cả' ? 1 : a.localeCompare(b)
     ),
-    []
+    [resources]
   );
 
   const selectedFolder = RESOURCE_LEAF_FOLDERS.find((folder) => folder.id === selectedFolderId);
@@ -40,7 +114,7 @@ export default function ResourceUserPage() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
 
-    return MOCK_RESOURCES
+    return resources
       .filter((r) => r.status === "approved")
       .filter((r) => {
         if (!selectedFolderId) return false;
@@ -49,10 +123,10 @@ export default function ResourceUserPage() {
       .filter((r) => {
         const matchSearch =
           !q ||
-          r.title.toLowerCase().includes(q) ||
-          r.subject.toLowerCase().includes(q) ||
-          r.type.toLowerCase().includes(q) ||
-          r.format.toLowerCase().includes(q);
+          String(r.title || '').toLowerCase().includes(q) ||
+          String(r.subject || '').toLowerCase().includes(q) ||
+          String(r.type || '').toLowerCase().includes(q) ||
+          String(r.format || '').toLowerCase().includes(q);
 
         const matchType = activeType === "Tất cả" || r.type === activeType;
         const matchFormat = activeFormat === "Tất cả" || r.format === activeFormat;
@@ -63,6 +137,7 @@ export default function ResourceUserPage() {
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [
+    resources,
     search,
     activeType,
     activeFormat,
@@ -75,8 +150,8 @@ export default function ResourceUserPage() {
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Stats
-  const totalApproved = MOCK_RESOURCES.filter((r) => r.status === 'approved').length;
-  const totalSubjects = new Set(MOCK_RESOURCES.map((r) => r.subject)).size;
+  const totalApproved = resources.filter((r) => r.status === 'approved').length;
+  const totalSubjects = new Set(resources.map((r) => r.subject).filter(Boolean)).size;
 
   const hasFilter = activeType !== 'Tất cả' || activeFormat !== 'Tất cả' || activeSource !== 'Tất cả' || activeSubject !== 'Tất cả';
 
@@ -89,29 +164,33 @@ export default function ResourceUserPage() {
     setPage(1);
   };
 
-  const handleSubmitForm = (formData) => {
+  const handleSubmitForm = async (formData) => {
+    if (!currentUser?.memberId) {
+      setApiError('Không xác định được tài khoản đang đăng nhập.');
+      return;
+    }
+
     setFormLoading(true);
-    setTimeout(() => {
-      const today = new Date().toISOString().split('T')[0];
-      setMemberSubmissions((prev) => [
-        {
-          ...formData,
-          id: `DX-${String(prev.length + 1).padStart(3, '0')}`,
-          createdAt: today,
-          status: 'pending',
-          reviewedAt: '',
-          note: 'Phiếu đang chờ admin xét duyệt.',
-          uploadedBy: MEMBER_PROFILE.name,
-          memberId: MEMBER_PROFILE.memberId,
-          memberRole: MEMBER_PROFILE.role,
-        },
-        ...prev,
-      ]);
-      setFormLoading(false);
+    try {
+      const created = await createResourceAPI(toResourcePayload({
+        ...formData,
+        proposedById: currentUser.memberId,
+      }));
+
+      const filePayload = new FormData();
+      filePayload.append('documentId', created.documentId);
+      filePayload.append('file', formData.file);
+      await createResourceFileAPI(filePayload);
+
+      await loadResources();
       setFormOpen(false);
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 5000);
-    }, 900);
+    } catch (error) {
+      setApiError(error?.message || error || 'Không gửi được đề xuất tài liệu.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const handleFilter = (setter) => (val) => {
@@ -121,6 +200,7 @@ export default function ResourceUserPage() {
 
   return (
     <div className={styles.page}>
+      {apiError && <div className={styles.toast}>{apiError}</div>}
 
       {/* ══ HERO BANNER ══ */}
       <div className={styles.hero}>
@@ -202,7 +282,7 @@ export default function ResourceUserPage() {
                 <FilterOption
                   key={t}
                   label={t}
-                  count={t === 'Tất cả' ? MOCK_RESOURCES.length : MOCK_RESOURCES.filter((r) => r.type === t).length}
+                  count={t === 'Tất cả' ? resources.length : resources.filter((r) => r.type === t).length}
                   active={activeType === t}
                   onClick={() => handleFilter(setActiveType)(t)}
                 />
@@ -215,7 +295,7 @@ export default function ResourceUserPage() {
                 <FilterOption
                   key={f}
                   label={f}
-                  count={f === 'Tất cả' ? MOCK_RESOURCES.length : MOCK_RESOURCES.filter((r) => r.format === f).length}
+                  count={f === 'Tất cả' ? resources.length : resources.filter((r) => r.format === f).length}
                   active={activeFormat === f}
                   onClick={() => handleFilter(setActiveFormat)(f)}
                 />
@@ -228,7 +308,7 @@ export default function ResourceUserPage() {
                 <FilterOption
                   key={s}
                   label={s}
-                  count={s === 'Tất cả' ? MOCK_RESOURCES.length : MOCK_RESOURCES.filter((r) => r.source === s).length}
+                  count={s === 'Tất cả' ? resources.length : resources.filter((r) => r.source === s).length}
                   active={activeSource === s}
                   onClick={() => handleFilter(setActiveSource)(s)}
                 />
@@ -242,7 +322,7 @@ export default function ResourceUserPage() {
                   <FilterOption
                     key={s}
                     label={s}
-                    count={s === 'Tất cả' ? MOCK_RESOURCES.length : MOCK_RESOURCES.filter((r) => r.subject === s).length}
+                    count={s === 'Tất cả' ? resources.length : resources.filter((r) => r.subject === s).length}
                     active={activeSubject === s}
                     onClick={() => handleFilter(setActiveSubject)(s)}
                     small
@@ -464,6 +544,8 @@ export default function ResourceUserPage() {
         onSubmit={handleSubmitForm}
         loading={formLoading}
         isAdmin={false}
+        resourceTypes={resourceTypes}
+        subjectOptions={subjectOptions}
       />
 
       <SubmissionHistoryModal
@@ -477,6 +559,8 @@ export default function ResourceUserPage() {
 
 /* ── Sub-components ── */
 function resolveUserFolderId(resource) {
+  if (resource.lookupFolderId) return resource.lookupFolderId;
+
   const text = `${resource.major || ''} ${resource.subject || ''} ${resource.title || ''}`.toLowerCase();
   const directMatch = RESOURCE_LEAF_FOLDERS.find((folder) => text.includes(folder.label.toLowerCase()));
   if (directMatch) return directMatch.id;

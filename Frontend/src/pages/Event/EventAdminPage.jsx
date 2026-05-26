@@ -23,6 +23,10 @@ import {
   updateEventAPI,
 } from '../../services/event-service';
 import {
+  getMembersAPI,
+  normalizeMemberFromApi,
+} from '../../services/member-service';
+import {
   PAGE_SIZE,
   STATUS_LABEL,
   TAG_FILTERS,
@@ -50,6 +54,52 @@ const buildEvaluationsFromEvents = (events) =>
       evaluation: event.evaluation,
     }));
 
+const normalizeRegistrationList = (data) =>
+  Array.isArray(data) ? data.map(normalizeEventRegistrationFromApi) : [];
+
+const applyRegistrationCounts = (events, registrationsByEvent) =>
+  events.map((event) => {
+    const members = registrationsByEvent[event.id];
+    return {
+      ...event,
+      attendance: Array.isArray(members) ? members.length : Number(event.attendance || 0),
+    };
+  });
+
+const fetchRegistrationsForEvents = async (events) => {
+  const results = await Promise.all(
+    events.map(async (event) => {
+      try {
+        const data = await getEventRegistrationsByEventAPI(event.id);
+        return {
+          eventId: event.id,
+          members: normalizeRegistrationList(data),
+          failed: false,
+        };
+      } catch {
+        return {
+          eventId: event.id,
+          members: null,
+          failed: true,
+        };
+      }
+    }),
+  );
+
+  return {
+    registrationsByEvent: results.reduce((acc, item) => {
+      if (item.members) acc[item.eventId] = item.members;
+      return acc;
+    }, {}),
+    failed: results.some((item) => item.failed),
+  };
+};
+
+const countApprovedMembers = (data) =>
+  Array.isArray(data)
+    ? data.map(normalizeMemberFromApi).filter((member) => member.requestStatus === 'Đã duyệt').length
+    : 0;
+
 export default function EventAdminPage() {
   const [events, setEvents] = useState([]);
   const [apiError, setApiError] = useState('');
@@ -70,23 +120,47 @@ export default function EventAdminPage() {
   const [evaluationHistoryOpen, setEvaluationHistoryOpen] = useState(false);
   const [registrationTarget, setRegistrationTarget] = useState(null);
   const [registeredMembers, setRegisteredMembers] = useState([]);
+  const [registrationsByEvent, setRegistrationsByEvent] = useState({});
+  const [memberCount, setMemberCount] = useState(0);
 
   useEffect(() => {
     let ignore = false;
 
-    getEventsAPI()
-      .then((data) => {
+    Promise.allSettled([getEventsAPI(), getMembersAPI()])
+      .then(async ([eventsResult, membersResult]) => {
+        if (eventsResult.status !== 'fulfilled') {
+          throw eventsResult.reason;
+        }
+
+        const nextEvents = Array.isArray(eventsResult.value)
+          ? eventsResult.value.map(normalizeEventFromApi)
+          : [];
+        const {
+          registrationsByEvent: nextRegistrationsByEvent,
+          failed,
+        } = await fetchRegistrationsForEvents(nextEvents);
+        const nextMemberCount = membersResult.status === 'fulfilled'
+          ? countApprovedMembers(membersResult.value)
+          : 0;
+
         if (ignore) return;
-        const nextEvents = Array.isArray(data) ? data.map(normalizeEventFromApi) : [];
-        setEvents(nextEvents);
+        setMemberCount(nextMemberCount);
+        setRegistrationsByEvent(nextRegistrationsByEvent);
+        setEvents(applyRegistrationCounts(nextEvents, nextRegistrationsByEvent));
         setEvaluations(buildEvaluationsFromEvents(nextEvents));
-        setApiError('');
+        setApiError(
+          failed || membersResult.status !== 'fulfilled'
+            ? 'Không tải được một số dữ liệu đăng ký hoặc thành viên.'
+            : '',
+        );
       })
       .catch((error) => {
         if (ignore) return;
         setApiError(error?.message || 'Không tải được danh sách sự kiện từ API.');
         setEvents([]);
         setEvaluations([]);
+        setRegistrationsByEvent({});
+        setMemberCount(0);
       });
 
     return () => {
@@ -104,12 +178,21 @@ export default function EventAdminPage() {
     getEventRegistrationsByEventAPI(registrationTarget.id)
       .then((data) => {
         if (ignore) return;
-        setRegisteredMembers(Array.isArray(data) ? data.map(normalizeEventRegistrationFromApi) : []);
+        const nextMembers = normalizeRegistrationList(data);
+        setRegisteredMembers(nextMembers);
+        setRegistrationsByEvent((prev) => ({ ...prev, [registrationTarget.id]: nextMembers }));
+        setEvents((prev) =>
+          prev.map((event) =>
+            event.id === registrationTarget.id
+              ? { ...event, attendance: nextMembers.length }
+              : event,
+          ),
+        );
       })
       .catch((error) => {
         if (ignore) return;
         setRegisteredMembers([]);
-        setApiError(error?.message || 'Khong tai duoc danh sach dang ky su kien.');
+        setApiError(error?.message || 'Không tải được danh sách đăng ký sự kiện.');
       });
 
     return () => {
@@ -150,11 +233,11 @@ export default function EventAdminPage() {
   const rosterSummary = useMemo(() => {
     const activityCount = filtered.length;
     const totalAttendance = filtered.reduce((sum, event) => sum + Number(event.attendance || 0), 0);
-    const totalCapacity = filtered.reduce((sum, event) => sum + Number(event.capacity || 0), 0);
-    const attendanceRate = totalCapacity > 0 ? Math.round((totalAttendance / totalCapacity) * 100) : 0;
+    const totalMemberSlots = memberCount * activityCount;
+    const attendanceRate = totalMemberSlots > 0 ? Math.round((totalAttendance / totalMemberSlots) * 100) : 0;
 
     return { activityCount, totalAttendance, attendanceRate };
-  }, [filtered]);
+  }, [filtered, memberCount]);
   const openAdd = () => {
     setEditTarget(null);
     setFormOpen(true);
@@ -165,18 +248,29 @@ export default function EventAdminPage() {
     setFormOpen(true);
   };
 
+  const openRegistrations = (event) => {
+    setRegistrationTarget(event);
+    setRegisteredMembers(registrationsByEvent[event.id] || []);
+  };
+
   const handleSubmit = async (formData) => {
     setFormLoading(true);
     try {
       if (editTarget) {
         const updated = await updateEventAPI(editTarget.id, toEventPayload(formData));
+        const nextEvent = applyRegistrationCounts(
+          [normalizeEventFromApi(updated)],
+          registrationsByEvent,
+        )[0];
         setEvents((prev) =>
-          prev.map((event) => (event.id === editTarget.id ? normalizeEventFromApi(updated) : event)),
+          prev.map((event) => (event.id === editTarget.id ? nextEvent : event)),
         );
       } else {
         const created = await createEventAPI(toEventPayload({ ...formData, status: 'draft' }));
+        const nextEvent = { ...normalizeEventFromApi(created), attendance: 0 };
+        setRegistrationsByEvent((prev) => ({ ...prev, [nextEvent.id]: [] }));
         setEvents((prev) => [
-          normalizeEventFromApi(created),
+          nextEvent,
           ...prev,
         ]);
       }
@@ -195,12 +289,16 @@ export default function EventAdminPage() {
 
     try {
       const updated = await updateEventAPI(eventId, toEventPayload({ ...current, status }));
+      const nextEvent = applyRegistrationCounts(
+        [normalizeEventFromApi(updated)],
+        registrationsByEvent,
+      )[0];
       setEvents((prev) =>
-        prev.map((event) => (event.id === eventId ? normalizeEventFromApi(updated) : event)),
+        prev.map((event) => (event.id === eventId ? nextEvent : event)),
       );
       setApiError('');
     } catch (error) {
-      setApiError(error?.message || 'Khong cap nhat duoc trang thai su kien.');
+      setApiError(error?.message || 'Không cập nhật được trạng thái sự kiện.');
     }
   };
 
@@ -210,6 +308,11 @@ export default function EventAdminPage() {
       await deleteEventAPI(deleteConfirm.id);
       setEvents((prev) => prev.filter((event) => event.id !== deleteConfirm.id));
       setEvaluations((prev) => prev.filter((item) => item.eventCode !== deleteConfirm.eventCode));
+      setRegistrationsByEvent((prev) => {
+        const next = { ...prev };
+        delete next[deleteConfirm.id];
+        return next;
+      });
       setDeleteConfirm(null);
       setApiError('');
     } catch (error) {
@@ -218,6 +321,11 @@ export default function EventAdminPage() {
   };
 
   const openEvaluation = (event) => {
+    if (event.status !== 'completed') {
+      setApiError('Chỉ có thể tạo hoặc xem phiếu đánh giá cho sự kiện đã kết thúc.');
+      return;
+    }
+
     const current = evaluations.find((item) => item.eventCode === event.eventCode);
     setEvaluationTarget(event);
     setEvaluationForm({
@@ -250,6 +358,11 @@ export default function EventAdminPage() {
   };
 
   const submitEvaluation = async () => {
+    if (evaluationTarget?.status !== 'completed') {
+      setApiError('Chỉ có thể tạo phiếu đánh giá cho sự kiện đã kết thúc.');
+      return;
+    }
+
     const errs = {};
     const selectedDate = evaluationForm.evaluationDate || getTodayDateInputValue();
     const eventEndDate = evaluationTarget?.date ? new Date(evaluationTarget.date) : null;
@@ -295,7 +408,7 @@ export default function EventAdminPage() {
       closeEvaluation();
       setApiError('');
     } catch (error) {
-      setApiError(error?.message || 'Khong luu duoc danh gia su kien.');
+      setApiError(error?.message || 'Không lưu được đánh giá sự kiện.');
     }
   };
 
@@ -333,9 +446,10 @@ export default function EventAdminPage() {
         tagLabels={TAG_LABEL}
         tagFilters={TAG_FILTERS}
         evaluations={evaluations}
+        memberCount={memberCount}
         onEdit={openEdit}
         onEvaluate={openEvaluation}
-        onViewRegistrations={setRegistrationTarget}
+        onViewRegistrations={openRegistrations}
         onUpdateStatus={updateEventStatus}
         onDelete={setDeleteConfirm}
       />

@@ -1,29 +1,19 @@
 import { useState, useEffect } from 'react';
 import styles from './ResourceForm.module.css';
 
-const TYPES   = ['Giáo trình', 'Slide bài giảng', 'Tài liệu tham khảo', 'Khác'];
-const FORMATS = ['PDF', 'DOCX', 'PPT', 'Khác'];
-const SOURCES = ['Tự biên soạn', 'Internet', 'Giảng viên cung cấp', 'Khác'];
+const SOURCE_OPTIONS = ['Tự biên soạn', 'Internet', 'Giảng viên cung cấp', 'Sinh viên khóa trước', 'Khác'];
 
 const EMPTY_FORM = {
-  title:       '',
-  type:        '',
-  subject:     '',
-  format:      '',
-  source:      '',
+  title: '',
+  typeId: '',
+  type: '',
+  subjectId: '',
+  subject: '',
+  source: '',
   description: '',
-  link:        '',
+  file: null,
 };
 
-/**
- * Props:
- *   open     – boolean
- *   onClose  – () => void
- *   onSubmit – (formData) => void
- *   initial  – resource object (edit) | null (add)
- *   loading  – boolean
- *   isAdmin  – boolean  (admin thêm trực tiếp, không qua duyệt)
- */
 export default function ResourceForm({
   open,
   onClose,
@@ -31,15 +21,17 @@ export default function ResourceForm({
   initial = null,
   loading = false,
   isAdmin = false,
+  resourceTypes = [],
+  subjectOptions = [],
 }) {
   const isEdit = !!initial;
 
-  const [form, setForm]     = useState(EMPTY_FORM);
+  const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (open) {
-      setForm(initial ? { ...EMPTY_FORM, ...initial } : EMPTY_FORM);
+      setForm(initial ? { ...EMPTY_FORM, ...initial, file: null } : EMPTY_FORM);
       setErrors({});
     }
   }, [open, initial]);
@@ -57,13 +49,39 @@ export default function ResourceForm({
     setErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
+  const handleTypeChange = (e) => {
+    const typeId = e.target.value;
+    const selectedType = resourceTypes.find((type) => String(type.typeId) === typeId);
+    setForm((prev) => ({
+      ...prev,
+      typeId,
+      type: selectedType?.typeName || '',
+    }));
+    setErrors((prev) => ({ ...prev, typeId: '' }));
+  };
+
+  const handleSubjectChange = (e) => {
+    const subjectId = e.target.value;
+    const selectedSubject = subjectOptions.find((subject) => String(subject.subjectId) === subjectId);
+    setForm((prev) => ({
+      ...prev,
+      subjectId,
+      subject: selectedSubject?.subjectName || '',
+    }));
+    setErrors((prev) => ({ ...prev, subjectId: '' }));
+  };
+
+  const handleFileChange = (e) => {
+    setForm((prev) => ({ ...prev, file: e.target.files?.[0] || null }));
+    setErrors((prev) => ({ ...prev, file: '' }));
+  };
+
   const validate = () => {
     const errs = {};
-    if (!form.title.trim())   errs.title   = 'Vui lòng nhập tên tài liệu';
-    if (!form.subject.trim()) errs.subject = 'Vui lòng nhập môn học / chủ đề';
-    if (!form.type)           errs.type    = 'Vui lòng chọn loại tài liệu';
-    if (!form.format)         errs.format  = 'Vui lòng chọn định dạng';
-    if (!form.link.trim())    errs.link    = 'Vui lòng nhập đường dẫn tài liệu';
+    if (!form.title.trim()) errs.title = 'Vui lòng nhập tên tài liệu';
+    if (!form.typeId) errs.typeId = 'Vui lòng chọn loại tài liệu';
+    if (!form.subjectId) errs.subjectId = 'Vui lòng chọn môn học / chủ đề';
+    if (!isEdit && !form.file) errs.file = 'Vui lòng chọn tệp tài liệu';
     return errs;
   };
 
@@ -77,8 +95,6 @@ export default function ResourceForm({
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-
-        {/* Header */}
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>
@@ -88,34 +104,27 @@ export default function ResourceForm({
               {isEdit
                 ? 'Cập nhật thông tin tài liệu trong hệ thống'
                 : isAdmin
-                  ? 'Thêm tài liệu trực tiếp vào kho học thuật'
+                  ? 'Tạo phiếu tài liệu và tải tệp lên hệ thống'
                   : 'Tài liệu sẽ được admin xét duyệt trước khi hiển thị'}
             </p>
           </div>
-          <button className={styles.closeBtn} onClick={onClose}>
+          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Đóng">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        {/* Mã phiếu + Ngày lập */}
         <div className={styles.formMeta}>
-          <span className={styles.formMetaTag}>
-            📋 Phiếu thêm tài liệu học thuật
-          </span>
+          <span className={styles.formMetaTag}>Phiếu thêm tài liệu học thuật</span>
           <span className={styles.formMetaDate}>
             Ngày lập: {new Date().toLocaleDateString('vi-VN')}
           </span>
         </div>
 
-        {/* Form */}
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <p className={styles.sectionLabel}>I. Thông tin tài liệu</p>
 
-          {/* Section I: Thông tin tài liệu */}
-          <p className={styles.sectionLabel}>II. Thông tin tài liệu</p>
-
-          {/* Tên tài liệu */}
           <Field label="Tên tài liệu *" error={errors.title}>
             <input
               className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
@@ -126,85 +135,59 @@ export default function ResourceForm({
             />
           </Field>
 
-          {/* Loại + Định dạng */}
           <div className={styles.row2}>
-            <Field label="Loại tài liệu *" error={errors.type}>
-              <div className={styles.radioGroup}>
-                {TYPES.map((t) => (
-                  <label
-                    key={t}
-                    className={`${styles.radioBtn} ${form.type === t ? styles.radioBtnActive : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="type"
-                      value={t}
-                      checked={form.type === t}
-                      onChange={handleChange('type')}
-                      className={styles.radioHidden}
-                    />
-                    {t}
-                  </label>
+            <Field label="Loại tài liệu *" error={errors.typeId}>
+              <select
+                className={`${styles.input} ${errors.typeId ? styles.inputError : ''}`}
+                value={form.typeId || ''}
+                onChange={handleTypeChange}
+              >
+                <option value="">Chọn loại tài liệu</option>
+                {resourceTypes.map((type) => (
+                  <option key={type.typeId} value={type.typeId}>
+                    {type.typeName}
+                  </option>
                 ))}
-              </div>
+              </select>
             </Field>
 
-            <Field label="Định dạng *" error={errors.format}>
-              <div className={styles.radioGroup}>
-                {FORMATS.map((f) => (
-                  <label
-                    key={f}
-                    className={`${styles.radioBtn} ${form.format === f ? styles.radioBtnActive : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="format"
-                      value={f}
-                      checked={form.format === f}
-                      onChange={handleChange('format')}
-                      className={styles.radioHidden}
-                    />
-                    {f}
-                  </label>
+            <Field label="Môn học / Chủ đề *" error={errors.subjectId}>
+              <select
+                className={`${styles.input} ${errors.subjectId ? styles.inputError : ''}`}
+                value={form.subjectId || ''}
+                onChange={handleSubjectChange}
+              >
+                <option value="">Chọn môn học</option>
+                {subjectOptions.map((subject) => (
+                  <option key={subject.subjectId} value={subject.subjectId}>
+                    {subject.subjectName}
+                  </option>
                 ))}
-              </div>
+              </select>
             </Field>
           </div>
 
-          {/* Môn học / Chủ đề */}
-          <Field label="Môn học / Chủ đề *" error={errors.subject}>
-            <input
-              className={`${styles.input} ${errors.subject ? styles.inputError : ''}`}
-              type="text"
-              placeholder="VD: Lập trình hướng đối tượng, Cơ sở dữ liệu..."
-              value={form.subject}
-              onChange={handleChange('subject')}
-            />
-          </Field>
-
-          {/* Nguồn tài liệu */}
           <Field label="Nguồn tài liệu">
             <div className={styles.radioGroup}>
-              {SOURCES.map((s) => (
+              {SOURCE_OPTIONS.map((source) => (
                 <label
-                  key={s}
-                  className={`${styles.radioBtn} ${form.source === s ? styles.radioBtnActive : ''}`}
+                  key={source}
+                  className={`${styles.radioBtn} ${form.source === source ? styles.radioBtnActive : ''}`}
                 >
                   <input
                     type="radio"
                     name="source"
-                    value={s}
-                    checked={form.source === s}
+                    value={source}
+                    checked={form.source === source}
                     onChange={handleChange('source')}
                     className={styles.radioHidden}
                   />
-                  {s}
+                  {source}
                 </label>
               ))}
             </div>
           </Field>
 
-          {/* Mô tả ngắn */}
           <Field label="Mô tả ngắn nội dung tài liệu">
             <textarea
               className={styles.textarea}
@@ -215,23 +198,20 @@ export default function ResourceForm({
             />
           </Field>
 
-          {/* Section III: Đường dẫn */}
-          <p className={styles.sectionLabel}>III. Đường dẫn / tệp đính kèm</p>
+          <p className={styles.sectionLabel}>II. Tệp đính kèm</p>
 
-          <Field label="Link lưu trữ *" error={errors.link}>
+          <Field label={isEdit ? 'Tệp tài liệu' : 'Tệp tài liệu *'} error={errors.file}>
             <input
-              className={`${styles.input} ${errors.link ? styles.inputError : ''}`}
-              type="url"
-              placeholder="https://drive.google.com/..."
-              value={form.link}
-              onChange={handleChange('link')}
+              className={`${styles.input} ${errors.file ? styles.inputError : ''}`}
+              type="file"
+              onChange={handleFileChange}
             />
+            {form.file && <p className={styles.helperText}>{form.file.name}</p>}
           </Field>
 
-          {/* Actions */}
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>
-              Huỷ
+              Hủy
             </button>
             <button type="submit" className={styles.submitBtn} disabled={loading}>
               {loading
@@ -247,7 +227,6 @@ export default function ResourceForm({
   );
 }
 
-// Field wrapper
 function Field({ label, error, children }) {
   const labelContent = typeof label === 'string' && label.trimEnd().endsWith('*')
     ? (

@@ -1,5 +1,19 @@
 import api from '../utils/api'
 
+const detectFormat = (resource = {}) => {
+  const fileName = resource.primaryFileName || resource.fileName || ''
+  const mimeType = resource.mimeType || ''
+  const extension = fileName.includes('.') ? fileName.split('.').pop().toUpperCase() : ''
+
+  if (extension) return extension
+  if (mimeType.includes('pdf')) return 'PDF'
+  if (mimeType.includes('word')) return 'DOCX'
+  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'PPT'
+  if (mimeType.includes('zip')) return 'ZIP'
+  if (mimeType.includes('png')) return 'PNG'
+  return 'Khác'
+}
+
 export const normalizeResourceFromApi = (resource = {}) => ({
   id: resource.documentId,
   title: resource.documentName || '',
@@ -13,10 +27,15 @@ export const normalizeResourceFromApi = (resource = {}) => ({
     : resource.reqStatus === 'REJECTED'
       ? 'rejected'
       : 'pending',
-  format: resource.format || 'Khác',
+  reqStatus: resource.reqStatus,
+  format: detectFormat(resource),
   source: resource.source || '',
   description: resource.note || '',
-  link: resource.fileUrl || '',
+  link: resource.primaryFileUrl || '',
+  fileName: resource.primaryFileName || '',
+  fileSize: resource.fileSize || 0,
+  mimeType: resource.mimeType || '',
+  lookupFolderId: resource.lookupFolderId || '',
   uploadedBy: resource.proposedById ? String(resource.proposedById) : 'Admin',
   memberId: resource.proposedById,
   reviewedBy: resource.approvedById ? String(resource.approvedById) : '',
@@ -30,13 +49,13 @@ export const toResourcePayload = (resource = {}) => ({
   documentName: resource.title,
   typeId: Number(resource.typeId || resource.type),
   subjectId: Number(resource.subjectId || resource.subject),
-  source: resource.source || resource.link || '',
+  source: resource.source || '',
   note: resource.description || resource.note || '',
   proposedById: resource.proposedById || null,
 })
 
-export const getResourcesAPI = () =>
-  api.get('documents')
+export const getResourcesAPI = (params = {}) =>
+  api.get('documents', { params })
 
 export const getResourceByIdAPI = (id) =>
   api.get(`documents/${id}`)
@@ -53,6 +72,9 @@ export const getResourcesByTypeAPI = (typeId) =>
 export const createResourceAPI = (payload) =>
   api.post('documents', payload)
 
+export const approveResourceAPI = (payload) =>
+  api.post('documents/approve', payload)
+
 export const softDeleteResourceAPI = (id) =>
   api.delete(`documents/${id}`)
 
@@ -60,7 +82,9 @@ export const hardDeleteResourceAPI = (id) =>
   api.delete(`documents/${id}/hard`)
 
 export const createResourceFileAPI = (payload) =>
-  api.post('document-files', payload)
+  api.post('document-files', payload, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 
 export const getResourceFilesAPI = (documentId) =>
   api.get(`document-files/by-document/${documentId}`)
@@ -85,10 +109,3 @@ export const getResourceStatusesAPI = () =>
 
 export const getResourceStatusByNameAPI = (statusName) =>
   api.get('document-statuses/by-name', { params: { name: statusName } })
-
-// DocumentRequest requires numeric typeId/subjectId. If the form keeps free-text
-// type/subject, FE must resolve or create lookup records before POST /api/documents.
-// Add fileUrl on DocumentResponse or include document-files in document detail response.
-// Add PUT/PATCH /api/documents/{id} for editing resource metadata.
-// Add approve/reject endpoints for resource review workflow.
-// Add search pagination/limit and approved-only filter for BM8.
