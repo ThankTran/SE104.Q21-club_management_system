@@ -52,8 +52,8 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
     );
   };
 
-  // Handle double-click navigation
-  const handleDoubleClick = (noti) => {
+  // Handle single-click: mark as read AND navigate
+  const handleClick = (noti) => {
     if (noti.isUnread) {
       handleMarkAsRead(noti.id);
     }
@@ -180,9 +180,8 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
                     <NotificationItem 
                       key={noti.id} 
                       noti={noti} 
-                      onMarkRead={handleMarkAsRead}
                       onDelete={handleDeleteNotification}
-                      onDoubleClick={handleDoubleClick}
+                      onClick={handleClick}
                     />
                   ))}
                 </div>
@@ -198,9 +197,8 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
                     <NotificationItem 
                       key={noti.id} 
                       noti={noti} 
-                      onMarkRead={handleMarkAsRead}
                       onDelete={handleDeleteNotification}
-                      onDoubleClick={handleDoubleClick}
+                      onClick={handleClick}
                     />
                   ))}
                 </div>
@@ -214,7 +212,7 @@ const NotificationPopover = ({ notifications, setNotifications, onClose }) => {
 };
 
 // Sub-component for individual notification item
-const NotificationItem = ({ noti, onMarkRead, onDelete, onDoubleClick }) => {
+const NotificationItem = ({ noti, onDelete, onClick }) => {
   // Generate a beautiful monochromatic illustration icon based on the type
   const getIllustrationIcon = (type) => {
     switch (type) {
@@ -234,8 +232,8 @@ const NotificationItem = ({ noti, onMarkRead, onDelete, onDoubleClick }) => {
   return (
     <div 
       className={`${styles.notiItem} ${noti.isUnread ? styles.unreadItem : ""}`}
-      onClick={() => onMarkRead(noti.id)}
-      onDoubleClick={() => onDoubleClick(noti)}
+      onClick={() => onClick(noti)}
+      style={{ cursor: "pointer" }}
     >
       {/* Monochromatic Illustration Container */}
       <div className={`${styles.illustrationWrapper} ${styles[`illustration_${noti.type}`]}`}>
