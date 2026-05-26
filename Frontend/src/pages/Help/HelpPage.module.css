@@ -141,6 +141,24 @@
   grid-template-columns: 7.5fr 2.78fr;
   gap: 32px;
   align-items: start;
+  transition: grid-template-columns 0.4s ease;
+}
+
+/* Khi tab AI active: ẩn cột FAQ, mở rộng cột phải */
+.gridFullWidth {
+  grid-template-columns: 0fr 1fr;
+  gap: 0;
+}
+
+.faqColumnHidden {
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.faqColumn {
+  transition: opacity 0.3s ease;
 }
     
 .sectionTitle {
