@@ -41,33 +41,32 @@ const Homepage = () => {
         </div>
         <div className={`${styles.metricsGrid} reveal`}>
           <div className={styles.metricCard}>
-            <div className={styles.metricHeader}>
+            <div className={styles.metricIconLabelRow}>
               <div className={styles.metricIcon}>
                 <img src={archiveIcon} alt="Archive" />
               </div>
+              <div className={styles.metricLabel}>Các hoạt động</div>
               <div className={styles.metricBadge}>+12% tháng này</div>
             </div>
-            <div className={styles.metricBadgeHeader}>
-              <div className={styles.metricNumber}>1,482</div>
-            </div>
-            <div className={styles.metricLabel}>Các hoạt động</div>
-            <div className={styles.metricDesc}>
-              Tài liệu mới đã xác minh hiện đang lưu hành trong hệ thống.
-            </div>
+            <div className={styles.metricNumber}>1,482</div>
           </div>
           <div className={styles.metricCard}>
-            <div className={styles.metricIcon}>
-              <img src={membersIcon} alt="Members" />
+            <div className={styles.metricIconLabelRow}>
+              <div className={styles.metricIcon}>
+                <img src={membersIcon} alt="Members" />
+              </div>
+              <div className={styles.metricLabel}>Thành viên</div>
             </div>
             <div className={styles.metricNumber}>86</div>
-            <div className={styles.metricLabel}>Thành viên</div>
           </div>
           <div className={styles.metricCard}>
-            <div className={styles.metricIcon}>
-              <img src={eventsIcon} alt="Events" />
+            <div className={styles.metricIconLabelRow}>
+              <div className={styles.metricIcon}>
+                <img src={eventsIcon} alt="Events" />
+              </div>
+              <div className={styles.metricLabel}>Sự kiện đang chờ</div>
             </div>
             <div className={styles.metricNumber}>24</div>
-            <div className={styles.metricLabel}>Sự kiện đang chờ</div>
           </div>
         </div>
       </div>
