@@ -46,6 +46,15 @@ const MOCK_ACTIVITIES = [
     status: "Đã đóng",
     icon: financeIcon,
   },
+  {
+    id: 5,
+    type: "member",
+    title: "Gia nhập CLB Công Nghệ UIT",
+    role: "Thành viên mới",
+    date: "15/10/2024",
+    status: "Đã duyệt",
+    icon: membersIcon,
+  },
 ];
 
 const SKILL_SUGGESTIONS = [
@@ -76,7 +85,6 @@ const SKILL_SUGGESTIONS = [
   "Tableau", "Power BI", "Apache Kafka",
   "Ionic", "Xamarin"
 ];
-
 
 const ProfilePage = () => {
   // Tabs: 'personal' | 'academic' | 'activity'
@@ -308,7 +316,7 @@ const ProfilePage = () => {
               <div className={styles.profileForm}>
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
-                    <label>Ban chủ nhiệm</label>
+                    <label>Vai trò</label>
                     <input type="text" value={profile.department} disabled />
                   </div>
                   <div className={styles.formGroup}>
@@ -331,7 +339,7 @@ const ProfilePage = () => {
                           onClick={() => handleRemoveSkill(skill)}
                           title="Xóa kỹ năng"
                         >
-                          ×
+                        x
                         </button>
                       </span>
                     ))}
@@ -364,7 +372,7 @@ const ProfilePage = () => {
                               onClick={() => handleAddSkill(suggestion)}
                               onMouseEnter={() => setSelectedSuggestionIndex(index)}
                             >
-                              <span className={styles.suggestionIcon}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="blue" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag-icon lucide-tag"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="blue"/></svg></span>
+                              <span className={styles.suggestionIcon}><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pin-icon lucide-pin"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></span>
                               <span className={styles.suggestionText}>{suggestion}</span>
                             </div>
                           ))}
@@ -394,10 +402,18 @@ const ProfilePage = () => {
               <div className={styles.activitiesTimeline}>
                 {MOCK_ACTIVITIES.map((act) => (
                   <div key={act.id} className={styles.timelineItem}>
-                    <div className={styles.timelineIconWrapper}>
-                      <img src={act.icon} alt={act.type} className={styles.timelineIcon} />
-                    </div>
-                    <div className={styles.timelineContent}>
+                    <div className={`${styles.timelineIconWrapper} ${
+                      act.type === 'event'    ? styles.dotEvent    :
+                      act.type === 'document' ? styles.dotDocument :
+                      act.type === 'finance'  ? styles.dotFinance  :
+                      act.type === 'member'   ? styles.dotMember   : ''
+                    }`}></div>
+                    <div className={`${styles.timelineContent} ${
+                      act.type === 'event'    ? styles.bgEvent    :
+                      act.type === 'document' ? styles.bgDocument :
+                      act.type === 'finance'  ? styles.bgFinance  :
+                      act.type === 'member'   ? styles.bgMember   : ''
+                    }`}>
                       <div className={styles.timelineHeader}>
                         <h4 className={styles.timelineTitle}>{act.title}</h4>
                         <span className={styles.timelineDate}>{act.date}</span>
