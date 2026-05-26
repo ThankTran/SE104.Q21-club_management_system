@@ -20,9 +20,9 @@ public class UserDomainServiceImpl implements UserDomainService {
     }
 
     @Override
-    public void validateLoginRequest(Long userId, Long memberId, String password) {
-        if (userId == null && memberId == null) {
-            throw new IllegalArgumentException("Can cung cap userId hoac memberId de dang nhap");
+    public void validateLoginRequest(Long userId, Long memberId, String username, String password) {
+        if (userId == null && memberId == null && isBlank(username)) {
+            throw new IllegalArgumentException("Can cung cap username, userId hoac memberId de dang nhap");
         }
         validatePasswordValue(password, "Mat khau");
     }
@@ -58,5 +58,9 @@ public class UserDomainServiceImpl implements UserDomainService {
         if (password.length() < 6) {
             throw new IllegalArgumentException(fieldName + " phai co it nhat 6 ky tu");
         }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

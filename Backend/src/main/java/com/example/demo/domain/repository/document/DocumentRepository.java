@@ -1,6 +1,7 @@
 package com.example.demo.domain.repository.document;
 
 import com.example.demo.domain.model.document.Document;
+import com.example.demo.domain.enums.ApprovalStatusEnum;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,6 +18,24 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Override
     @EntityGraph(attributePaths = {"type", "subject", "proposedBy", "approvedBy"})
     Optional<Document> findById(Long documentId);
+
+    @EntityGraph(attributePaths = {"type", "subject", "proposedBy", "approvedBy"})
+    @Query("""
+            SELECT d
+            FROM Document d
+            WHERE (:reqStatus IS NULL OR d.reqStatus = :reqStatus)
+              AND (:lookupFolderId IS NULL OR d.lookupFolderId = :lookupFolderId)
+              AND (:typeId IS NULL OR d.type.typeId = :typeId)
+              AND (:subjectId IS NULL OR d.subject.subjectId = :subjectId)
+              AND (:name IS NULL OR LOWER(d.documentName) LIKE LOWER(CONCAT('%', :name, '%')))
+            ORDER BY d.createdAt DESC
+            """)
+    List<Document> findWithFilters(
+            @Param("reqStatus") ApprovalStatusEnum reqStatus,
+            @Param("lookupFolderId") String lookupFolderId,
+            @Param("typeId") Integer typeId,
+            @Param("subjectId") Integer subjectId,
+            @Param("name") String name);
 
     @EntityGraph(attributePaths = {"type", "subject", "proposedBy", "approvedBy"})
     @Query("""

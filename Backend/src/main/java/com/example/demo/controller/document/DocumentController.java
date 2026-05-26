@@ -1,5 +1,6 @@
 package com.example.demo.controller.document;
 
+import com.example.demo.application.dto.request.document.DocumentApprovalRequest;
 import com.example.demo.application.dto.request.document.DocumentRequest;
 import com.example.demo.application.dto.response.document.DocumentResponse;
 import com.example.demo.application.exception.BusinessException;
@@ -24,14 +25,35 @@ public class DocumentController {
     public ResponseEntity<?> create(@Valid @RequestBody DocumentRequest request) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(documentService.create(request));
-        } catch (BusinessException e) {
+        } catch (BusinessException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<DocumentResponse>> getAll() {
-        return ResponseEntity.ok(documentService.getAll());
+    public ResponseEntity<?> getAll(
+            @RequestParam(required = false) String reqStatus,
+            @RequestParam(required = false) String lookupFolderId,
+            @RequestParam(required = false) Integer typeId,
+            @RequestParam(required = false) Integer subjectId,
+            @RequestParam(required = false) String name) {
+        try {
+            if (reqStatus != null || lookupFolderId != null || typeId != null || subjectId != null || name != null) {
+                return ResponseEntity.ok(documentService.getAll(reqStatus, lookupFolderId, typeId, subjectId, name));
+            }
+            return ResponseEntity.ok(documentService.getAll());
+        } catch (BusinessException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/approve")
+    public ResponseEntity<?> approve(@Valid @RequestBody DocumentApprovalRequest request) {
+        try {
+            return ResponseEntity.ok(documentService.approve(request));
+        } catch (BusinessException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")

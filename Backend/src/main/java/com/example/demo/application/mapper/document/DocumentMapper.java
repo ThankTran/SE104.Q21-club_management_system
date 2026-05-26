@@ -3,6 +3,7 @@ package com.example.demo.application.mapper.document;
 import com.example.demo.application.dto.request.document.DocumentRequest;
 import com.example.demo.application.dto.response.document.DocumentResponse;
 import com.example.demo.domain.model.document.Document;
+import com.example.demo.domain.model.document.DocumentFile;
 import com.example.demo.domain.model.document.DocumentType;
 import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.model.subject.Subject;
@@ -34,12 +35,24 @@ public class DocumentMapper {
                 .version(entity.getVersion())
                 .source(entity.getSource())
                 .note(entity.getNote())
+                .lookupFolderId(entity.getLookupFolderId())
                 .proposedById(entity.getProposedBy() != null ? entity.getProposedBy().getMemberId() : null)
                 .approvedById(entity.getApprovedBy() != null ? entity.getApprovedBy().getMemberId() : null)
                 .approvedAt(entity.getApprovedAt())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
+    }
+
+    public DocumentResponse toResponse(Document entity, DocumentFile primaryFile) {
+        DocumentResponse response = toResponse(entity);
+        if (primaryFile != null) {
+            response.setPrimaryFileUrl(primaryFile.getFileUrl());
+            response.setPrimaryFileName(primaryFile.getFileName());
+            response.setFileSize(primaryFile.getFileSize());
+            response.setMimeType(primaryFile.getMimeType());
+        }
+        return response;
     }
 }
 

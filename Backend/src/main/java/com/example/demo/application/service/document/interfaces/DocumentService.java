@@ -1,5 +1,6 @@
 package com.example.demo.application.service.document.interfaces;
 
+import com.example.demo.application.dto.request.document.DocumentApprovalRequest;
 import com.example.demo.application.dto.request.document.DocumentRequest;
 import com.example.demo.application.dto.response.document.DocumentResponse;
 import java.util.List;
@@ -10,6 +11,10 @@ public interface DocumentService {
     DocumentResponse create(DocumentRequest request);
 
     List<DocumentResponse> getAll();
+
+    List<DocumentResponse> getAll(String reqStatus, String lookupFolderId, Integer typeId, Integer subjectId, String name);
+
+    DocumentResponse approve(DocumentApprovalRequest request);
 
     List<DocumentResponse> searchByName(String documentName);
 

@@ -21,7 +21,7 @@ public class DocumentFileController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> create(@Valid @RequestBody DocumentFileRequest request) {
+    public ResponseEntity<?> create(@Valid @ModelAttribute DocumentFileRequest request) {
         try {
             return ResponseEntity
                     .status(HttpStatus.CREATED)

@@ -1,10 +1,12 @@
 package com.example.demo.application.service.document.impl;
 
+import com.example.demo.application.dto.request.document.DocumentApprovalRequest;
 import com.example.demo.application.dto.request.document.DocumentRequest;
 import com.example.demo.application.dto.response.document.DocumentResponse;
 import com.example.demo.application.exception.BusinessException;
 import com.example.demo.application.mapper.document.DocumentMapper;
 import com.example.demo.application.service.document.interfaces.DocumentService;
+import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.model.document.Document;
 import com.example.demo.domain.model.document.DocumentType;
 import com.example.demo.domain.model.member.Member;
@@ -15,7 +17,10 @@ import com.example.demo.domain.repository.document.DocumentTypeRepository;
 import com.example.demo.domain.repository.member.MemberRepository;
 import com.example.demo.domain.repository.subject.SubjectRepository;
 import com.example.demo.domain.service.document.DocumentDomainService;
+import com.example.demo.domain.service.member.MemberDomainService;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -28,6 +33,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @CacheConfig(cacheNames = "documents")
 public class DocumentServiceImpl implements DocumentService {
+    private static final Set<String> LOOKUP_FOLDER_IDS = Set.of(
+            "tu-tuong-ho-chi-minh",
+            "triet-hoc-mac-lenin",
+            "kinh-te-chinh-tri",
+            "chu-nghia-xa-hoi-khoa-hoc",
+            "lich-su-dang",
+            "phap-luat-dai-cuong",
+            "giai-tich",
+            "dai-so-tuyen-tinh",
+            "cau-truc-roi-rac",
+            "xac-suat-thong-ke",
+            "nhap-mon-lap-trinh",
+            "anh-van-1",
+            "anh-van-2",
+            "anh-van-3",
+            "cong-nghe-phan-mem",
+            "he-thong-thong-tin",
+            "khoa-hoc-may-tinh",
+            "ky-thuat-may-tinh",
+            "mang-may-tinh",
+            "an-toan-thong-tin",
+            "thuong-mai-dien-tu");
+
     private final DocumentRepository documentRepository;
     private final DocumentTypeRepository documentTypeRepository;
     private final SubjectRepository subjectRepository;
@@ -35,6 +63,7 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentFileRepository documentFileRepository;
     private final DocumentMapper documentMapper;
     private final DocumentDomainService documentDomainService;
+    private final MemberDomainService memberDomainService;
 
     public DocumentServiceImpl(
             DocumentRepository documentRepository,
@@ -43,7 +72,8 @@ public class DocumentServiceImpl implements DocumentService {
             MemberRepository memberRepository,
             DocumentFileRepository documentFileRepository,
             DocumentMapper documentMapper,
-            DocumentDomainService documentDomainService) {
+            DocumentDomainService documentDomainService,
+            MemberDomainService memberDomainService) {
         this.documentRepository = documentRepository;
         this.documentTypeRepository = documentTypeRepository;
         this.subjectRepository = subjectRepository;
@@ -51,6 +81,7 @@ public class DocumentServiceImpl implements DocumentService {
         this.documentFileRepository = documentFileRepository;
         this.documentMapper = documentMapper;
         this.documentDomainService = documentDomainService;
+        this.memberDomainService = memberDomainService;
     }
 
     @Override
@@ -76,41 +107,77 @@ public class DocumentServiceImpl implements DocumentService {
         documentDomainService.validateProposer(proposedBy);
 
         Document document = documentMapper.toEntity(request, type, subject, proposedBy);
-        return documentMapper.toResponse(documentRepository.save(document));
+        return toResponseWithPrimaryFile(documentRepository.save(document));
     }
 
     @Override
     @Cacheable(key = "'all'")
     public List<DocumentResponse> getAll() {
-        return documentRepository.findAll().stream().map(documentMapper::toResponse).toList();
+        return documentRepository.findAll().stream().map(this::toResponseWithPrimaryFile).toList();
+    }
+
+    @Override
+    @Cacheable(key = "'filters:' + (#reqStatus ?: '') + '|' + (#lookupFolderId ?: '') + '|' + (#typeId ?: '') + '|' + (#subjectId ?: '') + '|' + (#name ?: '')")
+    public List<DocumentResponse> getAll(String reqStatus, String lookupFolderId, Integer typeId, Integer subjectId, String name) {
+        ApprovalStatusEnum status = parseApprovalStatus(reqStatus);
+        String normalizedFolderId = normalizeBlank(lookupFolderId);
+        String normalizedName = normalizeBlank(name);
+        return documentRepository.findWithFilters(status, normalizedFolderId, typeId, subjectId, normalizedName)
+                .stream()
+                .map(this::toResponseWithPrimaryFile)
+                .toList();
+    }
+
+    @Override
+    @CacheEvict(allEntries = true)
+    public DocumentResponse approve(DocumentApprovalRequest request) {
+        validateApprovalRequest(request);
+        Document document = documentRepository.findById(request.getDocumentId())
+                .orElseThrow(() -> new BusinessException("Khong tim thay document: " + request.getDocumentId()));
+        if (document.getReqStatus() != ApprovalStatusEnum.PENDING) {
+            throw new BusinessException("Phieu tai lieu da duoc xu ly: " + request.getDocumentId());
+        }
+
+        Member approver = memberRepository.findById(request.getApprovedBy())
+                .orElseThrow(() -> new BusinessException("Khong tim thay nguoi duyet: " + request.getApprovedBy()));
+        memberDomainService.validateApproverPermission(approver);
+
+        document.setReqStatus(request.getStatus());
+        document.setApprovedBy(approver);
+        document.setApprovedAt(LocalDateTime.now());
+        document.setNote(request.getNote());
+        document.setLookupFolderId(
+                request.getStatus() == ApprovalStatusEnum.APPROVED ? request.getLookupFolderId() : null);
+
+        return toResponseWithPrimaryFile(documentRepository.save(document));
     }
 
     @Override
     @Cacheable(key = "'name:' + #documentName")
     public List<DocumentResponse> searchByName(String documentName) {
         return documentRepository.searchByName(documentName)
-                .stream().map(documentMapper::toResponse).toList();
+                .stream().map(this::toResponseWithPrimaryFile).toList();
     }
 
     @Override
     @Cacheable(key = "'subject:' + #subjectId")
     public List<DocumentResponse> getBySubject(Integer subjectId) {
         return documentRepository.findBySubjectId(subjectId)
-                .stream().map(documentMapper::toResponse).toList();
+                .stream().map(this::toResponseWithPrimaryFile).toList();
     }
 
     @Override
     @Cacheable(key = "'type:' + #typeId")
     public List<DocumentResponse> getByType(Integer typeId) {
         return documentRepository.findByTypeId(typeId)
-                .stream().map(documentMapper::toResponse).toList();
+                .stream().map(this::toResponseWithPrimaryFile).toList();
     }
 
     @Override
     @Cacheable(key = "'id:' + #id")
     public DocumentResponse getById(Long id) {
         return documentRepository.findById(id)
-                .map(documentMapper::toResponse)
+                .map(this::toResponseWithPrimaryFile)
                 .orElseThrow(() -> new BusinessException("Khong tim thay document: " + id));
     }
 
@@ -146,5 +213,52 @@ public class DocumentServiceImpl implements DocumentService {
     @Async("applicationTaskExecutor")
     public CompletableFuture<DocumentResponse> getByIdAsync(Long id) {
         return CompletableFuture.completedFuture(getById(id));
+    }
+
+    private DocumentResponse toResponseWithPrimaryFile(Document document) {
+        return documentMapper.toResponse(
+                document,
+                documentFileRepository.findFirstByDocumentDocumentIdOrderByUploadedAtAsc(document.getDocumentId())
+                        .orElse(null));
+    }
+
+    private void validateApprovalRequest(DocumentApprovalRequest request) {
+        if (request == null) {
+            throw new BusinessException("Approval request must not be empty");
+        }
+        if (request.getDocumentId() == null) {
+            throw new BusinessException("Document id is required");
+        }
+        if (request.getApprovedBy() == null) {
+            throw new BusinessException("Approver is required");
+        }
+        if (request.getStatus() == null
+                || (request.getStatus() != ApprovalStatusEnum.APPROVED
+                && request.getStatus() != ApprovalStatusEnum.REJECTED)) {
+            throw new BusinessException("Approval status must be APPROVED or REJECTED");
+        }
+        if (request.getStatus() == ApprovalStatusEnum.APPROVED) {
+            String folderId = normalizeBlank(request.getLookupFolderId());
+            if (folderId == null || !LOOKUP_FOLDER_IDS.contains(folderId)) {
+                throw new BusinessException("Thu muc tai lieu khong hop le");
+            }
+            request.setLookupFolderId(folderId);
+        }
+    }
+
+    private ApprovalStatusEnum parseApprovalStatus(String reqStatus) {
+        String normalized = normalizeBlank(reqStatus);
+        if (normalized == null) {
+            return null;
+        }
+        try {
+            return ApprovalStatusEnum.valueOf(normalized.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("Trang thai duyet khong hop le: " + reqStatus);
+        }
+    }
+
+    private String normalizeBlank(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

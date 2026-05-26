@@ -12,7 +12,7 @@ public class DocumentFileMapper {
         return DocumentFile.builder()
                 .document(document)
                 .fileUrl(url)
-                .fileName(request.getFile().getName())
+                .fileName(request.getFile().getOriginalFilename())
                 .fileSize(request.getFile().getSize())
                 .mimeType(request.getFile().getContentType())
                 .build();

@@ -358,12 +358,14 @@ public class SampleDataSeeder implements CommandLineRunner {
             YearMonth documentMonth = currentMonth.minusMonths(5L - ((index - 1) % 6));
             int documentDay = Math.min(documentMonth.lengthOfMonth(), 3 + (((index - 1) / 6) * 4));
             LocalDateTime createdAt = documentMonth.atDay(documentDay).atTime(10 + (index % 6), (index * 9) % 60);
+            ApprovalStatusEnum approvalStatus = pickApprovalStatus(index);
             documents.add(Document.builder()
                     .documentName("Tài liệu học tập số " + index)
                     .type(documentTypes.get((index - 1) % documentTypes.size()))
                     .subject(subjects.get((index - 1) % subjects.size()))
                     .status(pickDocumentStatus(index))
-                    .reqStatus(pickApprovalStatus(index))
+                    .reqStatus(approvalStatus)
+                    .lookupFolderId(approvalStatus == ApprovalStatusEnum.APPROVED ? pickLookupFolderId(index) : null)
                     .version("1." + ((index - 1) % 4))
                     .source("https://drive.google.com/sample-doc-" + index)
                     .note("Tài liệu mẫu phục vụ kiểm thử hệ thống số " + index)
@@ -575,6 +577,21 @@ public class SampleDataSeeder implements CommandLineRunner {
             case 2 -> ApprovalStatusEnum.REJECTED;
             default -> ApprovalStatusEnum.REQUESTED_CHANGES;
         };
+    }
+
+    private String pickLookupFolderId(int index) {
+        List<String> folderIds = List.of(
+                "cau-truc-roi-rac",
+                "xac-suat-thong-ke",
+                "nhap-mon-lap-trinh",
+                "triet-hoc-mac-lenin",
+                "cong-nghe-phan-mem",
+                "he-thong-thong-tin",
+                "mang-may-tinh",
+                "an-toan-thong-tin",
+                "khoa-hoc-may-tinh",
+                "ky-thuat-may-tinh");
+        return folderIds.get((index - 1) % folderIds.size());
     }
 
     private TransactionStatus pickTransactionStatus(int index) {
