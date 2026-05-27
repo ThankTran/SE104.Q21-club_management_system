@@ -6,6 +6,7 @@ import com.example.demo.application.dto.response.event.EventCalendarLinkResponse
 import com.example.demo.application.dto.response.event.EventEvaluationResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import com.example.demo.application.mapper.event.EventMapper;
+import com.example.demo.application.service.notification.interfaces.NotificationDispatchService;
 import com.example.demo.domain.model.event.Event;
 import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.repository.event.EventOrganizerRepository;
@@ -35,6 +36,7 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
     private static final ZoneId EVENT_TIMEZONE = ZoneId.of("Asia/Bangkok");
     private static final DateTimeFormatter GOOGLE_CALENDAR_DATE_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'");
+    private static final String TARGET_EVENT = "EVENT";
 
     private final EventRepository eventRepository;
     private final EventOrganizerRepository eventOrganizerRepository;
@@ -43,6 +45,7 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
     private final MemberRepository memberRepository;
     private final EventMapper eventMapper;
     private final EventDomainService eventDomainService;
+    private final NotificationDispatchService notificationDispatchService;
 
     public EventServiceImpl(
             EventRepository eventRepository,
@@ -51,7 +54,8 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
             TransactionRepository transactionRepository,
             MemberRepository memberRepository,
             EventMapper eventMapper,
-            EventDomainService eventDomainService) {
+            EventDomainService eventDomainService,
+            NotificationDispatchService notificationDispatchService) {
         this.eventRepository = eventRepository;
         this.eventOrganizerRepository = eventOrganizerRepository;
         this.eventRegistrationRepository = eventRegistrationRepository;
@@ -59,6 +63,7 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
         this.memberRepository = memberRepository;
         this.eventMapper = eventMapper;
         this.eventDomainService = eventDomainService;
+        this.notificationDispatchService = notificationDispatchService;
     }
 
     @CacheEvict(allEntries = true)
@@ -77,7 +82,13 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Khong tim thay thanh vien danh gia: " + request.getEvaluatedById()));
         }
-        return toResponse(eventRepository.save(eventMapper.toEntity(request, evaluatedBy)));
+        Event savedEvent = eventRepository.save(eventMapper.toEntity(request, evaluatedBy));
+        notificationDispatchService.toApprovedActiveMembers(
+                "Sự kiện mới",
+                "Sự kiện " + savedEvent.getEventName() + " vừa được tạo.",
+                TARGET_EVENT,
+                evaluatedBy);
+        return toResponse(savedEvent);
     }
 
     @CacheEvict(allEntries = true)
@@ -202,7 +213,16 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
         event.setEvaluatedBy(evaluatedBy);
         event.setEvaluationDate(evaluationDate);
         event.setEvaluationContent(request.getEvaluationContent());
-        return toEvaluationResponse(eventRepository.save(event));
+        Event savedEvent = eventRepository.save(event);
+        notificationDispatchService.toManagersAndMembers(
+                eventRegistrationRepository.findByEventEventId(savedEvent.getEventId()).stream()
+                        .map(registration -> registration.getMember())
+                        .toList(),
+                "Đánh giá sự kiện đã hoàn tất",
+                "Sự kiện " + savedEvent.getEventName() + " đã có nội dung đánh giá.",
+                TARGET_EVENT,
+                evaluatedBy);
+        return toEvaluationResponse(savedEvent);
     }
 
     @Override
@@ -230,6 +250,11 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
         }
         event.setDeletedAt(LocalDateTime.now());
         eventRepository.save(event);
+        notificationDispatchService.toApprovedActiveMembers(
+                "Sự kiện đã được xóa",
+                "Sự kiện " + event.getEventName() + " đã được xóa khỏi hệ thống.",
+                TARGET_EVENT,
+                null);
     }
 
     @Async("applicationTaskExecutor")

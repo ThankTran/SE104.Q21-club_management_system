@@ -144,7 +144,7 @@ public class UserServiceImpl implements com.example.demo.application.service.use
 
     private User resolveUser(Long userId, Long memberId, String username) {
         if (username != null && !username.isBlank()) {
-            return findUserByStudentId(username.trim());
+            return findUserByUsername(username.trim());
         }
         if (userId != null) {
             return findUserById(userId);
@@ -165,6 +165,21 @@ public class UserServiceImpl implements com.example.demo.application.service.use
     private User findUserByStudentId(String studentId) {
         return userRepository.findByMemberStudentId(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay tai khoan voi ten dang nhap: " + studentId));
+    }
+
+    private User findUserByUsername(String username) {
+        if (username.matches("\\d+")) {
+            try {
+                var userByMemberId = userRepository.findByMemberMemberId(Long.valueOf(username));
+                if (userByMemberId.isPresent()) {
+                    return userByMemberId.get();
+                }
+            } catch (NumberFormatException ignored) {
+                // Fall back to student ID lookup below.
+            }
+        }
+
+        return findUserByStudentId(username);
     }
 
     private void validateNewPassword(String newPassword) {

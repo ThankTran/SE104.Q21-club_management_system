@@ -17,4 +17,5 @@ public class JoinClubRequest {
     private String gender;
     private LocalDate dateOfBirth;
     private GraduatedStatusEnum graduatedStatus;
+    private String roleName;
 }

@@ -5,10 +5,13 @@ import com.example.demo.application.dto.request.member.ApprovalRequest;
 import com.example.demo.application.dto.request.member.MemberSearchRequest;
 import com.example.demo.application.dto.response.member.MemberResponse;
 import com.example.demo.application.mapper.member.MemberMapper;
+import com.example.demo.application.service.notification.interfaces.NotificationDispatchService;
 import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.model.department.Department;
+import com.example.demo.domain.model.role.Role;
 import com.example.demo.domain.repository.member.MemberRepository;
 import com.example.demo.domain.repository.department.DepartmentRepository;
+import com.example.demo.domain.repository.role.RoleRepository;
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
 import com.example.demo.domain.service.member.MemberDomainService;
@@ -33,20 +36,28 @@ import java.util.stream.Collectors;
 public class MemberServiceImpl implements com.example.demo.application.service.member.interfaces.MemberService {
     private static final int MIN_ROLE_PRIORITY = 1;
     private static final int MAX_ROLE_PRIORITY = 10;
+    private static final String DEFAULT_ROLE_NAME = "Thành viên";
+    private static final String TARGET_MEMBER = "MEMBER";
 
     private final MemberRepository memberRepository;
     private final DepartmentRepository departmentRepository;
+    private final RoleRepository roleRepository;
     private final MemberMapper memberMapper;
     private final MemberDomainService memberDomainService; 
+    private final NotificationDispatchService notificationDispatchService;
 
     public MemberServiceImpl(MemberRepository memberRepository,
                              DepartmentRepository departmentRepository,
+                             RoleRepository roleRepository,
                              MemberMapper memberMapper,
-                             MemberDomainService memberDomainService) {
+                             MemberDomainService memberDomainService,
+                             NotificationDispatchService notificationDispatchService) {
         this.memberRepository = memberRepository;
         this.departmentRepository = departmentRepository;
+        this.roleRepository = roleRepository;
         this.memberMapper = memberMapper;
         this.memberDomainService = memberDomainService;
+        this.notificationDispatchService = notificationDispatchService;
     }
 
 
@@ -74,6 +85,7 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
 
         Member member = memberMapper.toEntity(request);
         member.setDepartment(department);
+        member.setRole(resolveRoleOrDefault(request.getRoleName()));
         member.setReqStatus(ApprovalStatusEnum.PENDING);
         member.setCreatedAt(LocalDateTime.now());
         member.setUpdatedAt(LocalDateTime.now());
@@ -82,6 +94,11 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         memberDomainService.validateDefaultStatus(member.getReqStatus());
 
         Member savedMember = memberRepository.save(member);
+        notificationDispatchService.toManagers(
+                "Yêu cầu thành viên mới",
+                savedMember.getFullName() + " vừa gửi yêu cầu tham gia câu lạc bộ.",
+                TARGET_MEMBER,
+                savedMember);
         return memberMapper.toResponse(savedMember);
     }
 
@@ -118,6 +135,16 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
 
         memberDomainService.applyApproval(member, request.getStatus(), approver, request.getNote());
         Member updatedMember = memberRepository.save(member);
+        notificationDispatchService.toMembers(
+                List.of(updatedMember),
+                request.getStatus() == ApprovalStatusEnum.APPROVED
+                        ? "Hồ sơ thành viên đã được duyệt"
+                        : "Hồ sơ thành viên đã bị từ chối",
+                request.getStatus() == ApprovalStatusEnum.APPROVED
+                        ? "Yêu cầu tham gia câu lạc bộ của bạn đã được duyệt."
+                        : "Yêu cầu tham gia câu lạc bộ của bạn đã bị từ chối.",
+                TARGET_MEMBER,
+                approver);
 
         return memberMapper.toResponse(updatedMember);
     }
@@ -182,9 +209,6 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Không tìm thấy thành viên với ID: " + memberId));
 
-        // Domain service kiểm tra có được update không
-        memberDomainService.validateCanUpdate(member);
-
         // Validate email nếu thay đổi
         memberDomainService.validateEmailFormat(request.getEmail());
         if (!member.getEmail().equals(request.getEmail())
@@ -203,19 +227,33 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         member.setDateOfBirth(request.getDateOfBirth());
         member.setDepartment(department);
         member.setGraduatedStatus(request.getGraduatedStatus());
+        member.setRole(resolveRoleOrDefault(request.getRoleName()));
         member.setUpdatedAt(LocalDateTime.now());
-        member.setApprovalNote("Thông tin được chỉnh sửa, chờ xét duyệt lại");
 
-        if (member.getRole() != null && member.getRole().getPriority() != null
-                && member.getRole().getPriority() == 1) {
-            member.setReqStatus(ApprovalStatusEnum.APPROVED);
-            member.setApprovalDate(LocalDateTime.now());
-        } else {
-            member.setReqStatus(ApprovalStatusEnum.PENDING);
-            member.setApprovalDate(null);
+        Member savedMember = memberRepository.save(member);
+        if (savedMember.getReqStatus() == ApprovalStatusEnum.PENDING) {
+            notificationDispatchService.toManagers(
+                    "Hồ sơ thành viên cần xét duyệt",
+                    savedMember.getFullName() + " vừa cập nhật hồ sơ và đang chờ xét duyệt.",
+                    TARGET_MEMBER,
+                    savedMember);
         }
 
-        return memberMapper.toResponse(memberRepository.save(member));
+        return memberMapper.toResponse(savedMember);
+    }
+
+    private Role resolveRoleOrDefault(String roleName) {
+        String safeRoleName = roleName == null || roleName.isBlank() ? DEFAULT_ROLE_NAME : roleName.trim();
+        return roleRepository.findByRoleName(safeRoleName)
+                .or(() -> findRoleAlias(safeRoleName))
+                .orElseThrow(() -> new IllegalArgumentException("Vai trò không tồn tại: " + safeRoleName));
+    }
+
+    private java.util.Optional<Role> findRoleAlias(String roleName) {
+        if ("Trưởng ban học thuật".equalsIgnoreCase(roleName)) {
+            return roleRepository.findByRoleName("Trưởng ban học tập");
+        }
+        return java.util.Optional.empty();
     }
 
     @Async("applicationTaskExecutor")

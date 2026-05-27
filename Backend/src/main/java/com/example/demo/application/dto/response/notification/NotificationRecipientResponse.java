@@ -15,4 +15,10 @@ public class NotificationRecipientResponse {
     private Long memberId;
     private Boolean isRead;
     private LocalDateTime readAt;
+    private String title;
+    private String content;
+    private Long senderId;
+    private String targetType;
+    private String sendMethod;
+    private LocalDateTime sentAt;
 }

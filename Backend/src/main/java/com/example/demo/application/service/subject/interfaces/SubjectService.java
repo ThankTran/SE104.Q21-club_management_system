@@ -12,6 +12,8 @@ public interface SubjectService {
 
     SubjectResponse getById(Integer id);
 
+    SubjectResponse update(Integer id, SubjectRequest request);
+
     void delete(Integer id);
 
     CompletableFuture<List<SubjectResponse>> getAllAsync();

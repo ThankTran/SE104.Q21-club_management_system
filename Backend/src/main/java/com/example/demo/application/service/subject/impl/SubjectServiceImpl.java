@@ -56,6 +56,21 @@ public class SubjectServiceImpl implements com.example.demo.application.service.
     }
 
     @CacheEvict(allEntries = true)
+    public SubjectResponse update(Integer id, SubjectRequest request) {
+        subjectDomainService.validateUpdateRequest(id, request);
+        var subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Subject not found: " + id));
+        String subjectName = request.getSubjectName().trim();
+        boolean duplicate = subjectRepository.findBySubjectNameIgnoreCase(subjectName)
+                .filter(existing -> !existing.getSubjectId().equals(id))
+                .isPresent();
+
+        subjectDomainService.validateSubjectUniqueness(subjectName, duplicate);
+        subject.setSubjectName(subjectName);
+        return subjectMapper.toResponse(subjectRepository.save(subject));
+    }
+
+    @CacheEvict(allEntries = true)
     public void delete(Integer id) {
         subjectDomainService.validateDelete(
                 id,

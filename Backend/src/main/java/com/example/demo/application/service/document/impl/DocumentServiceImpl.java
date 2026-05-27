@@ -6,6 +6,7 @@ import com.example.demo.application.dto.response.document.DocumentResponse;
 import com.example.demo.application.exception.BusinessException;
 import com.example.demo.application.mapper.document.DocumentMapper;
 import com.example.demo.application.service.document.interfaces.DocumentService;
+import com.example.demo.application.service.notification.interfaces.NotificationDispatchService;
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.model.document.Document;
 import com.example.demo.domain.model.document.DocumentType;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @CacheConfig(cacheNames = "documents")
 public class DocumentServiceImpl implements DocumentService {
+    private static final String TARGET_DOCUMENT = "DOCUMENT";
     private static final Set<String> LOOKUP_FOLDER_IDS = Set.of(
             "tu-tuong-ho-chi-minh",
             "triet-hoc-mac-lenin",
@@ -64,6 +66,7 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentMapper documentMapper;
     private final DocumentDomainService documentDomainService;
     private final MemberDomainService memberDomainService;
+    private final NotificationDispatchService notificationDispatchService;
 
     public DocumentServiceImpl(
             DocumentRepository documentRepository,
@@ -73,7 +76,8 @@ public class DocumentServiceImpl implements DocumentService {
             DocumentFileRepository documentFileRepository,
             DocumentMapper documentMapper,
             DocumentDomainService documentDomainService,
-            MemberDomainService memberDomainService) {
+            MemberDomainService memberDomainService,
+            NotificationDispatchService notificationDispatchService) {
         this.documentRepository = documentRepository;
         this.documentTypeRepository = documentTypeRepository;
         this.subjectRepository = subjectRepository;
@@ -82,6 +86,7 @@ public class DocumentServiceImpl implements DocumentService {
         this.documentMapper = documentMapper;
         this.documentDomainService = documentDomainService;
         this.memberDomainService = memberDomainService;
+        this.notificationDispatchService = notificationDispatchService;
     }
 
     @Override
@@ -107,7 +112,13 @@ public class DocumentServiceImpl implements DocumentService {
         documentDomainService.validateProposer(proposedBy);
 
         Document document = documentMapper.toEntity(request, type, subject, proposedBy);
-        return toResponseWithPrimaryFile(documentRepository.save(document));
+        Document savedDocument = documentRepository.save(document);
+        notificationDispatchService.toManagers(
+                "Tài liệu mới cần duyệt",
+                proposedBy.getFullName() + " vừa đề xuất tài liệu " + savedDocument.getDocumentName() + ".",
+                TARGET_DOCUMENT,
+                proposedBy);
+        return toResponseWithPrimaryFile(savedDocument);
     }
 
     @Override
@@ -149,7 +160,23 @@ public class DocumentServiceImpl implements DocumentService {
         document.setLookupFolderId(
                 request.getStatus() == ApprovalStatusEnum.APPROVED ? request.getLookupFolderId() : null);
 
-        return toResponseWithPrimaryFile(documentRepository.save(document));
+        Document savedDocument = documentRepository.save(document);
+        if (request.getStatus() == ApprovalStatusEnum.APPROVED) {
+            notificationDispatchService.toApprovedActiveMembers(
+                    "Tài liệu đã được duyệt",
+                    "Tài liệu " + savedDocument.getDocumentName() + " đã được duyệt và có thể tra cứu.",
+                    TARGET_DOCUMENT,
+                    approver);
+        } else {
+            notificationDispatchService.toMembers(
+                    List.of(savedDocument.getProposedBy()),
+                    "Tài liệu đã bị từ chối",
+                    "Tài liệu " + savedDocument.getDocumentName() + " đã bị từ chối.",
+                    TARGET_DOCUMENT,
+                    approver);
+        }
+
+        return toResponseWithPrimaryFile(savedDocument);
     }
 
     @Override
@@ -184,10 +211,23 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     @CacheEvict(allEntries = true)
     public void softDeleteById(Long id) {
-        if (!documentRepository.existsById(id)) {
-            throw new BusinessException("Khong tim thay document: " + id);
-        }
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Khong tim thay document: " + id));
         documentRepository.softDeleteById(id);
+        if (document.getReqStatus() == ApprovalStatusEnum.APPROVED) {
+            notificationDispatchService.toApprovedActiveMembers(
+                    "Tài liệu đã được xóa",
+                    "Tài liệu " + document.getDocumentName() + " đã được xóa khỏi kho tài liệu.",
+                    TARGET_DOCUMENT,
+                    null);
+        } else {
+            notificationDispatchService.toManagersAndMembers(
+                    List.of(document.getProposedBy()),
+                    "Tài liệu đã được xóa",
+                    "Tài liệu " + document.getDocumentName() + " đã được xóa khỏi hệ thống.",
+                    TARGET_DOCUMENT,
+                    null);
+        }
     }
 
     @Override
