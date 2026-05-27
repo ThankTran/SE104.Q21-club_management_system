@@ -53,7 +53,7 @@ const LoginModal = ({ onClose }) => {
             <input
               name="username"
               type="text"
-              placeholder="Nhập MSSV"
+              placeholder="Nhập memberId"
               value={form.username}
               onChange={handleChange}
               className={`${styles.input} ${errors.username ? styles.inputError : ''}`}

@@ -25,6 +25,7 @@ export const STATUS_LABEL = {
   published: { label: 'Đang diễn ra', bg: '#e6f4ea', color: '#276749' },
   draft: { label: 'Chưa diễn ra', bg: '#e8ecf2', color: '#3a4a5c' },
   completed: { label: 'Đã kết thúc', bg: '#ede8f8', color: '#5b3fa8' },
+  evaluated: { label: 'Đã đánh giá', bg: '#dcfce7', color: '#15803d' },
   upcoming: { label: 'Sắp diễn ra', bg: '#e0f0ff', color: '#1a6b8a' },
   cancelled: { label: 'Đã hủy', bg: '#fff0f0', color: '#e53e3e' },
 };

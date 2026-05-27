@@ -3,7 +3,15 @@ import { fmtDate, fmtMoney } from '../../../utils/Finance/financeUtils';
 import FinanceCharts from './FinanceCharts';
 import PendingDuesList from './PendingDuesList';
 
+const getRecentItems = (items, dateKey) =>
+  [...items]
+    .sort((a, b) => new Date(b[dateKey] || 0) - new Date(a[dateKey] || 0))
+    .slice(0, 5);
+
 export default function OverviewPanel({ thuList, chiList, pendingDues = [], pendingDuesLoading = false, setTab }) {
+  const recentThu = getRecentItems(thuList, 'ngayThu');
+  const recentChi = getRecentItems(chiList, 'ngayLap');
+
   return (
     <div className={styles.overviewGrid}>
       <div className={`${styles.overviewPanel} ${styles.incomePanel}`}>
@@ -11,7 +19,7 @@ export default function OverviewPanel({ thuList, chiList, pendingDues = [], pend
           <h3 className={styles.panelTitle}>Thu gần đây</h3>
           <button className={styles.panelLink} onClick={() => setTab('thu')}>Xem tất cả →</button>
         </div>
-        {thuList.slice(-5).reverse().map(r => (
+        {recentThu.map(r => (
           <div key={r.id} className={styles.recentRow}>
             <div className={styles.recentIcon} style={{ background: '#dcfce7', color: '#15803d' }}>↑</div>
             <div className={styles.recentInfo}>
@@ -27,7 +35,7 @@ export default function OverviewPanel({ thuList, chiList, pendingDues = [], pend
           <h3 className={styles.panelTitle}>Chi gần đây</h3>
           <button className={styles.panelLink} onClick={() => setTab('chi')}>Xem tất cả →</button>
         </div>
-        {chiList.slice(-5).reverse().map(r => (
+        {recentChi.map(r => (
           <div key={r.id} className={styles.recentRow}>
             <div className={styles.recentIcon} style={{ background: '#fee2e2', color: '#b91c1c' }}>↓</div>
             <div className={styles.recentInfo}>

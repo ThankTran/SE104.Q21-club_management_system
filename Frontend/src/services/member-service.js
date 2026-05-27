@@ -42,16 +42,15 @@ export const normalizeMemberFromApi = (member = {}) => ({
   phone: member.phone || '',
   departmentId: member.departmentId || null,
   department: member.departmentName || '',
-  course: member.course || '',
   dateOfBirth: member.dateOfBirth || '',
   gender: GENDER_UI[member.gender] || member.gender || '',
   graduationStatus: GRADUATION_UI[member.graduatedStatus] || member.graduatedStatus || 'Chưa tốt nghiệp',
   requestStatus: REQUEST_STATUS_UI[member.reqStatus] || member.reqStatus || 'Đang xét duyệt',
   role: member.roleName || 'Thành viên',
   registeredAt: member.createdAt ? String(member.createdAt).slice(0, 10) : '',
-  reviewedBy: '',
-  reviewedAt: '',
-  reviewNote: '',
+  reviewedBy: member.approverName || '',
+  reviewedAt: member.approvalDate ? String(member.approvalDate).slice(0, 10) : '',
+  reviewNote: member.approvalNote || '',
   avatar: (member.fullName || member.studentId || 'NA').slice(0, 2).toUpperCase(),
   raw: member,
 })
@@ -65,6 +64,7 @@ export const toMemberPayload = (member = {}) => ({
   dateOfBirth: member.dateOfBirth,
   gender: GENDER_API[member.gender] || member.gender,
   graduatedStatus: GRADUATION_API[member.graduationStatus] || member.graduationStatus,
+  roleName: member.role,
 })
 
 export const toApprovalPayload = (member, reviewData = {}) => ({
@@ -96,4 +96,3 @@ export const getMemberDepartmentsAPI = () =>
   api.get('members/departments')
 
 // Add DELETE /api/members/{id} if frontend needs member removal.
-// Add role/course fields to MemberResponse if frontend must persist those columns.

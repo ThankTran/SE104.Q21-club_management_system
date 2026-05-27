@@ -11,9 +11,13 @@ import exportReportIcon from "../../assets/icons/export-report.svg";
 import preferencesIcon from "../../assets/icons/preferences.svg";
 import chevronRightIcon from "../../assets/icons/chevron-right.svg";
 import useScrollReveal from "../../hooks/useScrollReveal";
-import { getDashboardOverviewAPI } from "../../services/dashboard-service";
 import { getEventsAPI, normalizeEventFromApi } from "../../services/event-service";
+import { getMembersAPI } from "../../services/member-service";
+import { getNotificationsAPI } from "../../services/notification-service";
 import useAuthStore from "../../store/auth-store";
+import { isManager } from "../../utils/access-control";
+
+const APPROVED_STATUS = "APPROVED";
 
 const DEFAULT_OVERVIEW = {
   stats: [
@@ -22,7 +26,7 @@ const DEFAULT_OVERVIEW = {
       value: 0,
       sub: "Tổng trong năm",
       desc: "Dữ liệu hoạt động được đồng bộ từ hệ thống.",
-      badge: "+0% tháng này",
+      badge: "0 tháng này",
     },
     {
       label: "Thành viên",
@@ -77,13 +81,70 @@ const normalizeActivity = (activity, index) => ({
   id: `${activity.text || "activity"}-${index}`,
   text: activity.text || "Hoạt động mới",
   time: formatRelativeTime(activity.time),
-  desc: activity.content || activity.description || "Cập nhật từ hệ thống.",
+  desc: activity.content || activity.description || activity.desc || "Cập nhật từ hệ thống.",
   icon: index % 3 === 0 ? addIcon : index % 3 === 1 ? verifyIcon : maintenanceIcon,
 });
+
+const buildHomeOverview = (members = [], events = [], notifications = []) => {
+  const today = new Date();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+  const approvedMembers = members.filter((member) => member.reqStatus === APPROVED_STATUS);
+  const normalizedEvents = events.map(normalizeEventFromApi);
+  const eventsThisMonth = normalizedEvents.filter((event) => {
+    const eventDate = event.date ? new Date(event.date) : null;
+    return (
+      eventDate &&
+      !Number.isNaN(eventDate.getTime()) &&
+      eventDate.getMonth() === currentMonth &&
+      eventDate.getFullYear() === currentYear
+    );
+  });
+  const eventsThisYear = normalizedEvents.filter((event) => {
+    const eventDate = event.date ? new Date(event.date) : null;
+    return eventDate && !Number.isNaN(eventDate.getTime()) && eventDate.getFullYear() === currentYear;
+  });
+
+  return {
+    stats: [
+      {
+        label: "Hoạt động",
+        value: eventsThisYear.length,
+        sub: "Tổng trong năm",
+        desc: "Hoạt động được đồng bộ từ danh sách sự kiện.",
+        badge: `${eventsThisMonth.length} tháng này`,
+      },
+      {
+        label: "Thành viên",
+        value: approvedMembers.length || members.length,
+        sub: "Tổng trong CLB",
+        desc: "Thành viên hiện có trong câu lạc bộ.",
+      },
+      {
+        label: "Sự kiện tháng này",
+        value: eventsThisMonth.length,
+        sub: "Đã lên lịch",
+        desc: "Sự kiện đang được theo dõi trong tháng.",
+      },
+    ],
+    activities: notifications
+      .slice()
+      .sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0))
+      .slice(0, 10)
+      .map((item) => ({
+        text: item.title,
+        time: item.sentAt,
+        content: item.content,
+      })),
+    events: normalizedEvents,
+  };
+};
 
 const Homepage = () => {
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
+  const canUseManagerTools = isManager(currentUser);
   const [overview, setOverview] = useState(DEFAULT_OVERVIEW);
   const [events, setEvents] = useState([]);
   const [apiError, setApiError] = useState("");
@@ -94,23 +155,40 @@ const Homepage = () => {
 
     const loadHomeData = async () => {
       setApiError("");
-      try {
-        const [dashboardData, eventData] = await Promise.all([
-          getDashboardOverviewAPI(),
-          getEventsAPI(),
-        ]);
-        if (ignore) return;
+      const [membersResult, eventsResult, notificationsResult] = await Promise.allSettled([
+        getMembersAPI(),
+        getEventsAPI(),
+        getNotificationsAPI(),
+      ]);
+      if (ignore) return;
 
-        setOverview((prev) => ({
-          ...prev,
-          stats: dashboardData?.stats?.length ? dashboardData.stats : prev.stats,
-          activities: dashboardData?.activities ?? prev.activities,
-        }));
-        setEvents((eventData || []).map(normalizeEventFromApi));
-      } catch (error) {
-        if (!ignore) {
-          setApiError(error?.message || "Không thể tải dữ liệu trang chủ");
-        }
+      const memberData =
+        membersResult.status === "fulfilled" && Array.isArray(membersResult.value)
+          ? membersResult.value
+          : [];
+      const eventData =
+        eventsResult.status === "fulfilled" && Array.isArray(eventsResult.value)
+          ? eventsResult.value
+          : [];
+      const notificationData =
+        notificationsResult.status === "fulfilled" && Array.isArray(notificationsResult.value)
+          ? notificationsResult.value
+          : [];
+
+      const nextOverview = buildHomeOverview(memberData, eventData, notificationData);
+      setOverview((prev) => ({
+        ...prev,
+        stats: nextOverview.stats,
+        activities: nextOverview.activities,
+      }));
+      setEvents(nextOverview.events);
+
+      const errors = [membersResult, eventsResult, notificationsResult]
+        .filter((result) => result.status === "rejected")
+        .map((result) => result.reason?.message)
+        .filter(Boolean);
+      if (errors.length) {
+        setApiError(errors[0]);
       }
     };
 
@@ -123,16 +201,16 @@ const Homepage = () => {
   const metricCards = useMemo(() => {
     const statsByLabel = new Map((overview.stats || []).map((item) => [item.label, item]));
     const ordered = [
-      statsByLabel.get("Hoạt động") || overview.stats?.[2] || DEFAULT_OVERVIEW.stats[0],
-      statsByLabel.get("Thành viên") || overview.stats?.[0] || DEFAULT_OVERVIEW.stats[1],
-      statsByLabel.get("Sự kiện tháng này") || overview.stats?.[1] || DEFAULT_OVERVIEW.stats[2],
+      statsByLabel.get("Hoạt động") || overview.stats?.[0] || DEFAULT_OVERVIEW.stats[0],
+      statsByLabel.get("Thành viên") || overview.stats?.[1] || DEFAULT_OVERVIEW.stats[1],
+      statsByLabel.get("Sự kiện tháng này") || overview.stats?.[2] || DEFAULT_OVERVIEW.stats[2],
     ];
 
     return ordered.map((stat, index) => ({
       ...stat,
       icon: metricIcons[index],
       desc: stat.desc || stat.sub || DEFAULT_OVERVIEW.stats[index].desc,
-      badge: index === 0 ? stat.badge || "+12% tháng này" : "",
+      badge: index === 0 ? stat.badge || "0 tháng này" : "",
     }));
   }, [overview.stats]);
 
@@ -154,7 +232,7 @@ const Homepage = () => {
       .slice(0, 2);
   }, [events]);
 
-  const displayName = currentUser?.fullName || currentUser?.roleName || "Quản trị viên CLB";
+  const displayName = currentUser?.fullName || currentUser?.roleName || "Thành viên CLB";
 
   return (
     <div className={styles.container}>
@@ -166,7 +244,12 @@ const Homepage = () => {
             giám sát cộng đồng.
           </p>
           <div className={styles.heroButtons}>
-            <button className={styles.secondaryButton} onClick={() => navigate("/dashboard")}>Xem báo cáo</button>
+            <button
+              className={styles.secondaryButton}
+              onClick={() => navigate(canUseManagerTools ? "/dashboard" : "/profile")}
+            >
+              {canUseManagerTools ? "Xem báo cáo" : "Xem hồ sơ"}
+            </button>
           </div>
         </div>
       </div>
@@ -176,34 +259,20 @@ const Homepage = () => {
           <h2 className={styles.metricsTitle}>Tổng quan</h2>
         </div>
         <div className={`${styles.metricsGrid} reveal`}>
-          <div className={styles.metricCard}>
-            <div className={styles.metricIconLabelRow}>
-              <div className={styles.metricIcon}>
-                <img src={archiveIcon} alt="Archive" />
+          {metricCards.map((metric) => (
+            <div className={styles.metricCard} key={metric.label}>
+              <div className={styles.metricIconLabelRow}>
+                <div className={styles.metricIcon}>
+                  <img src={metric.icon} alt="" />
+                </div>
+                <div className={styles.metricLabel}>{metric.label}</div>
+                {metric.badge && <div className={styles.metricBadge}>{metric.badge}</div>}
               </div>
-              <div className={styles.metricLabel}>Các hoạt động</div>
-              <div className={styles.metricBadge}>+12% tháng này</div>
-            </div>
-            <div className={styles.metricNumber}>1,482</div>
-          </div>
-          <div className={styles.metricCard}>
-            <div className={styles.metricIconLabelRow}>
-              <div className={styles.metricIcon}>
-                <img src={membersIcon} alt="Members" />
+              <div className={styles.metricNumber}>
+                {Number(metric.value || 0).toLocaleString()}
               </div>
-              <div className={styles.metricLabel}>Thành viên</div>
             </div>
-            <div className={styles.metricNumber}>86</div>
-          </div>
-          <div className={styles.metricCard}>
-            <div className={styles.metricIconLabelRow}>
-              <div className={styles.metricIcon}>
-                <img src={eventsIcon} alt="Events" />
-              </div>
-              <div className={styles.metricLabel}>Sự kiện đang chờ</div>
-            </div>
-            <div className={styles.metricNumber}>24</div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -219,9 +288,7 @@ const Homepage = () => {
                   </div>
                   <div className={styles.activityContent}>
                     <div className={styles.activityHeader}>
-                      <span className={styles.activityTitle}>
-                        {activity.text}
-                      </span>
+                      <span className={styles.activityTitle}>{activity.text}</span>
                       <span className={styles.activityTime}>{activity.time}</span>
                     </div>
                     <p className={styles.activityDesc}>{activity.desc}</p>
@@ -239,7 +306,9 @@ const Homepage = () => {
             <div className={styles.statusGrid}>
               <div className={styles.statusItem}>
                 <span className={styles.statusLabel}>API CLB</span>
-                <span className={styles.statusValue}>{apiError ? "Cần kiểm tra" : "Đang kết nối"}</span>
+                <span className={styles.statusValue}>
+                  {apiError ? "Cần kiểm tra" : "Đang kết nối"}
+                </span>
               </div>
               <div className={styles.statusItem}>
                 <span className={styles.statusLabel}>Thành viên</span>
@@ -267,7 +336,9 @@ const Homepage = () => {
                 upcomingEvents.map((event) => (
                   <div className={styles.eventItem} key={event.id}>
                     <div className={styles.eventDate}>
-                      <span className={styles.eventDay}>{event.date ? new Date(event.date).getDate() : "--"}</span>
+                      <span className={styles.eventDay}>
+                        {event.date ? new Date(event.date).getDate() : "--"}
+                      </span>
                       <span className={styles.eventMonth}>{formatEventMonth(event.date)}</span>
                     </div>
                     <div className={styles.eventContent}>
@@ -282,26 +353,28 @@ const Homepage = () => {
             </div>
           </div>
 
-          <div className={styles.adminToolkit}>
-            <span className={styles.adminToolkitLabel}>ADMIN TOOLKIT</span>
-            <div className={styles.adminToolkitList}>
-              <button className={styles.adminToolkitItem} onClick={() => navigate("/dashboard")}>
-                <div className={styles.adminToolkitIcon}>
-                  <img src={exportReportIcon} alt="Export Report" width="20" height="20" />
-                </div>
-                <span className={styles.adminToolkitText}>Xuất báo cáo hàng năm</span>
-                <img src={chevronRightIcon} alt="" className={styles.adminToolkitChevron} />
-              </button>
+          {canUseManagerTools && (
+            <div className={styles.adminToolkit}>
+              <span className={styles.adminToolkitLabel}>ADMIN TOOLKIT</span>
+              <div className={styles.adminToolkitList}>
+                <button className={styles.adminToolkitItem} onClick={() => navigate("/dashboard")}>
+                  <div className={styles.adminToolkitIcon}>
+                    <img src={exportReportIcon} alt="Export Report" width="20" height="20" />
+                  </div>
+                  <span className={styles.adminToolkitText}>Xuất báo cáo hằng năm</span>
+                  <img src={chevronRightIcon} alt="" className={styles.adminToolkitChevron} />
+                </button>
 
-              <button className={styles.adminToolkitItem} onClick={() => navigate("/settings")}>
-                <div className={styles.adminToolkitIcon}>
-                  <img src={preferencesIcon} alt="System Preferences" width="20" height="20" />
-                </div>
-                <span className={styles.adminToolkitText}>Tùy chỉnh hệ thống</span>
-                <img src={chevronRightIcon} alt="" className={styles.adminToolkitChevron} />
-              </button>
+                <button className={styles.adminToolkitItem} onClick={() => navigate("/settings")}>
+                  <div className={styles.adminToolkitIcon}>
+                    <img src={preferencesIcon} alt="System Preferences" width="20" height="20" />
+                  </div>
+                  <span className={styles.adminToolkitText}>Tùy chỉnh hệ thống</span>
+                  <img src={chevronRightIcon} alt="" className={styles.adminToolkitChevron} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

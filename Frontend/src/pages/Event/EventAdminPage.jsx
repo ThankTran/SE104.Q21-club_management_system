@@ -54,6 +54,18 @@ const buildEvaluationsFromEvents = (events) =>
       evaluation: event.evaluation,
     }));
 
+const hasEventEvaluation = (event, evaluations = []) => {
+    const hasInline =
+        typeof event?.evaluation === 'string' && event.evaluation.trim().length > 0;
+    const hasInList = evaluations.some((item) => item.eventCode === event?.eventCode);
+    return hasInline || hasInList;
+};
+
+const getDisplayStatus = (event, evaluations = []) =>
+  event.status === 'completed' && hasEventEvaluation(event, evaluations)
+    ? 'evaluated'
+    : event.status;
+
 const normalizeRegistrationList = (data) =>
   Array.isArray(data) ? data.map(normalizeEventRegistrationFromApi) : [];
 
@@ -205,6 +217,13 @@ export default function EventAdminPage() {
     .filter((event) => event.status === 'completed')
     .reduce((sum, event) => sum + (Number(event.estimatedCost) * 0.9 || 0), 0);
   const publishedCount = events.filter((event) => event.status === 'published').length;
+  const eventsToEvaluate = useMemo(
+    () =>
+      events.filter(
+        (event) => event.status === 'completed' && !hasEventEvaluation(event, evaluations),
+      ),
+    [events, evaluations],
+  );
 
   const filtered = useMemo(() => {
     const query = search.toLowerCase();
@@ -213,7 +232,7 @@ export default function EventAdminPage() {
       const matchSearch =
         event.title.toLowerCase().includes(query) ||
         event.location.toLowerCase().includes(query);
-      const matchStatus = statusFilter === 'all' || event.status === statusFilter;
+      const matchStatus = statusFilter === 'all' || getDisplayStatus(event, evaluations) === statusFilter;
       const matchTag = tagFilter === 'all' || event.tag === tagFilter;
 
       return matchSearch && matchStatus && matchTag;
@@ -226,7 +245,7 @@ export default function EventAdminPage() {
     });
 
     return result;
-  }, [events, search, statusFilter, tagFilter, dateSort]);
+  }, [events, evaluations, search, statusFilter, tagFilter, dateSort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -251,6 +270,12 @@ export default function EventAdminPage() {
   const openRegistrations = (event) => {
     setRegistrationTarget(event);
     setRegisteredMembers(registrationsByEvent[event.id] || []);
+  };
+
+  const applyFilters = ({ statusFilter: nextStatusFilter, tagFilter: nextTagFilter }) => {
+    setStatusFilter(nextStatusFilter);
+    setTagFilter(nextTagFilter);
+    setPage(1);
   };
 
   const handleSubmit = async (formData) => {
@@ -283,24 +308,43 @@ export default function EventAdminPage() {
     }
   };
 
-  const updateEventStatus = async (eventId, status) => {
-    const current = events.find((event) => event.id === eventId);
-    if (!current) return;
+    const updateEventStatus = async (eventId, status) => {
+        const current = events.find((event) => event.id === eventId);
+        if (!current) return;
 
-    try {
-      const updated = await updateEventAPI(eventId, toEventPayload({ ...current, status }));
-      const nextEvent = applyRegistrationCounts(
-        [normalizeEventFromApi(updated)],
-        registrationsByEvent,
-      )[0];
-      setEvents((prev) =>
-        prev.map((event) => (event.id === eventId ? nextEvent : event)),
-      );
-      setApiError('');
-    } catch (error) {
-      setApiError(error?.message || 'Không cập nhật được trạng thái sự kiện.');
-    }
-  };
+        try {
+            const updated = await updateEventAPI(eventId, toEventPayload({ ...current, status }));
+            const nextEvent = applyRegistrationCounts(
+                [normalizeEventFromApi(updated)],
+                registrationsByEvent,
+            )[0];
+
+            setEvents((prev) =>
+                prev.map((event) => (event.id === eventId ? nextEvent : event)),
+            );
+
+            if (nextEvent.evaluation) {
+                setEvaluations((prev) => {
+                    const existed = prev.find((item) => item.eventCode === nextEvent.eventCode);
+                    if (existed) return prev;
+                    return [
+                        ...prev,
+                        {
+                            id: createEvaluationCode(nextEvent.eventCode, prev.length),
+                            eventCode: nextEvent.eventCode,
+                            eventTitle: nextEvent.title,
+                            evaluationDate: nextEvent.evaluationDate || '',
+                            evaluation: nextEvent.evaluation,
+                        },
+                    ];
+                });
+            }
+
+            setApiError('');
+        } catch (error) {
+            setApiError(error?.message || 'Không cập nhật được trạng thái sự kiện.');
+        }
+    };
 
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
@@ -335,10 +379,8 @@ export default function EventAdminPage() {
     setEvaluationErrors({});
   };
 
-  const openEvaluationFromHistory = (evaluation) => {
-    const event = events.find((item) => item.eventCode === evaluation.eventCode);
-    if (!event) return;
-
+  const openEvaluationFromList = (event) => {
+    setEvaluationHistoryOpen(false);
     openEvaluation(event);
   };
 
@@ -419,7 +461,7 @@ export default function EventAdminPage() {
       <EventAdminHeader
         onExport={() => exportEventsExcel(filtered)}
         onAdd={openAdd}
-        onViewEvaluationHistory={() => setEvaluationHistoryOpen(true)}
+        onOpenEvaluationList={() => setEvaluationHistoryOpen(true)}
       />
 
       <EventFiscalSummary totalEstimated={totalEstimated} totalActual={totalActual} />
@@ -436,9 +478,8 @@ export default function EventAdminPage() {
         filterOpen={filterOpen}
         setFilterOpen={setFilterOpen}
         statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
         tagFilter={tagFilter}
-        setTagFilter={setTagFilter}
+        onApplyFilters={applyFilters}
         dateSort={dateSort}
         setDateSort={setDateSort}
         publishedCount={publishedCount}
@@ -481,9 +522,9 @@ export default function EventAdminPage() {
 
       <EventEvaluationHistoryModal
         open={evaluationHistoryOpen}
-        evaluations={evaluations}
+        events={eventsToEvaluate}
         onClose={() => setEvaluationHistoryOpen(false)}
-        onSelectEvaluation={openEvaluationFromHistory}
+        onSelectEvent={openEvaluationFromList}
       />
 
       <EventDeleteConfirmModal

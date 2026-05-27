@@ -22,8 +22,10 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      removeToken()
-      window.location.href = '/'
+      if (getToken()) {
+        removeToken()
+        window.location.href = '/'
+      }
     }
     return Promise.reject(error.response?.data || error)
   }

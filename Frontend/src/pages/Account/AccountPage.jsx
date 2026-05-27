@@ -141,20 +141,17 @@ export default function AccountPage() {
   };
 
   const createAccount = async (formData) => {
-    const inputMemberId = String(formData.memberId).trim();
-    const member = members.find(
-      (item) => String(item.memberId) === inputMemberId || item.id === inputMemberId,
-    );
+    const memberId = Number(formData.memberId);
 
-    if (!member?.memberId) {
-      setApiError("Không tìm thấy thành viên tương ứng với MSSV hoặc memberId đã nhập.");
-      return;
+    if (!Number.isFinite(memberId)) {
+      setApiError("MemberId không hợp lệ.");
+      return false;
     }
 
     setSaving(true);
     try {
       const created = await createUserAPI({
-        memberId: member.memberId,
+        memberId,
         password: formData.password.trim(),
       });
       const nextAccount = normalizeAccountFromApi(created, "");
@@ -164,8 +161,10 @@ export default function AccountPage() {
       setSearch("");
       setPage(1);
       setApiError("");
+      return true;
     } catch (error) {
       setApiError(error?.message || "Không tạo được tài khoản.");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -267,6 +266,7 @@ export default function AccountPage() {
         onClose={() => setCreateOpen(false)}
         onSubmit={createAccount}
         existingAccounts={accounts}
+        members={members}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import MemberReviewModal from '../../components/sections/Member/MemberReviewModa
 import MemberDeleteConfirmModal from '../../components/sections/Member/MemberDeleteConfirmModal';
 import useAuthStore from '../../store/auth-store';
 import { getMeAPI } from '../../services/auth-services';
+import { getRolesAPI } from '../../services/role-service';
 import {
   approveMemberAPI,
   getMemberDepartmentsAPI,
@@ -61,6 +62,7 @@ export default function MemberAdminPage() {
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState('');
   const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [roleOptions, setRoleOptions] = useState([]);
   const [activeTab, setActiveTab] = useState('review');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -82,8 +84,8 @@ export default function MemberAdminPage() {
   useEffect(() => {
     let ignore = false;
 
-    Promise.allSettled([getMembersAPI(), getMemberDepartmentsAPI()])
-      .then(([membersResult, departmentsResult]) => {
+    Promise.allSettled([getMembersAPI(), getMemberDepartmentsAPI(), getRolesAPI()])
+      .then(([membersResult, departmentsResult, rolesResult]) => {
         if (ignore) return;
 
         if (membersResult.status === 'fulfilled' && Array.isArray(membersResult.value)) {
@@ -104,11 +106,18 @@ export default function MemberAdminPage() {
         } else {
           setDepartmentOptions([]);
         }
+
+        if (rolesResult.status === 'fulfilled' && Array.isArray(rolesResult.value)) {
+          setRoleOptions(rolesResult.value.map((role) => role.roleName).filter(Boolean));
+        } else {
+          setRoleOptions([]);
+        }
       })
       .catch((error) => {
         if (ignore) return;
         setMembers([]);
         setDepartmentOptions([]);
+        setRoleOptions([]);
         setApiError(error?.message || 'Không tải được danh sách thành viên từ API.');
       })
       .finally(() => {
@@ -123,6 +132,10 @@ export default function MemberAdminPage() {
   const departmentNames = useMemo(
     () => departmentOptions.map((department) => department.name).filter(Boolean),
     [departmentOptions],
+  );
+  const roleNames = useMemo(
+    () => (roleOptions.length ? roleOptions : [...new Set(members.map((member) => member.role).filter(Boolean))]),
+    [members, roleOptions],
   );
 
   const getDepartmentId = (departmentName) => {
@@ -254,12 +267,7 @@ export default function MemberAdminPage() {
         approvedBy: approverMemberId,
       };
       const updated = await approveMemberAPI(toApprovalPayload(member, nextReviewData));
-      const nextMember = {
-        ...normalizeMemberFromApi(updated),
-        reviewedBy: currentUser?.fullName || reviewData.reviewedBy,
-        reviewedAt: reviewData.reviewedAt,
-        reviewNote: reviewData.reviewNote,
-      };
+      const nextMember = normalizeMemberFromApi(updated);
 
       setMembers((prev) => prev.map((m) => (m.memberId === member.memberId ? nextMember : m)));
       setReviewTarget(null);
@@ -420,6 +428,7 @@ export default function MemberAdminPage() {
         loading={formLoading}
         existingMembers={members}
         departments={departmentNames}
+        roles={roleNames}
       />
 
       <MemberDetailModal member={detailTarget} onClose={() => setDetailTarget(null)} />

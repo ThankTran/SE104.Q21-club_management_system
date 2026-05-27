@@ -117,6 +117,7 @@ export default function EventUserPage() {
   const [activeTag, setActiveTag] = useState(ALL_TAG);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+  const [unregisterTarget, setUnregisterTarget] = useState(null);
   const [registeredIds, setRegisteredIds] = useState(new Set());
   const [apiError, setApiError] = useState('');
   const [apiSuccess, setApiSuccess] = useState('');
@@ -177,6 +178,10 @@ export default function EventUserPage() {
   };
 
   const isRegistered = (id) => registeredIds.has(id);
+
+  const requestUnregister = (event) => {
+    setUnregisterTarget(event);
+  };
 
   const handleDownloadCalendar = () => {
     const icsContent = buildRegisteredEventsIcs(registeredEvents);
@@ -241,6 +246,7 @@ export default function EventUserPage() {
         ),
       );
       if (selected?.id === eventId) setSelected(null);
+      setUnregisterTarget(null);
       setApiError('');
       setApiSuccess('Đã hủy đăng ký sự kiện.');
     } catch (error) {
@@ -291,7 +297,7 @@ export default function EventUserPage() {
                     className={styles.hlUnregisterBtn}
                     onClick={(clickEvent) => {
                       clickEvent.stopPropagation();
-                      handleUnregister(event.id);
+                      requestUnregister(event);
                     }}
                   >
                     Hủy
@@ -343,7 +349,7 @@ export default function EventUserPage() {
               event={event}
               onClick={() => setSelected(event)}
               onRegister={() => handleRegister(event)}
-              onUnregister={() => handleUnregister(event.id)}
+              onUnregister={() => requestUnregister(event)}
               isRegistered={isRegistered(event.id)}
             />
           ))}
@@ -427,13 +433,40 @@ export default function EventUserPage() {
                 className={styles.registerFullBtn}
                 onClick={() =>
                   isRegistered(selected.id)
-                    ? handleUnregister(selected.id)
+                    ? requestUnregister(selected)
                     : handleRegister(selected)
                 }
               >
                 {isRegistered(selected.id) ? 'Hủy đăng ký' : 'Đăng ký tham gia'}
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {unregisterTarget && (
+        <div className={styles.overlay} onClick={() => setUnregisterTarget(null)}>
+          <div className={styles.confirmBox} onClick={(event) => event.stopPropagation()}>
+            <h3 className={styles.confirmTitle}>Xác nhận hủy đăng ký</h3>
+            <p className={styles.confirmText}>
+              Bạn có chắc chắn muốn hủy đăng ký sự kiện {unregisterTarget.title}?
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                type="button"
+                className={styles.confirmCancelBtn}
+                onClick={() => setUnregisterTarget(null)}
+              >
+                Giữ đăng ký
+              </button>
+              <button
+                type="button"
+                className={styles.confirmDangerBtn}
+                onClick={() => handleUnregister(unregisterTarget.id)}
+              >
+                Hủy đăng ký
+              </button>
+            </div>
           </div>
         </div>
       )}

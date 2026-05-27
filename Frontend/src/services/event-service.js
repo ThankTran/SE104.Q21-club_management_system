@@ -14,19 +14,23 @@ const toDateTime = (date, time) => {
 }
 
 const mapEventStatusToUi = (status, reqStatus) => {
-  if (reqStatus === 'PENDING') return 'draft'
-  if (status === 'NotStarted') return 'upcoming'
-  if (status === 'InProgress') return 'published'
-  if (status === 'Finished') return 'completed'
-  if (status === 'Cancelled') return 'cancelled'
-  return 'upcoming'
+    if (reqStatus === 'PENDING') return 'draft'
+    if (status === 'NotStarted') return 'upcoming'
+    if (status === 'InProgress') return 'published'
+    if (status === 'Finished') return 'completed'
+    if (status === 'Evaluated') return 'evaluated'
+    if (status === 'Cancelled') return 'cancelled'
+    return 'upcoming'
 }
 
 const mapEventStatusToApi = (status) => {
-  if (status === 'completed') return 'Finished'
-  if (status === 'cancelled') return 'Cancelled'
-  if (status === 'published') return 'NotStarted'
-  return 'NotStarted'
+    if (status === 'draft') return 'NotStarted'
+    if (status === 'upcoming') return 'NotStarted'
+    if (status === 'published') return 'InProgress'
+    if (status === 'completed') return 'Finished'
+    if (status === 'evaluated') return 'Evaluated'
+    if (status === 'cancelled') return 'Cancelled'
+    return 'NotStarted'
 }
 
 export const normalizeEventFromApi = (event = {}) => ({
@@ -51,22 +55,22 @@ export const normalizeEventFromApi = (event = {}) => ({
 })
 
 export const toEventPayload = (event = {}) => ({
-  eventId: event.eventCode || event.id,
-  eventName: event.title,
-  location: event.location,
-  eventDate: event.date,
-  startTime: toDateTime(event.date, event.time),
-  endTime: toDateTime(event.date, event.endTime),
-  estimatedCost: Number(event.estimatedCost || 0),
-  capacity: event.capacity ? Number(event.capacity) : null,
-  organizer: event.organizer || '',
-  tag: event.tag || 'OTHER',
-  status: mapEventStatusToApi(event.status),
-  reqStatus: event.status === 'draft' ? 'PENDING' : 'APPROVED',
-  description: event.description || '',
-  evaluatedById: null,
-  evaluationDate: null,
-  evaluationContent: null,
+    eventId: event.eventCode || event.id,
+    eventName: event.title,
+    location: event.location,
+    eventDate: event.date,
+    startTime: toDateTime(event.date, event.time),
+    endTime: toDateTime(event.date, event.endTime),
+    estimatedCost: Number(event.estimatedCost || 0),
+    capacity: event.capacity ? Number(event.capacity) : null,
+    organizer: event.organizer || '',
+    tag: event.tag || 'OTHER',
+    status: mapEventStatusToApi(event.status),
+    reqStatus: event.status === 'draft' ? 'PENDING' : 'APPROVED',
+    description: event.description || '',
+    evaluatedById: event.raw?.evaluatedById ?? null,
+    evaluationDate: event.evaluationDate ? `${event.evaluationDate}T23:59:59` : null,
+    evaluationContent: event.evaluation || null,
 })
 
 export const getEventsAPI = () =>

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import {persist} from 'zustand/middleware';
+import { isManager } from '../utils/access-control';
 
 export const useAuthStore = create(
   persist(
@@ -34,7 +35,7 @@ export const useAuthStore = create(
       },
 
       // admin / member
-      isAdmin: () => get().user?.role === 'admin',
+      isAdmin: () => isManager(get().user),
     }),
     {
       name: 'auth-storage',

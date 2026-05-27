@@ -1,58 +1,66 @@
-import { useEffect, useState } from "react";
-import { DEPARTMENTS, ROLES } from "../Member/MemberForm";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./AccountCreateModal.module.css";
 
 const EMPTY_FORM = {
   memberId: "",
-  name: "",
-  email: "",
-  department: DEPARTMENTS[0],
-  role: ROLES[4],
-  username: "",
   password: "",
 };
 
-export default function AccountCreateModal({ open, onClose, onSubmit, existingAccounts = [] }) {
+export default function AccountCreateModal({
+  open,
+  onClose,
+  onSubmit,
+  existingAccounts = [],
+  members = [],
+}) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
+  const availableMembers = useMemo(() => {
+    const usedMemberIds = new Set(
+      existingAccounts
+        .map((account) => String(account.memberDbId || ""))
+        .filter(Boolean),
+    );
+
+    return members.filter((member) => {
+      const memberId = String(member.memberId || "");
+      return memberId && !usedMemberIds.has(memberId);
+    });
+  }, [existingAccounts, members]);
+
   useEffect(() => {
     if (open) {
-      setForm(EMPTY_FORM);
+      setForm({
+        ...EMPTY_FORM,
+        memberId: availableMembers[0]?.memberId ? String(availableMembers[0].memberId) : "",
+      });
       setErrors({});
     }
-  }, [open]);
+  }, [availableMembers, open]);
 
   if (!open) return null;
 
   const handleChange = (field) => (event) => {
-    const value = event.target.value;
-    setForm((current) => {
-      const next = { ...current, [field]: value };
-      if (field === "email" && !current.username) {
-        next.username = value.split("@")[0];
-      }
-      return next;
-    });
+    setForm((current) => ({ ...current, [field]: event.target.value }));
     setErrors((current) => ({ ...current, [field]: "" }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const nextErrors = validate(form, existingAccounts);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length) return;
 
-    onSubmit({
-      ...form,
+    const submitted = await onSubmit({
       memberId: form.memberId.trim(),
-      name: form.name.trim(),
-      email: form.email.trim(),
-      username: form.username.trim(),
       password: form.password.trim(),
     });
-    onClose();
+
+    if (submitted !== false) {
+      onClose();
+    }
   };
 
   return (
@@ -61,7 +69,9 @@ export default function AccountCreateModal({ open, onClose, onSubmit, existingAc
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>Tạo tài khoản</h2>
-            <p className={styles.subtitle}>Thêm tài khoản đăng nhập cho thành viên câu lạc bộ.</p>
+            <p className={styles.subtitle}>
+              Chọn memberId làm tên đăng nhập và đặt mật khẩu ban đầu.
+            </p>
           </div>
           <button className={styles.closeBtn} type="button" onClick={onClose} aria-label="Đóng">
             ×
@@ -69,48 +79,42 @@ export default function AccountCreateModal({ open, onClose, onSubmit, existingAc
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          <div className={styles.row2}>
-            <Field label="MSSV" error={errors.memberId}>
-              <input className={styles.input} value={form.memberId} onChange={handleChange("memberId")} placeholder="2410015" />
-            </Field>
-            <Field label="Họ và tên" error={errors.name}>
-              <input className={styles.input} value={form.name} onChange={handleChange("name")} placeholder="Nguyễn Văn A" />
-            </Field>
-          </div>
-
-          <Field label="Email" error={errors.email}>
-            <input className={styles.input} value={form.email} onChange={handleChange("email")} placeholder="example@student.edu.vn" />
+          <Field label="Member ID" error={errors.memberId}>
+            <select
+              className={styles.select}
+              value={form.memberId}
+              onChange={handleChange("memberId")}
+              disabled={!availableMembers.length}
+            >
+              {availableMembers.length ? (
+                availableMembers.map((member) => (
+                  <option key={member.memberId} value={member.memberId}>
+                    {member.memberId}
+                    {member.id ? ` - ${member.id}` : ""}
+                    {member.name ? ` - ${member.name}` : ""}
+                  </option>
+                ))
+              ) : (
+                <option value="">Không còn memberId khả dụng</option>
+              )}
+            </select>
           </Field>
 
-          <div className={styles.row2}>
-            <Field label="Khoa">
-              <select className={styles.select} value={form.department} onChange={handleChange("department")}>
-                {DEPARTMENTS.map((department) => (
-                  <option key={department} value={department}>{department}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Vai trò">
-              <select className={styles.select} value={form.role} onChange={handleChange("role")}>
-                {ROLES.map((role) => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
-              </select>
-            </Field>
-          </div>
-
-          <div className={styles.row2}>
-            <Field label="Tên đăng nhập" error={errors.username}>
-              <input className={styles.input} value={form.username} onChange={handleChange("username")} placeholder="username" />
-            </Field>
-            <Field label="Mật khẩu" error={errors.password}>
-              <input className={styles.input} value={form.password} onChange={handleChange("password")} placeholder="CLB@0015" />
-            </Field>
-          </div>
+          <Field label="Mật khẩu" error={errors.password}>
+            <input
+              className={styles.input}
+              type="password"
+              value={form.password}
+              onChange={handleChange("password")}
+              placeholder="Nhập mật khẩu"
+            />
+          </Field>
 
           <div className={styles.actions}>
             <button className={styles.cancelBtn} type="button" onClick={onClose}>Hủy</button>
-            <button className={styles.submitBtn} type="submit">Tạo tài khoản</button>
+            <button className={styles.submitBtn} type="submit" disabled={!availableMembers.length}>
+              Tạo tài khoản
+            </button>
           </div>
         </form>
       </div>
@@ -131,27 +135,16 @@ function Field({ label, error, children }) {
 function validate(form, existingAccounts) {
   const errors = {};
   const memberId = form.memberId.trim();
-  const email = form.email.trim().toLowerCase();
-  const username = form.username.trim().toLowerCase();
 
-  if (!memberId) errors.memberId = "Vui lòng nhập MSSV";
-  else if (existingAccounts.some((account) => account.memberId === memberId)) {
-    errors.memberId = "MSSV đã có tài khoản";
+  if (!memberId) {
+    errors.memberId = "Vui lòng chọn memberId";
+  } else if (existingAccounts.some((account) => String(account.memberDbId || "") === memberId)) {
+    errors.memberId = "MemberId đã có tài khoản";
   }
 
-  if (!form.name.trim()) errors.name = "Vui lòng nhập họ tên";
-  if (!email) errors.email = "Vui lòng nhập email";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Email không hợp lệ";
-  else if (existingAccounts.some((account) => account.email.toLowerCase() === email)) {
-    errors.email = "Email đã tồn tại";
+  if (!form.password.trim()) {
+    errors.password = "Vui lòng nhập mật khẩu";
   }
-
-  if (!username) errors.username = "Vui lòng nhập tên đăng nhập";
-  else if (existingAccounts.some((account) => account.username.toLowerCase() === username)) {
-    errors.username = "Tên đăng nhập đã tồn tại";
-  }
-
-  if (!form.password.trim()) errors.password = "Vui lòng nhập mật khẩu";
 
   return errors;
 }

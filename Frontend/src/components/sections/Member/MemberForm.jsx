@@ -20,21 +20,17 @@ export const ROLES = [
 
 export const GRADUATION_STATUSES = ['Chưa tốt nghiệp', 'Đã tốt nghiệp'];
 export const GENDERS = ['Nam', 'Nữ'];
-export const REQUEST_STATUSES = ['Đang xét duyệt', 'Đã duyệt', 'Từ chối'];
 
 const EMPTY_FORM = {
   id: '',
   name: '',
   email: '',
   department: '',
-  course: '',
   dateOfBirth: '',
   gender: '',
   graduationStatus: 'Chưa tốt nghiệp',
-  requestStatus: 'Đang xét duyệt',
   role: 'Thành viên',
   phone: '',
-  registeredAt: '',
 };
 
 export default function MemberForm({
@@ -45,6 +41,7 @@ export default function MemberForm({
   loading = false,
   existingMembers = [],
   departments = DEPARTMENTS,
+  roles = ROLES,
 }) {
   const isEdit = !!initial;
   const [form, setForm] = useState(EMPTY_FORM);
@@ -87,7 +84,6 @@ export default function MemberForm({
     else if (existingLookup.some((m) => m.email?.toLowerCase() === email)) errs.email = 'Email đã tồn tại';
 
     if (!form.department) errs.department = 'Vui lòng chọn khoa';
-    if (!form.course.trim()) errs.course = 'Vui lòng nhập khóa';
     if (!form.dateOfBirth) errs.dateOfBirth = 'Vui lòng chọn ngày sinh';
     if (!GENDERS.includes(form.gender)) errs.gender = 'Giới tính chỉ được là Nam hoặc Nữ';
     if (!GRADUATION_STATUSES.includes(form.graduationStatus)) {
@@ -95,8 +91,8 @@ export default function MemberForm({
     } else if (form.graduationStatus !== 'Chưa tốt nghiệp') {
       errs.graduationStatus = 'Thành viên phải là sinh viên chưa tốt nghiệp';
     }
-    if (!REQUEST_STATUSES.includes(form.requestStatus)) errs.requestStatus = 'Trạng thái hồ sơ không hợp lệ';
     if (!form.role) errs.role = 'Vui lòng chọn vai trò';
+    else if (!roles.includes(form.role)) errs.role = 'Vai trò không hợp lệ';
 
     return errs;
   };
@@ -115,8 +111,6 @@ export default function MemberForm({
       name: form.name.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
-      course: form.course.trim(),
-      registeredAt: form.registeredAt || new Date().toISOString().slice(0, 10),
     });
   };
 
@@ -150,26 +144,17 @@ export default function MemberForm({
             <Field label="MSSV *" error={errors.id}>
               <input className={`${styles.input} ${errors.id ? styles.inputError : ''}`} value={form.id} onChange={handleChange('id')} placeholder="2410001" disabled={isEdit} />
             </Field>
-            <Field label="Ngày đăng ký">
-              <input className={styles.input} type="date" value={form.registeredAt} onChange={handleChange('registeredAt')} />
-            </Field>
-          </div>
-
-          <div className={styles.row2}>
             <Field label="Họ và tên *" error={errors.name}>
               <input className={`${styles.input} ${errors.name ? styles.inputError : ''}`} value={form.name} onChange={handleChange('name')} placeholder="Nguyễn Văn A" />
             </Field>
-            <Field label="Email *" error={errors.email}>
-              <input className={`${styles.input} ${errors.email ? styles.inputError : ''}`} type="email" value={form.email} onChange={handleChange('email')} placeholder="example@student.edu.vn" />
-            </Field>
           </div>
 
           <div className={styles.row2}>
+            <Field label="Email *" error={errors.email}>
+              <input className={`${styles.input} ${errors.email ? styles.inputError : ''}`} type="email" value={form.email} onChange={handleChange('email')} placeholder="example@student.edu.vn" />
+            </Field>
             <Field label="Số điện thoại">
               <input className={styles.input} type="tel" value={form.phone} onChange={handleChange('phone')} placeholder="0912 345 678" />
-            </Field>
-            <Field label="Khóa *" error={errors.course}>
-              <input className={`${styles.input} ${errors.course ? styles.inputError : ''}`} value={form.course} onChange={handleChange('course')} placeholder="K24" />
             </Field>
           </div>
 
@@ -192,11 +177,11 @@ export default function MemberForm({
             </select>
           </Field>
 
-          <div className={styles.sectionTitle}>Phân quyền và trạng thái</div>
+          <div className={styles.sectionTitle}>Phân quyền</div>
           <div className={styles.row2}>
             <Field label="Vai trò *" error={errors.role}>
               <select className={`${styles.select} ${errors.role ? styles.inputError : ''}`} value={form.role} onChange={handleChange('role')}>
-                {ROLES.map((item) => <option key={item} value={item}>{item}</option>)}
+                {roles.map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
             </Field>
             <Field label="Tình trạng tốt nghiệp *" error={errors.graduationStatus}>
@@ -205,18 +190,6 @@ export default function MemberForm({
               </select>
             </Field>
           </div>
-
-          <Field label="Trạng thái hồ sơ" error={errors.requestStatus}>
-            <div className={styles.statusGroup}>
-              {REQUEST_STATUSES.map((item) => (
-                <label key={item} className={`${styles.statusOption} ${form.requestStatus === item ? styles.statusSelected : ''}`}>
-                  <input type="radio" name="requestStatus" value={item} checked={form.requestStatus === item} onChange={handleChange('requestStatus')} className={styles.radioHidden} />
-                  <span className={styles.statusDot} data-status={item} />
-                  {item}
-                </label>
-              ))}
-            </div>
-          </Field>
 
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>Hủy</button>

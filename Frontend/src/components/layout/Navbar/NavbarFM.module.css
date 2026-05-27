@@ -244,20 +244,37 @@
 .avatar {
   width: 32px;
   height: 32px;
-  background: var(--text-header);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-700, #1d4ed8), var(--primary-500, #3b82f6));
 }
 
 .avatar:hover {
-  background: var(--text-darkest);
+  filter: brightness(0.95);
 }
 
 .activeAvatar {
-  background: var(--brand-secondary) !important;
   box-shadow: 0 0 0 2px var(--white-hard), 0 0 0 4px var(--brand-secondary);
   transform: scale(1.05);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarInitials {
+  color: var(--white-hard);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .profileContainer {

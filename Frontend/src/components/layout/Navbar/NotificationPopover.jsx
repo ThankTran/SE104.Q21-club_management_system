@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../../store/auth-store";
+import { isManager } from "../../../utils/access-control";
 import {
   deleteNotificationRecipientAPI,
   markNotificationRecipientAsReadAPI,
@@ -27,8 +28,7 @@ const NotificationPopover = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const roleValue = `${user?.role || ""} ${user?.roleName || ""}`.toLowerCase();
-  const isAdmin = roleValue.includes("admin") || roleValue.includes("quản trị");
+  const isAdmin = isManager(user);
   const memberId = user?.memberId;
   const [activeTab, setActiveTab] = useState("all");
   const [showMoreMenu, setShowMoreMenu] = useState(false);
