@@ -16,6 +16,14 @@ public class SubjectDomainServiceImpl implements SubjectDomainService {
     }
 
     @Override
+    public void validateUpdateRequest(Integer subjectId, SubjectRequest request) {
+        if (subjectId == null) {
+            throw new IllegalArgumentException("Subject id must not be empty");
+        }
+        validateCreateRequest(request);
+    }
+
+    @Override
     public void validateSubjectUniqueness(String subjectName, boolean exists) {
         if (exists) {
             throw new IllegalArgumentException("Subject already exists: " + subjectName);

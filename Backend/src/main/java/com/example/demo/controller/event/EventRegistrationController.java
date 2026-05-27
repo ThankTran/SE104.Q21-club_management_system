@@ -4,7 +4,9 @@ import com.example.demo.application.dto.request.event.EventAttendanceRequest;
 import com.example.demo.application.dto.request.event.EventRegistrationRequest;
 import com.example.demo.application.dto.response.event.EventRegistrationResponse;
 import com.example.demo.application.service.event.interfaces.EventRegistrationService;
+import com.example.demo.config.AccessControlInterceptor;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,10 +31,16 @@ public class EventRegistrationController {
     @PostMapping("/{eventId}/registrations")
     public ResponseEntity<?> register(
             @PathVariable String eventId,
-            @RequestBody EventRegistrationRequest request) {
+            @RequestBody EventRegistrationRequest request,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_MEMBER_ID_ATTRIBUTE, required = false) Long currentMemberId,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_USER_IS_MANAGER_ATTRIBUTE, required = false) Boolean currentUserIsManager) {
         try {
+            Long requestedMemberId = request == null ? null : request.getMemberId();
+            if (!Boolean.TRUE.equals(currentUserIsManager) && !Objects.equals(currentMemberId, requestedMemberId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền đăng ký cho thành viên khác");
+            }
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(eventRegistrationService.register(eventId, request == null ? null : request.getMemberId()));
+                    .body(eventRegistrationService.register(eventId, requestedMemberId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

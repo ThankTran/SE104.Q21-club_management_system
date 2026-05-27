@@ -143,8 +143,10 @@ public class SampleDataSeeder implements CommandLineRunner {
 
     private List<Role> seedRoles() {
         List<Role> roles = List.of(
-                Role.builder().roleName("Trưởng ban học tập").priority(1).build(),
-                Role.builder().roleName("Trưởng ban sự kiện").priority(1).build(),
+                Role.builder().roleName("Chủ nhiệm").priority(1).build(),
+                Role.builder().roleName("Phó chủ nhiệm").priority(1).build(),
+                Role.builder().roleName("Trưởng ban học thuật").priority(1).build(),
+                Role.builder().roleName("Trưởng ban truyền thông").priority(1).build(),
                 Role.builder().roleName("Thành viên").priority(10).build());
         return roleRepository.saveAll(roles);
     }
@@ -199,9 +201,11 @@ public class SampleDataSeeder implements CommandLineRunner {
     }
 
     private List<Member> seedMembers(List<Role> roles, List<Department> departments) {
-        Role studyHead = roles.get(0);
-        Role eventHead = roles.get(1);
-        Role memberRole = roles.get(2);
+        Role president = roles.get(0);
+        Role vicePresident = roles.get(1);
+        Role academicHead = roles.get(2);
+        Role communicationHead = roles.get(3);
+        Role memberRole = roles.get(4);
 
         Department software = departments.get(0);
         Department computerScience = departments.get(1);
@@ -210,10 +214,10 @@ public class SampleDataSeeder implements CommandLineRunner {
         Department ai = departments.get(4);
 
         List<MemberSeed> seeds = List.of(
-                new MemberSeed("22130001", "Nguyễn Minh Anh", software, "minhanh@club.local", "0901000001", GenderEnum.FEMALE, LocalDate.of(2004, 1, 15), studyHead),
-                new MemberSeed("22130002", "Trần Quốc Bảo", software, "quocbao@club.local", "0901000002", GenderEnum.MALE, LocalDate.of(2004, 2, 18), eventHead),
-                new MemberSeed("22130003", "Lê Hoàng Nam", software, "hoangnam@club.local", "0901000003", GenderEnum.MALE, LocalDate.of(2004, 3, 12), memberRole),
-                new MemberSeed("22130004", "Phạm Gia Hân", software, "giahan@club.local", "0901000004", GenderEnum.FEMALE, LocalDate.of(2004, 5, 9), memberRole),
+                new MemberSeed("22130001", "Nguyễn Minh Anh", software, "minhanh@club.local", "0901000001", GenderEnum.FEMALE, LocalDate.of(2004, 1, 15), president),
+                new MemberSeed("22130002", "Trần Quốc Bảo", software, "quocbao@club.local", "0901000002", GenderEnum.MALE, LocalDate.of(2004, 2, 18), vicePresident),
+                new MemberSeed("22130003", "Lê Hoàng Nam", software, "hoangnam@club.local", "0901000003", GenderEnum.MALE, LocalDate.of(2004, 3, 12), academicHead),
+                new MemberSeed("22130004", "Phạm Gia Hân", software, "giahan@club.local", "0901000004", GenderEnum.FEMALE, LocalDate.of(2004, 5, 9), communicationHead),
                 new MemberSeed("22130005", "Võ Đức Tài", software, "ductai@club.local", "0901000005", GenderEnum.MALE, LocalDate.of(2004, 7, 21), memberRole),
                 new MemberSeed("22130006", "Hoàng Trung Kiên", software, "trungkien@club.local", "0901000006", GenderEnum.MALE, LocalDate.of(2004, 8, 3), memberRole),
                 new MemberSeed("22130007", "Đặng Minh Khôi", software, "minhkhoi@club.local", "0901000007", GenderEnum.MALE, LocalDate.of(2004, 4, 27), memberRole),
@@ -277,7 +281,14 @@ public class SampleDataSeeder implements CommandLineRunner {
                     .updatedAt(createdAt.plusHours(4))
                     .build());
         }
-        return memberRepository.saveAll(members);
+        List<Member> savedMembers = memberRepository.saveAll(members);
+        if (savedMembers.size() > 1) {
+            Member seedApprover = savedMembers.get(0);
+            savedMembers.get(0).setApprover(seedApprover);
+            savedMembers.get(1).setApprover(seedApprover);
+            return memberRepository.saveAll(savedMembers);
+        }
+        return savedMembers;
     }
 
     private void seedUsers(List<Member> members) {
