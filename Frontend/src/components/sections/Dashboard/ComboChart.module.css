@@ -47,7 +47,7 @@
 }
 
 .legendItem {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
@@ -74,6 +74,8 @@
 /* ── Chart area ── */
 .chartWrap {
   width: 100%;
+  overflow: hidden;  /* thêm dòng này */
+  line-height: 0;
 }
 
 /* ── Fade animation ── */
