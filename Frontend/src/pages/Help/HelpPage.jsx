@@ -358,9 +358,9 @@ export default function HelpPage() {
       </div>
 
       {/* Main Grid */}
-      <div className={styles.gridContent}>
+      <div className={`${styles.gridContent} ${activeRightTab === "ai" ? styles.gridFullWidth : ""}`}>
         {/* Left Column: FAQ Accordion & Category Tabs */}
-        <div className={styles.faqColumn}>
+        <div className={`${styles.faqColumn} ${activeRightTab === "ai" ? styles.faqColumnHidden : ""}`}>
           <h2 className={styles.sectionTitle}>
             <img src={infoIcon} alt="FAQs" className={styles.sectionTitleIcon} />
             Câu hỏi thường gặp

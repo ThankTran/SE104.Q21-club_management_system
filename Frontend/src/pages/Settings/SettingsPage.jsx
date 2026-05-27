@@ -80,7 +80,7 @@ export default function SettingsPage() {
     "Mạng và truyền thông",
   ]);
   const [newDept, setNewDept] = useState("");
-  const [fundAmount, setFundAmount] = useState(50000);
+  const [fundAmount, setFundAmount] = useState("50000");
 
   const handleAddDept = () => {
     if (!newDept.trim()) {
@@ -104,7 +104,8 @@ export default function SettingsPage() {
 
   const handleSystemSave = (e) => {
     e.preventDefault();
-    if (fundAmount < 0 || isNaN(fundAmount)) {
+    const parsed = Number(fundAmount);
+    if (!fundAmount || isNaN(parsed) || parsed < 0) {
       showToast("Số tiền quỹ không hợp lệ", "error");
       return;
     }
@@ -344,16 +345,19 @@ export default function SettingsPage() {
                     <div className={styles.fundInputWrapper}>
                       <input
                         id="fund-amount"
-                        type="number"
-                        min="0"
-                        step="1000"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         value={fundAmount}
-                        onChange={(e) => setFundAmount(Number(e.target.value))}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/^0+(?=\d)/, "");
+                          if (/^\d*$/.test(val)) setFundAmount(val);
+                        }}
                       />
                       <span className={styles.fundUnit}>VND</span>
                     </div>
                     <p className={styles.fundHint}>
-                      Hiện tại: <strong>{Number(fundAmount).toLocaleString("vi-VN")} VND</strong> / kỳ
+                      Hiện tại: <strong>{(Number(fundAmount) || 0).toLocaleString("vi-VN")} VND</strong> / kỳ
                     </p>
                   </div>
                 </div>

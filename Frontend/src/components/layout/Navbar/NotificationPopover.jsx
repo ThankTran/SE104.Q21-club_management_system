@@ -66,7 +66,8 @@ const NotificationPopover = ({
     persistRead(id);
   };
 
-  const handleDoubleClick = (noti) => {
+  // Handle single-click: mark as read AND navigate
+  const handleClick = (noti) => {
     if (noti.isUnread) {
       handleMarkAsRead(noti.id);
     }
@@ -205,12 +206,11 @@ const NotificationPopover = ({
                 <h3 className={styles.sectionHeader}>Hôm nay</h3>
                 <div className={styles.sectionList}>
                   {todayNotis.map((noti) => (
-                    <NotificationItem
-                      key={noti.id}
-                      noti={noti}
-                      onMarkRead={handleMarkAsRead}
+                    <NotificationItem 
+                      key={noti.id} 
+                      noti={noti} 
                       onDelete={handleDeleteNotification}
-                      onDoubleClick={handleDoubleClick}
+                      onClick={handleClick}
                     />
                   ))}
                 </div>
@@ -222,28 +222,11 @@ const NotificationPopover = ({
                 <h3 className={styles.sectionHeader}>Trước đó</h3>
                 <div className={styles.sectionList}>
                   {earlierNotis.map((noti) => (
-                    <NotificationItem
-                      key={noti.id}
-                      noti={noti}
-                      onMarkRead={handleMarkAsRead}
+                    <NotificationItem 
+                      key={noti.id} 
+                      noti={noti} 
                       onDelete={handleDeleteNotification}
-                      onDoubleClick={handleDoubleClick}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {ungroupedNotis.length > 0 && (
-              <div className={styles.section}>
-                <div className={styles.sectionList}>
-                  {ungroupedNotis.map((noti) => (
-                    <NotificationItem
-                      key={noti.id}
-                      noti={noti}
-                      onMarkRead={handleMarkAsRead}
-                      onDelete={handleDeleteNotification}
-                      onDoubleClick={handleDoubleClick}
+                      onClick={handleClick}
                     />
                   ))}
                 </div>
@@ -256,7 +239,9 @@ const NotificationPopover = ({
   );
 };
 
-const NotificationItem = ({ noti, onMarkRead, onDelete, onDoubleClick }) => {
+// Sub-component for individual notification item
+const NotificationItem = ({ noti, onDelete, onClick }) => {
+  // Generate a beautiful monochromatic illustration icon based on the type
   const getIllustrationIcon = (type) => {
     switch (type) {
       case "document":
@@ -275,8 +260,8 @@ const NotificationItem = ({ noti, onMarkRead, onDelete, onDoubleClick }) => {
   return (
     <div
       className={`${styles.notiItem} ${noti.isUnread ? styles.unreadItem : ""}`}
-      onClick={() => onMarkRead(noti.id)}
-      onDoubleClick={() => onDoubleClick(noti)}
+      onClick={() => onClick(noti)}
+      style={{ cursor: "pointer" }}
     >
       <div className={`${styles.illustrationWrapper} ${styles[`illustration_${noti.type}`]}`}>
         {getIllustrationIcon(noti.type)}
