@@ -606,6 +606,64 @@
   color: var(--primary-700);
 }
 
+/* ── Timeline dot color per type ── */
+.dotEvent {
+  border-color: #3b82f6;   /* blue */
+}
+
+.dotDocument {
+  border-color: #059669;   /* emerald green */
+}
+
+.dotFinance {
+  border-color: #ef4444;   /* rose red */
+}
+
+.dotMember {
+  border-color: #f59e0b;   /* amber */
+}
+
+/* ── Timeline card background tint per type ── */
+.bgEvent {
+  background: rgba(59, 130, 246, 0.10);
+  border-color: rgba(59, 130, 246, 0.28);
+}
+
+.bgEvent:hover {
+  background: rgba(59, 130, 246, 0.16) !important;
+  border-color: rgba(59, 130, 246, 0.40) !important;
+}
+
+.bgDocument {
+  background: rgba(5, 150, 105, 0.09);
+  border-color: rgba(5, 150, 105, 0.26);
+}
+
+.bgDocument:hover {
+  background: rgba(5, 150, 105, 0.15) !important;
+  border-color: rgba(5, 150, 105, 0.38) !important;
+}
+
+.bgFinance {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.24);
+}
+
+.bgFinance:hover {
+  background: rgba(239, 68, 68, 0.14) !important;
+  border-color: rgba(239, 68, 68, 0.36) !important;
+}
+
+.bgMember {
+  background: rgba(245, 158, 11, 0.09);
+  border-color: rgba(245, 158, 11, 0.26);
+}
+
+.bgMember:hover {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.38) !important;
+}
+
 /* ── Responsive media queries ── */
 @media (max-width: 900px) {
   .profileBody {
