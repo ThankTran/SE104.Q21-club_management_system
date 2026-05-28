@@ -16,7 +16,9 @@ import {
   RESOURCE_RULES,
 } from '../../data/Resource/resourceAdminData';
 import {
+  approveResourceAPI,
   createResourceAPI,
+  createResourceFileAPI,
   getResourceTypesAPI,
   getResourcesAPI,
   normalizeResourceFromApi,
@@ -24,13 +26,16 @@ import {
   toResourcePayload,
 } from '../../services/resource-service';
 import { getSubjectsAPI } from '../../services/subject-service';
+import useAuthStore from '../../store/auth-store';
 import styles from './ResourceAdminPage.module.css';
 
 export default function ResourceAdminPage() {
+  const currentUser = useAuthStore((state) => state.user);
   const [resources, setResources] = useState(INITIAL_RESOURCES);
   const [apiError, setApiError] = useState('');
   const [resourceTypes, setResourceTypes] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
+  const [formLoading, setFormLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('review');
   const [search, setSearch] = useState('');
 
@@ -47,6 +52,20 @@ export default function ResourceAdminPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [approveTarget, setApproveTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
+
+  const loadResources = () =>
+    getResourcesAPI()
+      .then((data) => {
+        const nextResources = Array.isArray(data)
+          ? data.map(normalizeResourceFromApi)
+          : [];
+        setResources(nextResources.length ? nextResources : INITIAL_RESOURCES);
+        setApiError('');
+      })
+      .catch((error) => {
+        setResources(INITIAL_RESOURCES);
+        setApiError(error?.message || 'Không tải được danh sách tài liệu từ API.');
+      });
 
   useEffect(() => {
     let ignore = false;
@@ -79,12 +98,6 @@ export default function ResourceAdminPage() {
     };
   }, []);
 
-  const resolveResourceTypeId = (typeName) =>
-    resourceTypes.find((type) => type.typeName === typeName)?.typeId || null;
-
-  const resolveSubjectId = (subjectName) =>
-    subjectOptions.find((subject) => subject.subjectName === subjectName)?.subjectId || null;
-
   const stats = useMemo(() => ({
     total: resources.length,
     pending: resources.filter((resource) => resource.status === 'pending').length,
@@ -93,7 +106,7 @@ export default function ResourceAdminPage() {
   }), [resources]);
 
   const subjects = useMemo(
-    () => [...new Set(resources.map((resource) => resource.subject))].sort(),
+    () => [...new Set(resources.map((resource) => resource.subject).filter(Boolean))].sort(),
     [resources],
   );
 
@@ -106,7 +119,7 @@ export default function ResourceAdminPage() {
           resource.title.toLowerCase().includes(normalizedSearch) ||
           resource.formCode.toLowerCase().includes(normalizedSearch) ||
           resource.subject.toLowerCase().includes(normalizedSearch) ||
-          resource.uploadedBy.toLowerCase().includes(normalizedSearch);
+          String(resource.uploadedBy || '').toLowerCase().includes(normalizedSearch);
 
         const matchesType = typeFilter === 'all' || resource.type === typeFilter;
         const matchesFormat = formatFilter === 'all' || resource.format === formatFilter;
@@ -138,30 +151,29 @@ export default function ResourceAdminPage() {
     if (resource) setApproveTarget(resource);
   };
 
-  const handleApprove = (id, lookupFolderId, reviewedAt = new Date().toISOString().split('T')[0]) => {
-    // TODO(BE): Chưa có endpoint approve/reject tài liệu; tạm cập nhật local.
-    setResources((prev) =>
-      prev.map((resource) => {
-        if (resource.id !== id) return resource;
+  const handleApprove = async (id, lookupFolderId) => {
+    if (!currentUser?.memberId) {
+      setApiError('Không xác định được tài khoản admin đang đăng nhập.');
+      return;
+    }
 
-        if (new Date(reviewedAt) < new Date(resource.createdAt)) {
-          alert(RESOURCE_RULES.reviewDateAfterCreatedDate);
-          return resource;
-        }
-
-        return {
-          ...resource,
-          status: 'approved',
-          reviewedBy: 'Admin',
-          reviewedAt,
-          lookupFolderId,
-          note: resource.note || 'Đã duyệt',
-        };
-      }),
-    );
-    setSelected(null);
-    setApproveTarget(null);
-    setRejectTarget(null);
+    try {
+      const updated = await approveResourceAPI({
+        documentId: id,
+        approvedBy: currentUser.memberId,
+        status: 'APPROVED',
+        lookupFolderId,
+        note: 'Đã duyệt',
+      });
+      const normalized = normalizeResourceFromApi(updated);
+      setResources((prev) => prev.map((resource) => (resource.id === id ? normalized : resource)));
+      setApiError('');
+      setSelected(null);
+      setApproveTarget(null);
+      setRejectTarget(null);
+    } catch (error) {
+      setApiError(error?.message || error || 'Không duyệt được tài liệu.');
+    }
   };
 
   const openRejectForm = (id) => {
@@ -169,33 +181,37 @@ export default function ResourceAdminPage() {
     if (resource) setRejectTarget(resource);
   };
 
-  const handleReject = (id, reason) => {
-    // TODO(BE): Chưa có endpoint approve/reject tài liệu; tạm cập nhật local.
-    setResources((prev) =>
-      prev.map((resource) =>
-        resource.id === id
-          ? {
-            ...resource,
-            status: 'rejected',
-            reviewedBy: 'Admin',
-            reviewedAt: new Date().toISOString().split('T')[0],
-            note: reason,
-          }
-          : resource,
-      ),
-    );
-    setSelected(null);
-    setRejectTarget(null);
+  const handleReject = async (id, reason) => {
+    if (!currentUser?.memberId) {
+      setApiError('Không xác định được tài khoản admin đang đăng nhập.');
+      return;
+    }
+
+    try {
+      const updated = await approveResourceAPI({
+        documentId: id,
+        approvedBy: currentUser.memberId,
+        status: 'REJECTED',
+        note: reason,
+      });
+      const normalized = normalizeResourceFromApi(updated);
+      setResources((prev) => prev.map((resource) => (resource.id === id ? normalized : resource)));
+      setApiError('');
+      setSelected(null);
+      setRejectTarget(null);
+    } catch (error) {
+      setApiError(error?.message || error || 'Không từ chối được tài liệu.');
+    }
   };
 
   const handleSubmit = async (data) => {
     const normalizedTitle = data.title.trim().toLowerCase();
-    const normalizedLink = data.link.trim().toLowerCase();
+    const normalizedSource = (data.source || '').trim().toLowerCase();
 
     const duplicate = resources.some((resource) =>
       resource.id !== editing?.id &&
       resource.title.trim().toLowerCase() === normalizedTitle &&
-      resource.link.trim().toLowerCase() === normalizedLink
+      (resource.source || '').trim().toLowerCase() === normalizedSource
     );
 
     if (duplicate) {
@@ -204,7 +220,6 @@ export default function ResourceAdminPage() {
     }
 
     if (editing) {
-      // TODO(BE): Chưa có PUT/PATCH /api/documents/{id}; tạm cập nhật local.
       setResources((prev) =>
         prev.map((resource) =>
           resource.id === editing.id
@@ -212,42 +227,38 @@ export default function ResourceAdminPage() {
             : resource,
         ),
       );
-    } else {
-      const typeId = data.typeId || resolveResourceTypeId(data.type);
-      const subjectId = data.subjectId || resolveSubjectId(data.subject);
-
-      if (typeId && subjectId) {
-        try {
-          const created = await createResourceAPI(toResourcePayload({ ...data, typeId, subjectId }));
-          setResources((prev) => [normalizeResourceFromApi(created), ...prev]);
-          setApiError('');
-        } catch (error) {
-          setApiError(error?.message || 'Không lưu được tài liệu.');
-          return;
-        }
-      } else {
-        // TODO(FE/BE): Form đang nhập loại/môn học dạng text, còn POST /api/documents yêu cầu typeId/subjectId.
-        // Khi có API lookup/create theo tên, thay nhánh local này bằng flow resolve id rồi POST.
-        const today = new Date().toISOString().split('T')[0];
-        const newResource = {
-          ...data,
-          id: Date.now(),
-          formCode: `TL-${String(resources.length + 1).padStart(3, '0')}`,
-          uploadedBy: 'Admin',
-          memberId: 'ADMIN',
-          memberRole: 'Quản trị viên',
-          createdAt: today,
-          status: 'pending',
-          reviewedBy: '',
-          reviewedAt: '',
-          note: '',
-        };
-        setResources((prev) => [newResource, ...prev]);
-      }
+      setFormOpen(false);
+      setEditing(null);
+      return;
     }
 
-    setFormOpen(false);
-    setEditing(null);
+    if (!currentUser?.memberId) {
+      setApiError('Không xác định được tài khoản đang đăng nhập.');
+      return;
+    }
+
+    setFormLoading(true);
+    try {
+      const created = await createResourceAPI(toResourcePayload({
+        ...data,
+        proposedById: currentUser.memberId,
+      }));
+
+      if (data.file) {
+        const filePayload = new FormData();
+        filePayload.append('documentId', created.documentId);
+        filePayload.append('file', data.file);
+        await createResourceFileAPI(filePayload);
+      }
+
+      await loadResources();
+      setFormOpen(false);
+      setEditing(null);
+    } catch (error) {
+      setApiError(error?.message || error || 'Không lưu được tài liệu.');
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const confirmDelete = async () => {
@@ -258,7 +269,7 @@ export default function ResourceAdminPage() {
       setDeleteTarget(null);
       setApiError('');
     } catch (error) {
-      setApiError(error?.message || 'Không xoá được tài liệu.');
+      setApiError(error?.message || error || 'Không xoá được tài liệu.');
     }
   };
 
@@ -318,37 +329,35 @@ export default function ResourceAdminPage() {
       </div>
 
       {activeTab === 'review' && (
-        <>
-          <div className={styles.tableSection}>
-            <div className={styles.tableHeader}>
-              <div>
-                <h2 className={styles.tableTitle}>Phiếu tài liệu chờ duyệt</h2>
-                <p className={styles.tableSubtitle}>
-                  Danh sách phiếu đề xuất đang chờ admin xét duyệt.
-                </p>
-              </div>
-              <span className={styles.tableCount}>{filteredResources.length} phiếu</span>
+        <div className={styles.tableSection}>
+          <div className={styles.tableHeader}>
+            <div>
+              <h2 className={styles.tableTitle}>Phiếu tài liệu chờ duyệt</h2>
+              <p className={styles.tableSubtitle}>
+                Danh sách phiếu đề xuất đang chờ admin xét duyệt.
+              </p>
             </div>
-
-            <ResourceTable
-              resources={filteredResources}
-              total={filteredResources.length}
-              page={1}
-              totalPages={1}
-              pageSize={Math.max(filteredResources.length, 1)}
-              onPageChange={() => {}}
-              onView={setSelected}
-              onEdit={(resource) => {
-                setEditing(resource);
-                setFormOpen(true);
-              }}
-              onApprove={openApproveForm}
-              onReject={openRejectForm}
-              onDelete={setDeleteTarget}
-              loading={false}
-            />
+            <span className={styles.tableCount}>{filteredResources.length} phiếu</span>
           </div>
-        </>
+
+          <ResourceTable
+            resources={filteredResources}
+            total={filteredResources.length}
+            page={1}
+            totalPages={1}
+            pageSize={Math.max(filteredResources.length, 1)}
+            onPageChange={() => {}}
+            onView={setSelected}
+            onEdit={(resource) => {
+              setEditing(resource);
+              setFormOpen(true);
+            }}
+            onApprove={openApproveForm}
+            onReject={openRejectForm}
+            onDelete={setDeleteTarget}
+            loading={false}
+          />
+        </div>
       )}
 
       {activeTab === 'lookup' && (
@@ -371,6 +380,9 @@ export default function ResourceAdminPage() {
           setEditing(null);
         }}
         onSubmit={handleSubmit}
+        loading={formLoading}
+        resourceTypes={resourceTypes}
+        subjectOptions={subjectOptions}
       />
 
       <ResourceDeleteConfirmModal

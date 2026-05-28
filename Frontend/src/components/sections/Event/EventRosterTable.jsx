@@ -15,9 +15,9 @@ const getStatusActionClass = (status) => {
 };
 
 const STATUS_ACTIONS = {
-  draft: { label: 'Sắp diễn ra', nextStatus: 'upcoming' },
-  upcoming: { label: 'Đang diễn ra', nextStatus: 'published' },
-  published: { label: 'Kết thúc', nextStatus: 'completed' },
+    draft: { label: 'Chưa bắt đầu', nextStatus: 'upcoming' },
+    upcoming: { label: 'Sắp diễn ra', nextStatus: 'published' },
+    published: { label: 'Đang diễn ra', nextStatus: 'completed' },
 };
 
 export default function EventRosterTable({
@@ -32,9 +32,8 @@ export default function EventRosterTable({
   filterOpen,
   setFilterOpen,
   statusFilter,
-  setStatusFilter,
   tagFilter,
-  setTagFilter,
+  onApplyFilters,
   dateSort,
   setDateSort,
   publishedCount,
@@ -42,6 +41,7 @@ export default function EventRosterTable({
   tagLabels,
   tagFilters,
   evaluations,
+  memberCount = 0,
   onEdit,
   onEvaluate,
   onViewRegistrations,
@@ -68,11 +68,10 @@ export default function EventRosterTable({
             open={filterOpen}
             setOpen={setFilterOpen}
             statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
             tagFilter={tagFilter}
-            setTagFilter={setTagFilter}
             statuses={statusLabels}
             tags={tagFilters}
+            onApplyFilters={onApplyFilters}
           />
           <span className={styles.publishedBadge}>{publishedCount} đang diễn ra</span>
         </div>
@@ -124,14 +123,24 @@ export default function EventRosterTable({
           </thead>
           <tbody>
             {events.map((event) => {
-              const status = statusLabels[event.status] || statusLabels.upcoming;
               const tag = tagLabels[event.tag] || tagLabels.OTHER;
               const date = new Date(event.date);
-              const percent = event.capacity > 0
-                ? Math.round((event.attendance / event.capacity) * 100)
+              const registeredCount = Number(event.attendance || 0);
+              const percent = memberCount > 0
+                ? Math.round((registeredCount / memberCount) * 100)
                 : 0;
               const isCompleted = event.status === 'completed';
-              const hasEvaluation = evaluations.some((item) => item.eventCode === event.eventCode);
+                const hasEvaluation =
+                    evaluations.some(
+                        (item) =>
+                            item.eventCode === event.eventCode &&
+                            item.evaluationDate &&
+                            item.evaluation &&
+                            item.evaluation.trim() !== ''
+                    ) ||
+                    Boolean(event.evaluationDate && event.evaluation && event.evaluation.trim() !== '');
+              const displayStatus = isCompleted && hasEvaluation ? 'evaluated' : event.status;
+              const status = statusLabels[displayStatus] || statusLabels.upcoming;
               const statusAction = STATUS_ACTIONS[event.status];
 
               return (
@@ -155,7 +164,7 @@ export default function EventRosterTable({
                     {date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
                   <td>
-                    <span className={styles.attendance}>{event.attendance} / {event.capacity}</span>
+                    <span className={styles.attendance}>{registeredCount} / {memberCount}</span>
                   <div className={styles.attBar}>
                     <div className={styles.attBarFill} style={{ width: `${percent}%` }} />
                   </div>
@@ -175,7 +184,7 @@ export default function EventRosterTable({
                     </button>
                   ) : (
                     <button className={styles.statusDoneBtn} disabled>
-                      Đã kết thúc
+                      {hasEvaluation ? 'Đã đánh giá' : 'Đã kết thúc'}
                     </button>
                   )}
                 </td>

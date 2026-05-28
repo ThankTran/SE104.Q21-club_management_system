@@ -41,6 +41,18 @@ public class SubjectController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody SubjectRequest request) {
+        try {
+            return ResponseEntity.ok(subjectService.update(id, request));
+        } catch (IllegalArgumentException e) {
+            HttpStatus status = e.getMessage() != null && e.getMessage().startsWith("Subject not found")
+                    ? HttpStatus.NOT_FOUND
+                    : HttpStatus.BAD_REQUEST;
+            return ResponseEntity.status(status).body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         subjectService.delete(id);

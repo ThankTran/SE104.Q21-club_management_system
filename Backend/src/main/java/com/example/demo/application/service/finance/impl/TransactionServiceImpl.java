@@ -4,6 +4,7 @@ import com.example.demo.application.dto.request.finance.TransactionRequest;
 import com.example.demo.application.dto.response.finance.MemberDueResponse;
 import com.example.demo.application.dto.response.finance.TransactionResponse;
 import com.example.demo.application.mapper.finance.TransactionMapper;
+import com.example.demo.application.service.notification.interfaces.NotificationDispatchService;
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.TransactionStatus;
 import com.example.demo.domain.enums.TransactionType;
@@ -34,24 +35,28 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransactionServiceImpl implements com.example.demo.application.service.finance.interfaces.TransactionService {
     private static final BigDecimal MONTHLY_FUND_AMOUNT = BigDecimal.valueOf(75_000L);
     private static final DateTimeFormatter MONTH_ID_FORMAT = DateTimeFormatter.ofPattern("yyyyMM");
+    private static final String TARGET_FINANCE = "FINANCE";
 
     private final TransactionRepository transactionRepository;
     private final EventRepository eventRepository;
     private final MemberRepository memberRepository;
     private final TransactionMapper transactionMapper;
     private final TransactionDomainService transactionDomainService;
+    private final NotificationDispatchService notificationDispatchService;
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             EventRepository eventRepository,
             MemberRepository memberRepository,
             TransactionMapper transactionMapper,
-            TransactionDomainService transactionDomainService) {
+            TransactionDomainService transactionDomainService,
+            NotificationDispatchService notificationDispatchService) {
         this.transactionRepository = transactionRepository;
         this.eventRepository = eventRepository;
         this.memberRepository = memberRepository;
         this.transactionMapper = transactionMapper;
         this.transactionDomainService = transactionDomainService;
+        this.notificationDispatchService = notificationDispatchService;
     }
 
     @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
@@ -75,9 +80,15 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
         var approvedBy = request.getApprovedById() == null ? null
                 : memberRepository.findById(request.getApprovedById())
                         .orElseThrow(() -> new IllegalArgumentException(
-                                "Khong tim thay nguoi duyet: " + request.getApprovedById()));
+                "Khong tim thay nguoi duyet: " + request.getApprovedById()));
         var entity = transactionMapper.toEntity(request, event, member, createdBy, approvedBy);
-        return transactionMapper.toResponse(transactionRepository.save(entity));
+        Transaction savedTransaction = transactionRepository.save(entity);
+        notifyFinance(
+                savedTransaction,
+                "Khoản tài chính mới",
+                "Có khoản tài chính mới: " + describeTransaction(savedTransaction) + ".",
+                createdBy);
+        return transactionMapper.toResponse(savedTransaction);
     }
 
     @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
@@ -194,7 +205,13 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
         if (transaction.getTransactionDate() == null) {
             transaction.setTransactionDate(LocalDateTime.now());
         }
-        return transactionMapper.toResponse(transactionRepository.save(transaction));
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        notifyFinance(
+                savedTransaction,
+                "Đóng tiền thành công",
+                "Khoản " + describeTransaction(savedTransaction) + " đã được hoàn tất.",
+                savedTransaction.getApprovedBy());
+        return transactionMapper.toResponse(savedTransaction);
     }
 
     @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
@@ -202,7 +219,12 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay transaction: " + id));
         transaction.setDeletedAt(LocalDateTime.now());
-        transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        notifyFinance(
+                savedTransaction,
+                "Giao dịch đã được xóa",
+                "Giao dịch " + describeTransaction(savedTransaction) + " đã được xóa khỏi hệ thống.",
+                savedTransaction.getApprovedBy());
     }
 
     @Async("applicationTaskExecutor")
@@ -235,7 +257,12 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
                 .transactionDate(month.atDay(1).atTime(12, 0))
                 .status(TransactionStatus.PENDING)
                 .build();
-        transactionRepository.save(monthlyDue);
+        Transaction savedDue = transactionRepository.save(monthlyDue);
+        notifyFinance(
+                savedDue,
+                "Khoản quỹ tháng mới",
+                "Bạn có khoản " + describeTransaction(savedDue) + " cần thanh toán.",
+                null);
     }
 
     private String buildMonthlyDueId(YearMonth month, Long memberId) {
@@ -275,5 +302,24 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
                         : transaction.getAmount())
                 .status(TransactionStatus.PENDING)
                 .build();
+    }
+
+    private void notifyFinance(Transaction transaction, String title, String content, Member sender) {
+        Member member = transaction.getMember();
+        if (member == null) {
+            notificationDispatchService.toManagers(title, content, TARGET_FINANCE, sender);
+            return;
+        }
+        notificationDispatchService.toManagersAndMembers(List.of(member), title, content, TARGET_FINANCE, sender);
+    }
+
+    private String describeTransaction(Transaction transaction) {
+        if (transaction.getDescription() != null && !transaction.getDescription().isBlank()) {
+            return transaction.getDescription();
+        }
+        if (transaction.getTransactionId() != null && !transaction.getTransactionId().isBlank()) {
+            return transaction.getTransactionId();
+        }
+        return "giao dịch tài chính";
     }
 }

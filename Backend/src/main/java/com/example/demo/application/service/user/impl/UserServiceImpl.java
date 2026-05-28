@@ -68,9 +68,13 @@ public class UserServiceImpl implements com.example.demo.application.service.use
         if (request == null) {
             throw new IllegalArgumentException("Thong tin dang nhap khong duoc de trong");
         }
-        userDomainService.validateLoginRequest(request.getUserId(), request.getMemberId(), request.getPassword());
+        userDomainService.validateLoginRequest(
+                request.getUserId(),
+                request.getMemberId(),
+                request.getUsername(),
+                request.getPassword());
 
-        User user = resolveUser(request.getUserId(), request.getMemberId());
+        User user = resolveUser(request.getUserId(), request.getMemberId(), request.getUsername());
         userDomainService.verifyLogin(user, request.getPassword());
         return userMapper.toResponse(user);
     }
@@ -138,7 +142,10 @@ public class UserServiceImpl implements com.example.demo.application.service.use
         return CompletableFuture.completedFuture(getUserByMemberId(memberId));
     }
 
-    private User resolveUser(Long userId, Long memberId) {
+    private User resolveUser(Long userId, Long memberId, String username) {
+        if (username != null && !username.isBlank()) {
+            return findUserByUsername(username.trim());
+        }
         if (userId != null) {
             return findUserById(userId);
         }
@@ -153,6 +160,26 @@ public class UserServiceImpl implements com.example.demo.application.service.use
     private User findUserByMemberId(Long memberId) {
         return userRepository.findByMemberMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay tai khoan cua member ID: " + memberId));
+    }
+
+    private User findUserByStudentId(String studentId) {
+        return userRepository.findByMemberStudentId(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay tai khoan voi ten dang nhap: " + studentId));
+    }
+
+    private User findUserByUsername(String username) {
+        if (username.matches("\\d+")) {
+            try {
+                var userByMemberId = userRepository.findByMemberMemberId(Long.valueOf(username));
+                if (userByMemberId.isPresent()) {
+                    return userByMemberId.get();
+                }
+            } catch (NumberFormatException ignored) {
+                // Fall back to student ID lookup below.
+            }
+        }
+
+        return findUserByStudentId(username);
     }
 
     private void validateNewPassword(String newPassword) {

@@ -21,7 +21,7 @@ export const normalizeAccountFromApi = (user = {}, passwordHash = '') => {
     userId: user.userId,
     memberDbId: user.memberId,
     memberId: studentId || memberId,
-    username: studentId || (memberId ? `member-${memberId}` : ''),
+    username: memberId,
     password: '',
     passwordHash,
     name: user.fullName || '',

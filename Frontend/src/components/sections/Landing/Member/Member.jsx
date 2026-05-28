@@ -1,18 +1,41 @@
-﻿import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './Member.module.css'
-import { membersData } from '../../../../data/Public/content';
+import {
+  getPublicLeadersAPI,
+  normalizePublicMemberFromApi,
+} from '../../../../services/member-service'
+import member1 from '../../../../assets/member/member1.png'
+import member2 from '../../../../assets/member/member2.png'
+import member3 from '../../../../assets/member/member3.png'
+import member4 from '../../../../assets/member/member4.png'
+import member5 from '../../../../assets/member/member5.png'
 
 const AUTO_DELAY = 3000
+const FALLBACK_IMAGES = [member1, member3, member4, member5, member2]
+
+const isImagePath = (value) =>
+  typeof value === 'string' && (
+    value.startsWith('http') ||
+    value.startsWith('/') ||
+    value.startsWith('data:image')
+  )
+
+const getMemberImage = (member, index) => {
+  const raw = member.raw || {}
+  const candidate = raw.avatarUrl || raw.imageUrl || raw.image || raw.img
+  return isImagePath(candidate) ? candidate : FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]
+}
 
 export default function Members() {
-  const members = membersData
+  const [members, setMembers] = useState([])
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [inView, setInView] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [apiError, setApiError] = useState('')
   const sectionRef = useRef(null)
   const total = members.length
 
-  // IntersectionObserver
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setInView(entry.isIntersecting),
@@ -22,19 +45,60 @@ export default function Members() {
     return () => observer.disconnect()
   }, [])
 
-  // Auto play
   useEffect(() => {
-    if (paused) return
+    let ignore = false
+
+    getPublicLeadersAPI()
+      .then((data) => {
+        if (ignore) return
+
+        const leaders = Array.isArray(data)
+          ? data.map(normalizePublicMemberFromApi)
+          : []
+
+        setMembers(leaders)
+        setActive(0)
+        setApiError('')
+      })
+      .catch((error) => {
+        if (ignore) return
+        setMembers([])
+        setApiError(error?.message || 'Không tải được danh sách ban lãnh đạo.')
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (total === 0 || active < total) return
+    setActive(0)
+  }, [active, total])
+
+  useEffect(() => {
+    if (paused || total <= 1) return
     const timer = setInterval(() => {
       setActive(i => (i + 1) % total)
     }, AUTO_DELAY)
     return () => clearInterval(timer)
   }, [paused, total])
 
-  const prev = () => setActive(i => (i - 1 + total) % total)
-  const next = () => setActive(i => (i + 1) % total)
+  const prev = () => {
+    if (total <= 1) return
+    setActive(i => (i - 1 + total) % total)
+  }
+
+  const next = () => {
+    if (total <= 1) return
+    setActive(i => (i + 1) % total)
+  }
 
   const getPos = (i) => {
+    if (total <= 1) return 0
     let diff = i - active
     if (diff > Math.floor(total / 2)) diff -= total
     if (diff < -Math.floor(total / 2)) diff += total
@@ -65,10 +129,8 @@ export default function Members() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Floating shape */}
       <div className={styles.shape} />
 
-      {/* Header */}
       <div className={`${styles.header} ${inView ? styles.headerVisible : ''}`}>
         <h2 className={styles.title}>Ban lãnh đạo & Thành viên</h2>
         <p className={styles.desc}>
@@ -76,25 +138,29 @@ export default function Members() {
         </p>
       </div>
 
-      {/* Stage */}
       <div className={`${styles.stage} ${inView ? styles.stageVisible : ''}`}>
+        {loading && <p className={styles.stateText}>Đang tải danh sách ban lãnh đạo...</p>}
+        {apiError && <p className={styles.stateText}>{apiError}</p>}
+        {!loading && !apiError && members.length === 0 && (
+          <p className={styles.stateText}>Chưa có dữ liệu ban lãnh đạo để hiển thị.</p>
+        )}
+
         {members.map((member, i) => {
           const pos = getPos(i)
           const isActive = pos === 0
 
           return (
             <div
-              key={member.id}
+              key={member.memberId || member.id}
               className={`${styles.card} ${isActive ? styles.cardActive : ''}`}
               style={getCardStyle(i)}
               onClick={() => !isActive && setActive(i)}
             >
-              {/* Glow ring khi active */}
               {isActive && <div className={styles.glowRing} />}
 
               <div className={`${styles.avatar} ${isActive ? styles.avatarActive : ''}`}>
                 <img
-                  src={member.img}
+                  src={getMemberImage(member, i)}
                   alt={member.name}
                   className={styles.avatarImg}
                 />
@@ -103,31 +169,27 @@ export default function Members() {
               <div className={styles.info}>
                 <p className={styles.name}>{member.name}</p>
                 <p className={styles.role}>{member.role}</p>
-                {isActive && (
-                  <p className={styles.bio}>
-                    Thành viên tích cực của CLB, đóng góp nhiều giá trị cho cộng đồng học thuật.
-                  </p>
-                )}
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* Controls */}
-      <div className={`${styles.controls} ${inView ? styles.controlsVisible : ''}`}>
-        <button className={styles.btn} onClick={prev}>←</button>
-        <div className={styles.dots}>
-          {members.map((_, i) => (
-            <button
-              key={i}
-              className={`${styles.dot} ${i === active ? styles.dotActive : ''}`}
-              onClick={() => setActive(i)}
-            />
-          ))}
+      {members.length > 1 && (
+        <div className={`${styles.controls} ${inView ? styles.controlsVisible : ''}`}>
+          <button className={styles.btn} onClick={prev}>←</button>
+          <div className={styles.dots}>
+            {members.map((member, i) => (
+              <button
+                key={member.memberId || member.id}
+                className={`${styles.dot} ${i === active ? styles.dotActive : ''}`}
+                onClick={() => setActive(i)}
+              />
+            ))}
+          </div>
+          <button className={styles.btn} onClick={next}>→</button>
         </div>
-        <button className={styles.btn} onClick={next}>→</button>
-      </div>
+      )}
     </section>
   )
 }

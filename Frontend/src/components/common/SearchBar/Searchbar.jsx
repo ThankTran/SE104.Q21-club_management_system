@@ -18,8 +18,10 @@ const Searchbar = ({ onSearch }) => {
           type="text"
           placeholder="Search archives..."
           className={styles.searchInput}
+          value={query}
+          onChange={handleInputChange}
         />
-        <button className={styles.searchBtn}>
+        <button className={styles.searchBtn} onClick={handleSearch}>
           <img src={search} alt="Search" className={styles.searchIcon} />
         </button>
       </div>

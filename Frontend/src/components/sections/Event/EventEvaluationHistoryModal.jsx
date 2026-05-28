@@ -1,6 +1,6 @@
 import styles from './EventEvaluationHistoryModal.module.css';
 
-export default function EventEvaluationHistoryModal({ open, evaluations, onClose, onSelectEvaluation }) {
+export default function EventEvaluationHistoryModal({ open, events, onClose, onSelectEvent }) {
   if (!open) return null;
 
   return (
@@ -8,8 +8,8 @@ export default function EventEvaluationHistoryModal({ open, evaluations, onClose
       <div className={styles.modal} onClick={(event) => event.stopPropagation()}>
         <div className={styles.header}>
           <div>
-            <h3 className={styles.title}>Lịch sử đánh giá sự kiện</h3>
-            <p className={styles.meta}>{evaluations.length.toLocaleString('vi-VN')} phiếu đánh giá</p>
+            <h3 className={styles.title}>Đánh giá sự kiện</h3>
+            <p className={styles.meta}>{events.length.toLocaleString('vi-VN')} sự kiện cần đánh giá</p>
           </div>
           <button className={styles.closeBtn} onClick={onClose} title="Đóng">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -22,30 +22,40 @@ export default function EventEvaluationHistoryModal({ open, evaluations, onClose
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Mã phiếu</th>
                 <th>Mã sự kiện</th>
                 <th>Tên sự kiện</th>
-                <th>Ngày đánh giá</th>
+                <th>Ngày kết thúc</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {evaluations.length > 0 ? (
-                evaluations.map((item) => (
+              {events.length > 0 ? (
+                events.map((item) => (
                   <tr
                     key={item.id}
                     className={styles.clickableRow}
-                    onClick={() => onSelectEvaluation(item)}
-                    title="Xem nhận xét"
+                    onClick={() => onSelectEvent(item)}
+                    title="Đánh giá sự kiện"
                   >
-                    <td className={styles.codeCell}>{item.id}</td>
-                    <td className={styles.centerCell}>{item.eventCode}</td>
-                    <td className={styles.centerCell}>{item.eventTitle}</td>
-                    <td className={styles.centerCell}>{item.evaluationDate}</td>
+                    <td className={styles.codeCell}>{item.eventCode}</td>
+                    <td className={styles.centerCell}>{item.title}</td>
+                    <td className={styles.centerCell}>{item.date}</td>
+                    <td className={styles.centerCell}>
+                      <button
+                        className={styles.evaluateBtn}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onSelectEvent(item);
+                        }}
+                      >
+                        Đánh giá
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className={styles.emptyCell} colSpan={4}>Chưa có phiếu đánh giá nào</td>
+                  <td className={styles.emptyCell} colSpan={4}>Không có sự kiện nào cần đánh giá</td>
                 </tr>
               )}
             </tbody>

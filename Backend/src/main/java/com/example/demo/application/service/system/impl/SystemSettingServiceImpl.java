@@ -66,6 +66,18 @@ public class SystemSettingServiceImpl implements com.example.demo.application.se
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay setting: " + key));
     }
 
+    @Cacheable(key = "'keyOrDefault:' + #key + ':' + #defaultValue")
+    public SystemSettingResponse getByKeyOrDefault(String key, String defaultValue, String description) {
+        return systemSettingRepository.findById(key).map(systemSettingMapper::toResponse)
+                .orElseGet(() -> SystemSettingResponse.builder()
+                        .settingKey(key)
+                        .settingValue(defaultValue)
+                        .description(description)
+                        .updatedById(null)
+                        .updatedAt(null)
+                        .build());
+    }
+
     @CacheEvict(allEntries = true)
     public void delete(String key) {
         systemSettingDomainService.validateDelete(key);

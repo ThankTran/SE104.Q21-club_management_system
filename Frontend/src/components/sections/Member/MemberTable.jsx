@@ -124,7 +124,7 @@ export default function MemberTable({
           <thead>
             <tr>
               <th>Thành viên</th>
-              <th>Khoa / Khóa</th>
+              <th>Khoa</th>
               {showContact && <th>Liên hệ</th>}
               {showRegisteredAt && <th>Ngày đăng ký</th>}
               <th>Vai trò</th>
@@ -150,7 +150,6 @@ export default function MemberTable({
                 </td>
                 <td className={styles.dept}>
                   <span>{m.department}</span>
-                  <small>{m.course}</small>
                 </td>
                 {showContact && (
                   <td className={styles.contactCell}>

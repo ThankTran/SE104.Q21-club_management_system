@@ -72,7 +72,7 @@ export default function EventCard({
         <div className={styles.bottom}>
           {estimatedCost != null && (
             <span className={styles.cost}>
-              Est. {Number(estimatedCost).toLocaleString('vi-VN')}₫
+              Dự kiến {Number(estimatedCost).toLocaleString('vi-VN')}₫
             </span>
           )}
 

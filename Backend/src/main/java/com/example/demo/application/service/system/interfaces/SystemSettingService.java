@@ -14,6 +14,8 @@ public interface SystemSettingService {
 
     SystemSettingResponse getByKey(String key);
 
+    SystemSettingResponse getByKeyOrDefault(String key, String defaultValue, String description);
+
     void delete(String key);
 
     CompletableFuture<SystemSettingResponse> getByKeyAsync(String key);

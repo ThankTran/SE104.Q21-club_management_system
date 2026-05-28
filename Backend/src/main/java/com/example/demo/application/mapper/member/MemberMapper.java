@@ -64,6 +64,10 @@ public class MemberMapper {
                         ? member.getReqStatus().name() : null)
                 .graduatedStatus(member.getGraduatedStatus() != null
                         ? member.getGraduatedStatus().name() : null)
+                .approverName(member.getApprover() != null
+                        ? member.getApprover().getFullName() : null)
+                .approvalDate(member.getApprovalDate())
+                .approvalNote(member.getApprovalNote())
                 .createdAt(member.getCreatedAt())
                 .build();
     }

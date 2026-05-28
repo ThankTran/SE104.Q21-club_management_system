@@ -28,11 +28,20 @@ public class NotificationRecipientMapper {
     public NotificationRecipientResponse toResponse(NotificationRecipient entity) {
         Long notificationId = entity.getId() != null ? entity.getId().getNotificationId() : null;
         Long memberId = entity.getId() != null ? entity.getId().getMemberId() : null;
+        Notification notification = entity.getNotification();
+        Member sender = notification == null ? null : notification.getSender();
+
         return NotificationRecipientResponse.builder()
                 .notificationId(notificationId)
                 .memberId(memberId)
                 .isRead(entity.getIsRead())
                 .readAt(entity.getReadAt())
+                .title(notification == null ? null : notification.getTitle())
+                .content(notification == null ? null : notification.getContent())
+                .senderId(sender == null ? null : sender.getMemberId())
+                .targetType(notification == null ? null : notification.getTargetType())
+                .sendMethod(notification == null ? null : notification.getSendMethod())
+                .sentAt(notification == null ? null : notification.getSentAt())
                 .build();
     }
 }

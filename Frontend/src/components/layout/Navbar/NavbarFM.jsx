@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./NavbarFM.module.css";
 import logo from "../../../assets/logo/logo_cnpm.png";
 import noti from "../../../assets/icons/noti.svg";
 import setting from "../../../assets/icons/setting.svg";
 import NotificationPopover from "./NotificationPopover";
-import {
-  getNotificationsAPI,
-  getNotificationsByMemberAPI,
-} from "../../../services/notification-service";
+import { getNotificationsByMemberAPI } from "../../../services/notification-service";
 import useAuthStore from "../../../store/auth-store";
+import { isManager } from "../../../utils/access-control";
+import {
+  PROFILE_CUSTOM_UPDATED_EVENT,
+  getCustomProfileKey,
+  getInitials,
+  readCustomProfile,
+} from "../../../utils/profile-custom";
 
 const targetTypeToNotificationType = (targetType = "") => {
   const value = targetType.toLowerCase();
@@ -44,9 +49,8 @@ const isToday = (value) => {
   return date.toDateString() === today.toDateString();
 };
 
-const normalizeNotification = (item, readByNotificationId) => {
+const normalizeNotification = (item) => {
   const id = item.notificationId ?? item.id;
-  const readRecord = readByNotificationId.get(id);
 
   return {
     id,
@@ -55,7 +59,7 @@ const normalizeNotification = (item, readByNotificationId) => {
     content: item.content || "",
     highlight: "",
     time: formatRelativeTime(item.sentAt),
-    isUnread: readRecord ? !readRecord.isRead : true,
+    isUnread: !item.isRead,
     category: isToday(item.sentAt) ? "today" : "earlier",
     targetType: item.targetType,
     raw: item,
@@ -65,38 +69,41 @@ const normalizeNotification = (item, readByNotificationId) => {
 const NavbarFM = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [openMenu, setOpenMenu] = useState(false);
   const [showNoti, setShowNoti] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationLoading, setNotificationLoading] = useState(false);
   const [notificationError, setNotificationError] = useState("");
+  const [profileAvatar, setProfileAvatar] = useState("");
   const profileRef = useRef(null);
   const currentUser = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const currentMemberId = currentUser?.memberId;
+  const canOpenSettings = isManager(currentUser);
 
   useEffect(() => {
     let ignore = false;
+    setNotifications([]);
 
     const loadNotifications = async () => {
+      if (!currentMemberId) {
+        setNotificationLoading(false);
+        setNotificationError("");
+        return;
+      }
+
       setNotificationLoading(true);
       setNotificationError("");
       try {
-        const [items, recipients] = await Promise.all([
-          getNotificationsAPI(),
-          currentMemberId
-            ? getNotificationsByMemberAPI(currentMemberId).catch(() => [])
-            : Promise.resolve([]),
-        ]);
+        const items = await getNotificationsByMemberAPI(currentMemberId);
         if (ignore) return;
 
-        const readByNotificationId = new Map(
-          (recipients || []).map((item) => [item.notificationId, item])
-        );
         setNotifications(
           (items || [])
             .slice()
             .sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0))
-            .map((item) => normalizeNotification(item, readByNotificationId))
+            .map(normalizeNotification)
         );
       } catch (error) {
         if (!ignore) {
@@ -126,11 +133,56 @@ const NavbarFM = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const syncAvatar = () => {
+      setProfileAvatar(readCustomProfile(currentMemberId).avatar);
+    };
+
+    syncAvatar();
+    if (!currentMemberId) return undefined;
+
+    const handleCustomProfileUpdate = (event) => {
+      if (String(event.detail?.memberId) === String(currentMemberId)) {
+        syncAvatar();
+      }
+    };
+
+    const handleStorage = (event) => {
+      if (event.key === getCustomProfileKey(currentMemberId)) {
+        syncAvatar();
+      }
+    };
+
+    window.addEventListener(PROFILE_CUSTOM_UPDATED_EVENT, handleCustomProfileUpdate);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener(
+        PROFILE_CUSTOM_UPDATED_EVENT,
+        handleCustomProfileUpdate
+      );
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [currentMemberId]);
+
   const unreadCount = notifications.filter((n) => n.isUnread).length;
 
   const isSettingsActive = location.pathname === "/settings";
   const isProfileActive = location.pathname === "/profile";
   const isProfileOpenOrActive = openMenu || isProfileActive;
+  const avatarFallback = currentUser?.studentId
+    ? String(currentUser.studentId).slice(0, 2)
+    : "TV";
+  const avatarInitials = getInitials(
+    currentUser?.fullName,
+    avatarFallback
+  );
+  const handleLogout = () => {
+    logout();
+    queryClient.clear();
+    setOpenMenu(false);
+    navigate("/");
+  };
 
   return (
     <nav className={styles.navbar}>
@@ -172,13 +224,15 @@ const NavbarFM = () => {
           )}
         </div>
 
-        <button
-          className={`${styles.iconBtn} ${isSettingsActive ? styles.activeIconBtn : ""}`}
-          title="Settings"
-          onClick={() => navigate("/settings")}
-        >
-          <img src={setting} alt="Settings" className={styles.iconImg} />
-        </button>
+        {canOpenSettings && (
+          <button
+            className={`${styles.iconBtn} ${isSettingsActive ? styles.activeIconBtn : ""}`}
+            title="Settings"
+            onClick={() => navigate("/settings")}
+          >
+            <img src={setting} alt="Settings" className={styles.iconImg} />
+          </button>
+        )}
 
         <div className={styles.profileContainer} ref={profileRef}>
           <button
@@ -186,7 +240,17 @@ const NavbarFM = () => {
             title="Profile"
             onClick={() => setOpenMenu(!openMenu)}
           >
-            <div className={`${styles.avatar} ${isProfileOpenOrActive ? styles.activeAvatar : ""}`}></div>
+            <div className={`${styles.avatar} ${isProfileOpenOrActive ? styles.activeAvatar : ""}`}>
+              {profileAvatar ? (
+                <img
+                  src={profileAvatar}
+                  alt={currentUser?.fullName || "Avatar"}
+                  className={styles.avatarImg}
+                />
+              ) : (
+                <span className={styles.avatarInitials}>{avatarInitials}</span>
+              )}
+            </div>
           </button>
 
           {openMenu && (
@@ -201,7 +265,7 @@ const NavbarFM = () => {
                 Hồ sơ
               </button>
 
-              <button className={styles.dropdownItem}>
+              <button className={styles.dropdownItem} onClick={handleLogout}>
                 Đăng xuất
               </button>
             </div>

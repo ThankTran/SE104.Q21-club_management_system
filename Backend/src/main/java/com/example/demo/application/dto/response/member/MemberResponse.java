@@ -21,5 +21,8 @@ public class MemberResponse {
     private String roleName;
     private String reqStatus;
     private String graduatedStatus;
+    private String approverName;
+    private LocalDateTime approvalDate;
+    private String approvalNote;
     private LocalDateTime createdAt;
 }

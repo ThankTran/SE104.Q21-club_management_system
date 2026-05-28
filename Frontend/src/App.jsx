@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Layout hiện tại của bạn
 import MainLayout from "./components/layout/Navigation/MainLayout";
+import ProtectedRoute from "./components/layout/Navigation/ProtectedRoute";
 
 // Public
 import LandingPage from "./pages/Public/LandingPage";
@@ -58,21 +59,23 @@ export default function App() {
         <Route path="/"     element={<LandingPage />} />
         <Route path="/signin" element={<SigninPage />} />
 
-        <Route element={<MainLayout />}>
-          <Route path="/home" element={<HomePage />} />          
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/memberuser"   element={<MemberUserPage />} />
-          <Route path="/memberadmin"  element={<MemberAdminPage />} />
-          <Route path="/resourcesuser" element={<ResourceUserPage />} />
-          <Route path="/resourcesadmin" element={<ResourceAdminPage />} />      
-          <Route path="/eventuser"    element={<EventUserPage />} />
-          <Route path="/eventadmin" element={<EventAdminPage />} />
-          <Route path="/finance"   element={<FinancePage />} />
-          <Route path="/profile"   element={<ProfilePage />} />
-          <Route path="/help"      element={<HelpPage />} />
-          <Route path="/settings"  element={<SettingsPage />} />
-          <Route path="/memberdues" element={<MemberPaymentPage />} />
-          <Route path="/account" element={<AccountPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/home" element={<HomePage />} />          
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/memberuser"   element={<MemberUserPage />} />
+            <Route path="/memberadmin"  element={<MemberAdminPage />} />
+            <Route path="/resourcesuser" element={<ResourceUserPage />} />
+            <Route path="/resourcesadmin" element={<ResourceAdminPage />} />      
+            <Route path="/eventuser"    element={<EventUserPage />} />
+            <Route path="/eventadmin" element={<EventAdminPage />} />
+            <Route path="/finance"   element={<FinancePage />} />
+            <Route path="/profile"   element={<ProfilePage />} />
+            <Route path="/help"      element={<HelpPage />} />
+            <Route path="/settings"  element={<SettingsPage />} />
+            <Route path="/memberdues" element={<MemberPaymentPage />} />
+            <Route path="/account" element={<AccountPage />} />
+          </Route>
         </Route>
 
         {/* ── Fallback ── */}

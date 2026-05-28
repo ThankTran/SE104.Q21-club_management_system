@@ -87,7 +87,7 @@ export default function ResourceLookupTable({ resources, search, onView }) {
         lookupFolderId: resource.lookupFolderId || resolveFolderId(resource),
       }));
 
-    return [...approved, ...SAMPLE_LOOKUP_RESOURCES]
+    return approved
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [resources]);
 

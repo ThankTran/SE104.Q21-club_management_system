@@ -8,7 +8,7 @@ import membersIcon from "../../assets/icons/members.svg";
 import eventsIcon from "../../assets/icons/events.svg";
 import resourcesIcon from "../../assets/icons/resources.svg";
 import financeIcon from "../../assets/icons/finance.svg";
-import verifyIcon from "../../assets/icons/verify.svg";
+import VERIFY_ICON from "../../assets/icons/verify.svg";
 import infoIcon from "../../assets/icons/infor.svg";
 
 const FAQ_DATA = [
@@ -81,8 +81,8 @@ export default function HelpPage() {
     topic: "general",
     message: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [IS_SUBMITTING, setIsSubmitting] = useState(false);
+  const [SUBMIT_SUCCESS, setSubmitSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   // AI Agent States
@@ -272,7 +272,7 @@ export default function HelpPage() {
     }
   };
 
-  const handleFormChange = (e) => {
+  const HANDLE_FORM_CHANGE = (e) => {
     const { name, value } = e.target;
     setFormState((prev) => ({
       ...prev,
@@ -281,7 +281,7 @@ export default function HelpPage() {
     if (errorMsg) setErrorMsg("");
   };
 
-  const handleFormSubmit = (e) => {
+  const HANDLE_FORM_SUBMIT = (e) => {
     e.preventDefault();
     const { name, email, message } = formState;
 

@@ -18,5 +18,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = {"member", "member.department", "member.role"})
     Optional<User> findByMemberMemberId(Long memberId);
 
+    @EntityGraph(attributePaths = {"member", "member.department", "member.role"})
+    Optional<User> findByMemberStudentId(String studentId);
+
     boolean existsByMemberMemberId(Long memberId);
 }

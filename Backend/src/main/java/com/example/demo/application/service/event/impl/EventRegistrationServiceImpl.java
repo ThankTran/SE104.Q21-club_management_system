@@ -3,6 +3,7 @@ package com.example.demo.application.service.event.impl;
 import com.example.demo.application.dto.request.event.EventAttendanceRequest;
 import com.example.demo.application.dto.response.event.EventRegistrationResponse;
 import com.example.demo.application.mapper.event.EventRegistrationMapper;
+import com.example.demo.application.service.notification.interfaces.NotificationDispatchService;
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.EventStatusEnum;
 import com.example.demo.domain.enums.TransactionStatus;
@@ -29,23 +30,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @CacheConfig(cacheNames = "eventRegistrations")
 public class EventRegistrationServiceImpl implements com.example.demo.application.service.event.interfaces.EventRegistrationService {
+    private static final String TARGET_EVENT = "EVENT";
+    private static final String TARGET_FINANCE = "FINANCE";
+
     private final EventRegistrationRepository eventRegistrationRepository;
     private final EventRepository eventRepository;
     private final MemberRepository memberRepository;
     private final TransactionRepository transactionRepository;
     private final EventRegistrationMapper eventRegistrationMapper;
+    private final NotificationDispatchService notificationDispatchService;
 
     public EventRegistrationServiceImpl(
             EventRegistrationRepository eventRegistrationRepository,
             EventRepository eventRepository,
             MemberRepository memberRepository,
             TransactionRepository transactionRepository,
-            EventRegistrationMapper eventRegistrationMapper) {
+            EventRegistrationMapper eventRegistrationMapper,
+            NotificationDispatchService notificationDispatchService) {
         this.eventRegistrationRepository = eventRegistrationRepository;
         this.eventRepository = eventRepository;
         this.memberRepository = memberRepository;
         this.transactionRepository = transactionRepository;
         this.eventRegistrationMapper = eventRegistrationMapper;
+        this.notificationDispatchService = notificationDispatchService;
     }
 
     @Override
@@ -87,6 +94,12 @@ public class EventRegistrationServiceImpl implements com.example.demo.applicatio
                 .build();
         EventRegistration saved = eventRegistrationRepository.save(registration);
         createEventDueIfNeeded(event, member);
+        notificationDispatchService.toMembers(
+                List.of(member),
+                "Đăng ký sự kiện thành công",
+                "Bạn đã đăng ký tham gia sự kiện " + event.getEventName() + ".",
+                TARGET_EVENT,
+                member);
         return eventRegistrationMapper.toResponse(saved);
     }
 
@@ -143,8 +156,18 @@ public class EventRegistrationServiceImpl implements com.example.demo.applicatio
         if (!eventRegistrationRepository.existsById(id)) {
             throw new IllegalArgumentException("Khong tim thay dang ky su kien");
         }
+        var registration = eventRegistrationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay dang ky su kien"));
+        var event = registration.getEvent();
+        var member = registration.getMember();
         eventRegistrationRepository.deleteById(id);
         cancelPendingEventDues(eventId, memberId);
+        notificationDispatchService.toMembers(
+                List.of(member),
+                "Đã hủy đăng ký sự kiện",
+                "Bạn đã hủy đăng ký sự kiện " + event.getEventName() + ".",
+                TARGET_EVENT,
+                member);
     }
 
     private void createEventDueIfNeeded(com.example.demo.domain.model.event.Event event, com.example.demo.domain.model.member.Member member) {
@@ -166,6 +189,12 @@ public class EventRegistrationServiceImpl implements com.example.demo.applicatio
                 .status(TransactionStatus.PENDING)
                 .build();
         transactionRepository.save(due);
+        notificationDispatchService.toMembers(
+                List.of(member),
+                "Phí tham gia sự kiện",
+                "Bạn có khoản phí tham gia sự kiện " + event.getEventName() + ".",
+                TARGET_FINANCE,
+                null);
     }
 
     private void cancelPendingEventDues(String eventId, Long memberId) {

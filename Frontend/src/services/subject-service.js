@@ -9,8 +9,10 @@ export const getSubjectByIdAPI = (id) =>
 export const createSubjectAPI = (payload) =>
   api.post('subjects', payload)
 
+export const updateSubjectAPI = (id, payload) =>
+  api.put(`subjects/${id}`, payload)
+
 export const deleteSubjectAPI = (id) =>
   api.delete(`subjects/${id}`)
 
 // Add GET /api/subjects/by-name or /api/subjects/search if frontend needs subject lookup.
-// Add PUT/PATCH /api/subjects/{id} if frontend needs subject editing.

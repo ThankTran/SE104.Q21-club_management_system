@@ -18,6 +18,11 @@ public class DocumentResponse {
     private String version;
     private String source;
     private String note;
+    private String lookupFolderId;
+    private String primaryFileUrl;
+    private String primaryFileName;
+    private Long fileSize;
+    private String mimeType;
     private Long proposedById;
     private Long approvedById;
     private LocalDateTime approvedAt;

@@ -10,7 +10,7 @@
 }
 
 .modal {
-  width: min(720px, 100%);
+  width: min(520px, 100%);
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   border-radius: 16px;
@@ -135,6 +135,11 @@
   border: none;
   background: var(--primary-900);
   color: var(--white-hard);
+}
+
+.submitBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 @media (max-width: 640px) {

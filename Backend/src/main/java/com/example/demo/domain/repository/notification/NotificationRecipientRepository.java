@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NotificationRecipientRepository extends JpaRepository<NotificationRecipient, NotificationRecipientId> {
-    @EntityGraph(attributePaths = {"notification", "member"})
+    @EntityGraph(attributePaths = {"notification", "notification.sender", "member"})
     List<NotificationRecipient> findByNotificationNotificationId(Long notificationId);
 
-    @EntityGraph(attributePaths = {"notification", "member"})
+    @EntityGraph(attributePaths = {"notification", "notification.sender", "member"})
     List<NotificationRecipient> findByMemberMemberId(Long memberId);
 
     boolean existsByNotificationNotificationId(Long notificationId);

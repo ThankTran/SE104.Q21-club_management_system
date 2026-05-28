@@ -9,6 +9,8 @@ import finance   from "../../../assets/icons/finance.svg";
 import help      from "../../../assets/icons/help.svg";
 import home      from "../../../assets/icons/home.svg";
 import setting   from "../../../assets/icons/setting.svg";
+import useAuthStore from "../../../store/auth-store";
+import { canAccessPath } from "../../../utils/access-control";
 
 const menuItems = [
   { id: "home",      label: "Trang chủ",      icon: home,      path: "/home"      },
@@ -31,17 +33,21 @@ const bottomItems = [
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  const visibleMenuItems = menuItems.filter((item) => canAccessPath(item.path, user, token));
+  const visibleBottomItems = bottomItems.filter((item) => canAccessPath(item.path, user, token));
 
   // Xác định active dựa theo URL thực tế, không phải state
-  const activeId = [...menuItems, ...bottomItems].find((item) =>
+  const activeId = [...visibleMenuItems, ...visibleBottomItems].find((item) =>
     location.pathname.startsWith(item.path)
-  )?.id ?? "dashboard";
+  )?.id ?? "home";
 
   return (
     <div className={styles.sidebar}>
       {/* Main Menu */}
       <nav className={styles.mainMenu}>
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <button
             key={item.id}
             className={`${styles.menuItem} ${activeId === item.id ? styles.active : ""}`}
@@ -56,7 +62,7 @@ const Sidebar = () => {
 
       {/* Bottom Menu */}
       <div className={styles.bottomMenu}>
-        {bottomItems.map((item) => (
+        {visibleBottomItems.map((item) => (
           <button
             key={item.id}
             className={`${styles.bottomItem} ${activeId === item.id ? styles.active : ""}`}

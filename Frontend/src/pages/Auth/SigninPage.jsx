@@ -1,19 +1,49 @@
-import React from "react";
+import { useState } from "react";
 import AuthLayout from "../../components/layout/Navigation/AuthLayout";
+import useAuth from "../../hooks/useAuth";
 import styles from "./SignupPage.module.css";
 
 const LoginPage = () => {
+  const { login, loading, error } = useAuth();
+  const [form, setForm] = useState({ username: "", password: "" });
+  const [formError, setFormError] = useState("");
+
+  const handleChange = (event) => {
+    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+    setFormError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!form.username.trim() || !form.password) {
+      setFormError("Vui long nhap day du ten dang nhap va mat khau");
+      return;
+    }
+
+    await login({
+      username: form.username.trim(),
+      password: form.password,
+    });
+  };
+
   return (
     <AuthLayout>
-      <form>
+      <form onSubmit={handleSubmit}>
+        {(formError || error) && <p className={styles.formError}>{formError || error}</p>}
         <input
+          name="username"
           type="text"
-          placeholder="Tên đăng nhập"
+          placeholder="Ten dang nhap"
+          value={form.username}
+          onChange={handleChange}
           className={styles.textInput}
         />
         <input
+          name="password"
           type="password"
-          placeholder="Mật khẩu"
+          placeholder="Mat khau"
+          value={form.password}
+          onChange={handleChange}
           className={styles.pwInput}
         />
         <div className={styles.rememberForgot}>
@@ -22,15 +52,9 @@ const LoginPage = () => {
             <label htmlFor="remember">Remember me</label>
           </div>
         </div>
-        <button type="submit" className={styles.button}>
-          Đăng nhập
+        <button type="submit" className={styles.button} disabled={loading}>
+          {loading ? "Dang dang nhap..." : "Dang nhap"}
         </button>
-        {/* <div className={styles.signup}>
-          <div className={styles.text}>Chưa có tài khoản?</div>
-          <a href="/signup" className={styles.signupLink}>
-            Đăng ký ngay
-          </a>
-        </div> */}
       </form>
     </AuthLayout>
   );

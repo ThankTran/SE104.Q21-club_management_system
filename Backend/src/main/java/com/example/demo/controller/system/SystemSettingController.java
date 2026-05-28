@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/system-settings")
 public class SystemSettingController {
+    private static final String MONTHLY_DUE_SETTING_KEY = "finance.monthlyDueAmount";
+    private static final String MONTHLY_DUE_DEFAULT_VALUE = "50000";
+    private static final String MONTHLY_DUE_DESCRIPTION = "Số tiền đóng quỹ định kỳ";
 
     private final SystemSettingService systemSettingService;
 
@@ -43,6 +46,34 @@ public class SystemSettingController {
             return ResponseEntity.ok(systemSettingService.getByKey(key));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/monthly-due-amount")
+    public ResponseEntity<SystemSettingResponse> getMonthlyDueAmount() {
+        return ResponseEntity.ok(systemSettingService.getByKeyOrDefault(
+                MONTHLY_DUE_SETTING_KEY,
+                MONTHLY_DUE_DEFAULT_VALUE,
+                MONTHLY_DUE_DESCRIPTION));
+    }
+
+    @PostMapping("/monthly-due-amount")
+    public ResponseEntity<?> saveMonthlyDueAmount(@RequestBody SystemSettingRequest request) {
+        try {
+            String value = request == null ? null : request.getSettingValue();
+            if (value == null || !value.matches("\\d+")) {
+                return ResponseEntity.badRequest().body("So tien dong quy khong hop le");
+            }
+
+            SystemSettingRequest normalized = new SystemSettingRequest();
+            normalized.setSettingKey(MONTHLY_DUE_SETTING_KEY);
+            normalized.setSettingValue(value);
+            normalized.setDescription(MONTHLY_DUE_DESCRIPTION);
+            normalized.setUpdatedById(request.getUpdatedById());
+
+            return ResponseEntity.ok(systemSettingService.createOrUpdate(normalized));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

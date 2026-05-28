@@ -314,6 +314,31 @@
   transform: translateY(-1px);
 }
 
+.saveSubmitBtn:disabled,
+.addDeptBtn:disabled,
+.removeDeptBtn:disabled,
+.editItemBtn:disabled,
+.saveItemBtn:disabled,
+.cancelItemBtn:disabled,
+.formGroup input:disabled,
+.formGroup select:disabled,
+.inlineInputRow input:disabled,
+.editSubjectInput:disabled,
+.fundInputWrapper input:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.saveSubmitBtn:disabled,
+.addDeptBtn:disabled,
+.removeDeptBtn:disabled,
+.editItemBtn:disabled,
+.saveItemBtn:disabled,
+.cancelItemBtn:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
 /* ── Toggle Lists (Notifications, Privacy) ── */
 .toggleGroup {
   display: flex;
@@ -488,6 +513,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 12px 16px;
   background: var(--white-hard, #ffffff);
   border: 1.5px solid var(--border-subtle, #e2e8f0);
@@ -504,6 +530,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .deptIndex {
@@ -523,6 +551,71 @@
 .deptName {
   font-size: 14px;
   font-weight: 600;
+  color: var(--text-deep-navy, #0d1b3d);
+  overflow-wrap: anywhere;
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.editSubjectInput {
+  flex: 1;
+  min-width: 120px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid var(--primary-300, #93c5fd);
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-deep-navy, #0d1b3d);
+  font-family: var(--font-family, inherit);
+  background: var(--white-hard, #ffffff);
+  outline: none;
+}
+
+.editSubjectInput:focus {
+  border-color: var(--primary-500, #3b82f6);
+  box-shadow: 0 0 0 3px var(--primary-100, #eff6ff);
+}
+
+.editItemBtn,
+.saveItemBtn,
+.cancelItemBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-subtle, #e2e8f0);
+  background: transparent;
+  color: var(--text-muted-gray, #64748b);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.editItemBtn:hover {
+  background: var(--primary-100, #eff6ff);
+  border-color: var(--primary-500, #3b82f6);
+  color: var(--primary-700, #1d4ed8);
+}
+
+.saveItemBtn:hover {
+  background: rgba(0, 202, 81, 0.08);
+  border-color: var(--accent-green, #00ca51);
+  color: var(--accent-green, #00ca51);
+}
+
+.cancelItemBtn:hover {
+  background: var(--bg-gray-soft, #f8fafc);
+  border-color: var(--text-muted-gray, #64748b);
   color: var(--text-deep-navy, #0d1b3d);
 }
 

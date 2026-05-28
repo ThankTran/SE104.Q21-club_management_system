@@ -1,18 +1,36 @@
+import { useEffect, useState } from 'react';
+
 import styles from './EventFilter.module.css';
 
 export default function EventFilter({
   open,
   setOpen,
   statusFilter,
-  setStatusFilter,
   tagFilter,
-  setTagFilter,
   statuses,
   tags,
+  onApplyFilters,
 }) {
+  const [draftStatusFilter, setDraftStatusFilter] = useState(statusFilter);
+  const [draftTagFilter, setDraftTagFilter] = useState(tagFilter);
+
+  useEffect(() => {
+    if (!open) return;
+    setDraftStatusFilter(statusFilter);
+    setDraftTagFilter(tagFilter);
+  }, [open, statusFilter, tagFilter]);
+
   const handleReset = () => {
-    setStatusFilter('all');
-    setTagFilter('all');
+    setDraftStatusFilter('all');
+    setDraftTagFilter('all');
+  };
+
+  const handleApply = () => {
+    onApplyFilters({
+      statusFilter: draftStatusFilter,
+      tagFilter: draftTagFilter,
+    });
+    setOpen(false);
   };
 
   return (
@@ -42,9 +60,9 @@ export default function EventFilter({
             <label>Trạng thái</label>
 
             <select
-              value={statusFilter}
+              value={draftStatusFilter}
               onChange={(e) =>
-                setStatusFilter(e.target.value)
+                setDraftStatusFilter(e.target.value)
               }
             >
               <option value="all">
@@ -64,9 +82,9 @@ export default function EventFilter({
             <label>Thẻ</label>
 
             <select
-              value={tagFilter}
+              value={draftTagFilter}
               onChange={(e) =>
-                setTagFilter(e.target.value)
+                setDraftTagFilter(e.target.value)
               }
             >
               <option value="all">
@@ -94,7 +112,7 @@ export default function EventFilter({
 
             <button
               className={styles.applyBtn}
-              onClick={() => setOpen(false)}
+              onClick={handleApply}
             >
               Áp dụng
             </button>

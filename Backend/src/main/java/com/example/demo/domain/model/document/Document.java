@@ -73,6 +73,9 @@ public class Document {
     @Column(name = "note", columnDefinition = "nvarchar(max)")
     private String note;
 
+    @Column(name = "lookup_folder_id", length = 100)
+    private String lookupFolderId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proposed_by")
     private Member proposedBy;

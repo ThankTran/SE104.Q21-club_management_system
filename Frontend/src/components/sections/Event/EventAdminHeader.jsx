@@ -1,6 +1,6 @@
 import styles from './EventAdminHeader.module.css';
 
-export default function EventAdminHeader({ onExport, onAdd, onViewEvaluationHistory }) {
+export default function EventAdminHeader({ onExport, onAdd, onOpenEvaluationList }) {
   return (
     <div className={styles.pageHeader}>
       <div>
@@ -8,13 +8,13 @@ export default function EventAdminHeader({ onExport, onAdd, onViewEvaluationHist
         <p className={styles.pageSubtitle}>Tổ chức, theo dõi và quản lý các sự kiện học thuật của câu lạc bộ.</p>
       </div>
       <div className={styles.headerActions}>
-        <button className={styles.historyBtn} onClick={onViewEvaluationHistory}>
+        <button className={styles.historyBtn} onClick={onOpenEvaluationList}>
           <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path d="M12 8v5l3 3"/>
             <path d="M3.05 11a9 9 0 101.64-4.36L3 8"/>
             <path d="M3 3v5h5"/>
           </svg>
-          Lịch sử đánh giá
+          Đánh giá
         </button>
         <button className={styles.exportBtn} onClick={onExport}>
           <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
