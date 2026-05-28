@@ -4,6 +4,7 @@ import com.example.demo.application.dto.request.event.EventRequest;
 import com.example.demo.application.dto.request.event.EventEvaluationRequest;
 import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
 import com.example.demo.application.dto.response.event.EventEvaluationResponse;
+import com.example.demo.application.dto.response.event.EventPublicResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,6 +16,8 @@ public interface EventService {
     EventResponse update(String id, EventRequest request);
 
     List<EventResponse> getAll();
+
+    List<EventPublicResponse> getPublicUpcomingEvents();
 
     List<EventResponse> searchByName(String eventName);
 

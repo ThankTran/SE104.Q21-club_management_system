@@ -5,7 +5,9 @@ import com.example.demo.application.dto.request.document.DocumentRequest;
 import com.example.demo.application.dto.response.document.DocumentResponse;
 import com.example.demo.application.exception.BusinessException;
 import com.example.demo.application.service.document.interfaces.DocumentService;
+import com.example.demo.config.AccessControlInterceptor;
 import java.util.List;
+import java.util.Objects;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +24,20 @@ public class DocumentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody DocumentRequest request) {
+    public ResponseEntity<?> create(
+            @Valid @RequestBody DocumentRequest request,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_MEMBER_ID_ATTRIBUTE, required = false) Long currentMemberId,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_USER_IS_MANAGER_ATTRIBUTE, required = false) Boolean currentUserIsManager) {
         try {
+            if (!Boolean.TRUE.equals(currentUserIsManager)) {
+                if (currentMemberId == null) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Khong xac dinh duoc thanh vien hien tai");
+                }
+                if (request.getProposedById() != null && !Objects.equals(request.getProposedById(), currentMemberId)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ban khong co quyen de xuat tai lieu cho thanh vien khac");
+                }
+                request.setProposedById(currentMemberId);
+            }
             return ResponseEntity.status(HttpStatus.CREATED).body(documentService.create(request));
         } catch (BusinessException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

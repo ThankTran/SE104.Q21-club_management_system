@@ -3,6 +3,7 @@ package com.example.demo.application.service.member.impl;
 import com.example.demo.application.dto.request.member.JoinClubRequest;
 import com.example.demo.application.dto.request.member.ApprovalRequest;
 import com.example.demo.application.dto.request.member.MemberSearchRequest;
+import com.example.demo.application.dto.response.member.MemberPublicResponse;
 import com.example.demo.application.dto.response.member.MemberResponse;
 import com.example.demo.application.mapper.member.MemberMapper;
 import com.example.demo.application.service.notification.interfaces.NotificationDispatchService;
@@ -16,6 +17,7 @@ import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
 import com.example.demo.domain.service.member.MemberDomainService;
 
+import java.text.Normalizer;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -185,11 +187,36 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         return (value == null || value.isBlank()) ? null : value.trim();
     }
 
+    private String normalizeRoleName(String value) {
+        if (value == null) {
+            return "";
+        }
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .trim()
+                .toLowerCase();
+    }
+
     @Override
     @Cacheable(key = "'all'")
     public List<MemberResponse> getAllMembers() {
         return memberRepository.findAll().stream()
                 .map(memberMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Cacheable(key = "'public-leaders'")
+    public List<MemberPublicResponse> getPublicLeaders() {
+        return memberRepository.findAll().stream()
+                .filter(member -> member.getReqStatus() == ApprovalStatusEnum.APPROVED)
+                .filter(member -> member.getRole() != null)
+                .filter(member -> !"thanh vien".equals(normalizeRoleName(member.getRole().getRoleName())))
+                .map(member -> MemberPublicResponse.builder()
+                        .memberId(member.getMemberId())
+                        .fullName(member.getFullName())
+                        .roleName(member.getRole().getRoleName())
+                        .build())
                 .collect(Collectors.toList());
     }
 

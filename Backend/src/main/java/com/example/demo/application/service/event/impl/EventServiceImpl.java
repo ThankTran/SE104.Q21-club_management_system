@@ -4,9 +4,12 @@ import com.example.demo.application.dto.request.event.EventEvaluationRequest;
 import com.example.demo.application.dto.request.event.EventRequest;
 import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
 import com.example.demo.application.dto.response.event.EventEvaluationResponse;
+import com.example.demo.application.dto.response.event.EventPublicResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import com.example.demo.application.mapper.event.EventMapper;
 import com.example.demo.application.service.notification.interfaces.NotificationDispatchService;
+import com.example.demo.domain.enums.ApprovalStatusEnum;
+import com.example.demo.domain.enums.EventStatusEnum;
 import com.example.demo.domain.model.event.Event;
 import com.example.demo.domain.model.member.Member;
 import com.example.demo.domain.repository.event.EventOrganizerRepository;
@@ -19,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -126,6 +130,21 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
     @Cacheable(key = "'all'")
     public List<EventResponse> getAll() {
         return eventRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    @Cacheable(key = "'public-upcoming'")
+    public List<EventPublicResponse> getPublicUpcomingEvents() {
+        LocalDate today = LocalDate.now(EVENT_TIMEZONE);
+        return eventRepository.findAll().stream()
+                .filter(event -> event.getReqStatus() == ApprovalStatusEnum.APPROVED)
+                .filter(this::isPublicUpcomingEvent)
+                .filter(event -> event.getEventDate() == null || !event.getEventDate().isBefore(today))
+                .sorted(Comparator.comparing(
+                        Event::getEventDate,
+                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .map(this::toPublicResponse)
+                .toList();
     }
 
     @Cacheable(key = "'name:' + #eventName")
@@ -295,6 +314,23 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
         EventResponse response = eventMapper.toResponse(event);
         response.setAttendance(eventRegistrationRepository.countByEventEventId(event.getEventId()));
         return response;
+    }
+
+    private boolean isPublicUpcomingEvent(Event event) {
+        return event.getStatus() == EventStatusEnum.NotStarted || event.getStatus() == EventStatusEnum.InProgress;
+    }
+
+    private EventPublicResponse toPublicResponse(Event event) {
+        return EventPublicResponse.builder()
+                .eventId(event.getEventId())
+                .eventName(event.getEventName())
+                .eventDate(event.getEventDate())
+                .startTime(event.getStartTime())
+                .endTime(event.getEndTime())
+                .location(event.getLocation())
+                .description(event.getDescription())
+                .tag(event.getTag())
+                .build();
     }
 
     private EventEvaluationResponse toEvaluationResponse(Event event) {

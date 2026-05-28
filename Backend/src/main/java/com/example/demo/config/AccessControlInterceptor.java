@@ -69,7 +69,9 @@ public class AccessControlInterceptor implements HandlerInterceptor {
                 || ("POST".equalsIgnoreCase(method) && matches(path, "/api/auth/register"))
                 || ("POST".equalsIgnoreCase(method) && matches(path, "/api/auth/logout"))
                 || ("POST".equalsIgnoreCase(method) && matches(path, "/api/members/register"))
-                || ("GET".equalsIgnoreCase(method) && matches(path, "/api/members/departments"));
+                || ("GET".equalsIgnoreCase(method) && matches(path, "/api/members/departments"))
+                || ("GET".equalsIgnoreCase(method) && matches(path, "/api/members/public-leaders"))
+                || ("GET".equalsIgnoreCase(method) && matches(path, "/api/events/public-upcoming"));
     }
 
     private boolean isMemberAllowed(String method, String path, Long memberId) {
@@ -116,7 +118,14 @@ public class AccessControlInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        return "POST".equalsIgnoreCase(method) && matches(path, "/api/events/*/registrations");
+        if ("POST".equalsIgnoreCase(method) && (
+                matches(path, "/api/events/*/registrations")
+                        || matches(path, "/api/documents")
+                        || matches(path, "/api/document-files"))) {
+            return true;
+        }
+
+        return false;
     }
 
     private boolean isManager(UserResponse user) {

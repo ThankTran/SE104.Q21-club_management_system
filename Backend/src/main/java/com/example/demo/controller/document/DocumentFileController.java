@@ -2,9 +2,13 @@ package com.example.demo.controller.document;
 
 import com.example.demo.application.dto.request.document.DocumentFileRequest;
 import com.example.demo.application.dto.response.document.DocumentFileResponse;
+import com.example.demo.application.dto.response.document.DocumentResponse;
 import com.example.demo.application.service.document.interfaces.DocumentFileService;
+import com.example.demo.application.service.document.interfaces.DocumentService;
+import com.example.demo.config.AccessControlInterceptor;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +19,28 @@ import org.springframework.web.bind.annotation.*;
 public class DocumentFileController {
 
     private final DocumentFileService documentFileService;
+    private final DocumentService documentService;
 
-    public DocumentFileController(DocumentFileService documentFileService) {
+    public DocumentFileController(DocumentFileService documentFileService, DocumentService documentService) {
         this.documentFileService = documentFileService;
+        this.documentService = documentService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> create(@Valid @ModelAttribute DocumentFileRequest request) {
+    public ResponseEntity<?> create(
+            @Valid @ModelAttribute DocumentFileRequest request,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_MEMBER_ID_ATTRIBUTE, required = false) Long currentMemberId,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_USER_IS_MANAGER_ATTRIBUTE, required = false) Boolean currentUserIsManager) {
         try {
+            if (!Boolean.TRUE.equals(currentUserIsManager)) {
+                if (currentMemberId == null) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Khong xac dinh duoc thanh vien hien tai");
+                }
+                DocumentResponse document = documentService.getById(request.getDocumentId());
+                if (!Objects.equals(document.getProposedById(), currentMemberId)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ban khong co quyen tai tep len tai lieu nay");
+                }
+            }
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(documentFileService.create(request));

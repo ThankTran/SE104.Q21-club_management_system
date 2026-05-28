@@ -3,6 +3,7 @@ package com.example.demo.application.service.member.interfaces;
 import com.example.demo.application.dto.request.member.ApprovalRequest;
 import com.example.demo.application.dto.request.member.JoinClubRequest;
 import com.example.demo.application.dto.request.member.MemberSearchRequest;
+import com.example.demo.application.dto.response.member.MemberPublicResponse;
 import com.example.demo.application.dto.response.member.MemberResponse;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,6 +16,8 @@ public interface MemberService {
     MemberResponse approveMember(ApprovalRequest request);
 
     List<MemberResponse> getAllMembers();
+
+    List<MemberPublicResponse> getPublicLeaders();
 
     Page<MemberResponse> searchMembers(MemberSearchRequest request, Pageable pageable);
 

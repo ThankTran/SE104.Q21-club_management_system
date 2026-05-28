@@ -3,8 +3,9 @@ package com.example.demo.controller.member;
 import com.example.demo.application.dto.request.member.ApprovalRequest;
 import com.example.demo.application.dto.request.member.JoinClubRequest;
 import com.example.demo.application.dto.request.member.MemberSearchRequest;
-import com.example.demo.application.dto.response.member.MemberResponse;
 import com.example.demo.application.dto.response.department.DepartmentResponse;
+import com.example.demo.application.dto.response.member.MemberPublicResponse;
+import com.example.demo.application.dto.response.member.MemberResponse;
 import com.example.demo.application.service.department.interfaces.DepartmentService;
 import com.example.demo.application.service.member.interfaces.MemberService;
 import org.springframework.data.domain.Page;
@@ -97,6 +98,11 @@ public class MemberController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/public-leaders")
+    public ResponseEntity<List<MemberPublicResponse>> getPublicLeaders() {
+        return ResponseEntity.ok(memberUseCase.getPublicLeaders());
     }
 
     @GetMapping("/{id}")

@@ -2,6 +2,7 @@ package com.example.demo.controller.event;
 
 import com.example.demo.application.dto.request.event.EventRequest;
 import com.example.demo.application.dto.response.event.EventCalendarLinkResponse;
+import com.example.demo.application.dto.response.event.EventPublicResponse;
 import com.example.demo.application.dto.response.event.EventResponse;
 import com.example.demo.application.service.event.interfaces.EventService;
 import java.time.LocalDate;
@@ -45,6 +46,11 @@ public class EventController {
     @GetMapping
     public ResponseEntity<List<EventResponse>> getAll() {
         return ResponseEntity.ok(eventService.getAll());
+    }
+
+    @GetMapping("/public-upcoming")
+    public ResponseEntity<List<EventPublicResponse>> getPublicUpcomingEvents() {
+        return ResponseEntity.ok(eventService.getPublicUpcomingEvents());
     }
 
     @GetMapping("/{id}")
