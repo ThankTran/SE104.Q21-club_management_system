@@ -128,7 +128,7 @@ const NotificationPopover = ({
   const earlierNotis = filteredNotifications.filter(
     (n) => n.category === "earlier" || n.category === "Trước đó"
   );
-  const ungroupedNotis = filteredNotifications.filter(
+  const UNGROUPED_NOTIS = filteredNotifications.filter(
     (n) => !todayNotis.includes(n) && !earlierNotis.includes(n)
   );
 

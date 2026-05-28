@@ -1,4 +1,13 @@
-import api from '../utils/api'
+import api, { API_BASE_URL } from '../utils/api'
+
+const API_ORIGIN = new URL(API_BASE_URL).origin
+
+const resolveResourceLink = (link = '') => {
+  if (!link) return ''
+  if (/^https?:\/\//i.test(link)) return link
+  if (link.startsWith('/uploads/')) return `${API_ORIGIN}${link}`
+  return link
+}
 
 const detectFormat = (resource = {}) => {
   const fileName = resource.primaryFileName || resource.fileName || ''
@@ -31,7 +40,7 @@ export const normalizeResourceFromApi = (resource = {}) => ({
   format: detectFormat(resource),
   source: resource.source || '',
   description: resource.note || '',
-  link: resource.primaryFileUrl || '',
+  link: resolveResourceLink(resource.primaryFileUrl || ''),
   fileName: resource.primaryFileName || '',
   fileSize: resource.fileSize || 0,
   mimeType: resource.mimeType || '',

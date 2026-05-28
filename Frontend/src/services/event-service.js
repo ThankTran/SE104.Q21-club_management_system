@@ -54,6 +54,19 @@ export const normalizeEventFromApi = (event = {}) => ({
   raw: event,
 })
 
+export const normalizePublicEventFromApi = (event = {}) => ({
+  id: event.eventId,
+  eventCode: event.eventId || '',
+  title: event.eventName || '',
+  date: toDatePart(event.eventDate || event.startTime),
+  time: toTimePart(event.startTime),
+  endTime: toTimePart(event.endTime),
+  location: event.location || '',
+  description: event.description || '',
+  tag: event.tag || 'OTHER',
+  raw: event,
+})
+
 export const toEventPayload = (event = {}) => ({
     eventId: event.eventCode || event.id,
     eventName: event.title,
@@ -75,6 +88,9 @@ export const toEventPayload = (event = {}) => ({
 
 export const getEventsAPI = () =>
   api.get('events')
+
+export const getPublicUpcomingEventsAPI = () =>
+  api.get('events/public-upcoming')
 
 export const getEventByIdAPI = (id) =>
   api.get(`events/${id}`)

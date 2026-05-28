@@ -55,6 +55,14 @@ export const normalizeMemberFromApi = (member = {}) => ({
   raw: member,
 })
 
+export const normalizePublicMemberFromApi = (member = {}) => ({
+  id: String(member.memberId || member.fullName || ''),
+  memberId: member.memberId,
+  name: member.fullName || '',
+  role: member.roleName || 'Thành viên',
+  raw: member,
+})
+
 export const toMemberPayload = (member = {}) => ({
   studentId: member.id,
   fullName: member.name,
@@ -76,6 +84,9 @@ export const toApprovalPayload = (member, reviewData = {}) => ({
 
 export const getMembersAPI = () =>
   api.get('members')
+
+export const getPublicLeadersAPI = () =>
+  api.get('members/public-leaders')
 
 export const getMemberByIdAPI = (id) =>
   api.get(`members/${id}`)

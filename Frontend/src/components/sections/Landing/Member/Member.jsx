@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './Member.module.css'
 import {
-  getMembersAPI,
-  normalizeMemberFromApi,
+  getPublicLeadersAPI,
+  normalizePublicMemberFromApi,
 } from '../../../../services/member-service'
-import { getRolesAPI } from '../../../../services/role-service'
 import member1 from '../../../../assets/member/member1.png'
 import member2 from '../../../../assets/member/member2.png'
 import member3 from '../../../../assets/member/member3.png'
@@ -12,15 +11,7 @@ import member4 from '../../../../assets/member/member4.png'
 import member5 from '../../../../assets/member/member5.png'
 
 const AUTO_DELAY = 3000
-const APPROVED_STATUS = 'APPROVED'
 const FALLBACK_IMAGES = [member1, member3, member4, member5, member2]
-
-const normalizeRoleText = (value) =>
-  String(value || '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
 
 const isImagePath = (value) =>
   typeof value === 'string' && (
@@ -57,42 +48,13 @@ export default function Members() {
   useEffect(() => {
     let ignore = false
 
-    Promise.allSettled([getMembersAPI(), getRolesAPI()])
-      .then(([membersResult, rolesResult]) => {
+    getPublicLeadersAPI()
+      .then((data) => {
         if (ignore) return
 
-        if (membersResult.status !== 'fulfilled' || !Array.isArray(membersResult.value)) {
-          setMembers([])
-          setApiError(membersResult.reason?.message || 'Không tải được danh sách ban lãnh đạo.')
-          return
-        }
-
-        const roles = rolesResult.status === 'fulfilled' && Array.isArray(rolesResult.value)
-          ? rolesResult.value
+        const leaders = Array.isArray(data)
+          ? data.map(normalizePublicMemberFromApi)
           : []
-        const rolePriorityByName = new Map(
-          roles
-            .filter((role) => role.roleName && role.priority != null)
-            .map((role) => [normalizeRoleText(role.roleName), Number(role.priority)])
-        )
-        const priorities = roles
-          .map((role) => Number(role.priority))
-          .filter((priority) => Number.isFinite(priority))
-        const lowestPriority = priorities.length ? Math.max(...priorities) : null
-
-        const leaders = membersResult.value
-          .filter((member) => member.reqStatus === APPROVED_STATUS)
-          .map(normalizeMemberFromApi)
-          .filter((member) => {
-            const normalizedRole = normalizeRoleText(member.role)
-            const priority = rolePriorityByName.get(normalizedRole)
-
-            if (lowestPriority != null && priority != null) {
-              return priority < lowestPriority
-            }
-
-            return normalizedRole !== normalizeRoleText('Thành viên')
-          })
 
         setMembers(leaders)
         setActive(0)
@@ -207,11 +169,6 @@ export default function Members() {
               <div className={styles.info}>
                 <p className={styles.name}>{member.name}</p>
                 <p className={styles.role}>{member.role}</p>
-                {isActive && (
-                  <p className={styles.bio}>
-                    Thành viên tích cực của CLB, đóng góp nhiều giá trị cho cộng đồng học thuật.
-                  </p>
-                )}
               </div>
             </div>
           )

@@ -27,6 +27,7 @@ check-figma-connection.js
 mcp.json
 node_modules
 Backend/data/
+Backend/uploads/
 
 ### IntelliJ IDEA ###
 .idea/

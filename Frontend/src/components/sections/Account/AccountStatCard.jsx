@@ -1,10 +1,12 @@
 import styles from "./AccountStatCard.module.css";
 
-export default function AccountStatCard({ icon: Icon, label, value, sub, variant = "default" }) {
+export default function AccountStatCard({ icon, label, value, sub, variant = "default" }) {
+  const IconComponent = icon;
+
   return (
     <div className={`${styles.card} ${styles[variant]}`}>
       <div className={styles.iconWrap}>
-        <Icon size={18} />
+        <IconComponent size={18} />
       </div>
       <div>
         <p className={styles.label}>{label}</p>

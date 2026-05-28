@@ -28,7 +28,7 @@ export default function ResourceUserPage() {
   const [activeFormat, setActiveFormat] = useState('Tất cả');
   const [activeSource, setActiveSource] = useState('Tất cả');
   const [activeSubject, setActiveSubject] = useState('Tất cả');
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory] = useState(null);
   const [selectedMajor, setSelectedMajor] = useState(null);
   const [selectedSubjectFolder, setSelectedSubjectFolder] = useState(null);
   const [selectedFolderId, setSelectedFolderId] = useState(null);

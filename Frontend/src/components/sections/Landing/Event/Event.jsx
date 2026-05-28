@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  getEventsAPI,
-  normalizeEventFromApi,
+  getPublicUpcomingEventsAPI,
+  normalizePublicEventFromApi,
 } from '../../../../services/event-service';
 import { eventsData } from '../../../../data/Public/content';
 import styles from './Event.module.css';
 
 const INITIAL_VISIBLE = 3;
-const ACTIVE_STATUSES = new Set(['upcoming', 'published']);
 
 const formatEventDescription = (event) => {
   const parts = [];
@@ -46,13 +45,12 @@ export default function Events() {
   useEffect(() => {
     let ignore = false;
 
-    getEventsAPI()
+    getPublicUpcomingEventsAPI()
       .then((data) => {
         if (ignore) return;
         const nextEvents = Array.isArray(data)
           ? data
-            .map(normalizeEventFromApi)
-            .filter((event) => ACTIVE_STATUSES.has(event.status))
+            .map(normalizePublicEventFromApi)
             .sort((a, b) => {
               const aTime = a.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER;
               const bTime = b.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER;

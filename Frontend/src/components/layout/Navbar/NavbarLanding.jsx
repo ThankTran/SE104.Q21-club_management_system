@@ -52,6 +52,15 @@ export default function NavbarLanding({ onLoginClick }) {
     setMenuOpen(false)
   }
 
+  const handleLoginClick = () => {
+    if (onLoginClick) {
+      onLoginClick()
+      return
+    }
+    navigate('/signin')
+    setMenuOpen(false)
+  }
+
   return (
     <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`}>
       <div
@@ -89,7 +98,7 @@ export default function NavbarLanding({ onLoginClick }) {
       </ul>
 
       <div className={styles.actions}>
-        <button className="btn-outline" onClick={onLoginClick}>
+        <button className="btn-outline" onClick={handleLoginClick}>
           Đăng nhập
         </button>
       </div>
@@ -134,7 +143,7 @@ export default function NavbarLanding({ onLoginClick }) {
             </a>
           ))}
           <div className={styles.drawerActions}>
-            <button className="btn-outline" onClick={onLoginClick}>
+            <button className="btn-outline" onClick={handleLoginClick}>
               Đăng nhập
             </button>
           </div>
