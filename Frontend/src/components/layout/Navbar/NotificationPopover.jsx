@@ -155,10 +155,6 @@ const NotificationPopover = ({
                 <Trash2 size={16} />
                 <span>Xóa tất cả thông báo</span>
               </button>
-              <button className={styles.menuItem} onClick={() => setShowMoreMenu(false)}>
-                <Settings size={16} />
-                <span>Cài đặt thông báo</span>
-              </button>
             </div>
           )}
         </div>
