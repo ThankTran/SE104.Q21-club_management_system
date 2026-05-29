@@ -16,7 +16,7 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!form.username.trim() || !form.password) {
-      setFormError("Vui long nhap day du ten dang nhap va mat khau");
+      setFormError("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.");
       return;
     }
 
@@ -33,7 +33,7 @@ const LoginPage = () => {
         <input
           name="username"
           type="text"
-          placeholder="Ten dang nhap"
+          placeholder="Tên đăng nhập"
           value={form.username}
           onChange={handleChange}
           className={styles.textInput}
@@ -41,7 +41,7 @@ const LoginPage = () => {
         <input
           name="password"
           type="password"
-          placeholder="Mat khau"
+          placeholder="Mật khẩu"
           value={form.password}
           onChange={handleChange}
           className={styles.pwInput}
@@ -53,7 +53,7 @@ const LoginPage = () => {
           </div>
         </div>
         <button type="submit" className={styles.button} disabled={loading}>
-          {loading ? "Dang dang nhap..." : "Dang nhap"}
+          {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </button>
       </form>
     </AuthLayout>
