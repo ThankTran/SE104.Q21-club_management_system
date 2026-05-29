@@ -104,11 +104,15 @@ export default function HelpPage() {
   const [optionsOffset, setOptionsOffset] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const chatEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Auto scroll chat
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
     }
   }, [chatMessages, isTyping]);
 
@@ -335,25 +339,27 @@ export default function HelpPage() {
           <p className={styles.bannerSubtitle}>
             Tìm kiếm câu trả lời nhanh chóng hoặc gửi yêu cầu hỗ trợ đến Ban quản trị câu lạc bộ.
           </p>
-          <div className={styles.searchBox}>
-            <img src={searchIcon} alt="Search" className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Nhập từ khóa tìm kiếm (ví dụ: đóng quỹ, tài liệu, sự kiện...)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.searchInput}
-            />
-            {searchQuery && (
-              <button
-                className={styles.clearSearch}
-                onClick={() => setSearchQuery("")}
-                title="Xóa tìm kiếm"
-              >
-                ×
-              </button>
-            )}
-          </div>
+          {activeRightTab === "form" && (
+            <div className={styles.searchBox}>
+              <img src={searchIcon} alt="Search" className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Nhập từ khóa tìm kiếm (ví dụ: đóng quỹ, tài liệu, sự kiện...)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+              {searchQuery && (
+                <button
+                  className={styles.clearSearch}
+                  onClick={() => setSearchQuery("")}
+                  title="Xóa tìm kiếm"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -475,7 +481,7 @@ export default function HelpPage() {
               </div>
 
               {/* Chat Scroll Area */}
-              <div className={styles.aiChatContent}>
+              <div className={styles.aiChatContent} ref={chatContainerRef}>
                 {chatMessages.map((msg) => {
                   if (msg.sender === "bot") {
                     return (
