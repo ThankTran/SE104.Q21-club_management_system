@@ -1,26 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styles from "./SettingsPage.module.css";
 import useScrollReveal from "../../hooks/useScrollReveal";
-import useAuthStore from "../../store/auth-store";
-import {
-  createDepartmentAPI,
-  deleteDepartmentAPI,
-  getDepartmentsAPI,
-} from "../../services/department-service";
-import {
-  getMonthlyDueAmountAPI,
-  saveMonthlyDueAmountAPI,
-} from "../../services/system-setting-service";
-import {
-  createSubjectAPI,
-  deleteSubjectAPI,
-  getSubjectsAPI,
-  updateSubjectAPI,
-} from "../../services/subject-service";
 
 import notiIcon from "../../assets/icons/noti.svg";
 import shieldIcon from "../../assets/icons/shield.svg";
-import preferencesIcon from "../../assets/icons/preferences.svg";
 import settingIcon from "../../assets/icons/setting.svg";
 
 const DEFAULT_FUND_AMOUNT = "50000";
@@ -44,42 +27,11 @@ export default function SettingsPage() {
   useScrollReveal();
   const currentUser = useAuthStore((state) => state.user);
 
-  const [activeTab, setActiveTab] = useState("general");
-  const [toast, setToast] = useState({
-    show: false,
-    message: "",
-    type: "success",
-  });
+  // Active Tab State: 'notifications' | 'system'
+  const [activeTab, setActiveTab] = useState("notifications");
 
-  const [generalSettings, setGeneralSettings] = useState({
-    username: "Nguyễn Văn A",
-    language: "vi",
-    theme: "light",
-    defaultView: "/home",
-  });
-
-  const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    activityUpdates: true,
-    financeReminder: false,
-    documentUploads: true,
-    eventRegistrations: true,
-  });
-
-  const [departments, setDepartments] = useState([]);
-  const [newDept, setNewDept] = useState("");
-  const [subjects, setSubjects] = useState([]);
-  const [newSubject, setNewSubject] = useState("");
-  const [editingSubjectId, setEditingSubjectId] = useState(null);
-  const [editingSubjectName, setEditingSubjectName] = useState("");
-  const [fundAmount, setFundAmount] = useState(DEFAULT_FUND_AMOUNT);
-  const [systemLoading, setSystemLoading] = useState(true);
-  const [isAddingDept, setIsAddingDept] = useState(false);
-  const [isAddingSubject, setIsAddingSubject] = useState(false);
-  const [savingSubjectId, setSavingSubjectId] = useState(null);
-  const [removingDeptId, setRemovingDeptId] = useState(null);
-  const [removingSubjectId, setRemovingSubjectId] = useState(null);
-  const [savingSystem, setSavingSystem] = useState(false);
+  // Toast feedback state
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -137,15 +89,6 @@ export default function SettingsPage() {
       ignore = true;
     };
   }, []);
-
-  const handleGeneralSave = (e) => {
-    e.preventDefault();
-    if (!generalSettings.username.trim()) {
-      showToast("Tên hiển thị không được để trống", "error");
-      return;
-    }
-    showToast("Đã lưu thiết lập giao diện và tài khoản thành công!");
-  };
 
   const handleToggleNoti = (key) => {
     setNotifications((prev) => {
@@ -355,16 +298,6 @@ export default function SettingsPage() {
         <div className={`${styles.navTabs} reveal-left`}>
           <button
             className={`${styles.tabBtn} ${
-              activeTab === "general" ? styles.activeTab : ""
-            }`}
-            onClick={() => setActiveTab("general")}
-          >
-            <img src={preferencesIcon} alt="" className={styles.tabIcon} />
-            <span>Tài khoản & Giao diện</span>
-          </button>
-
-          <button
-            className={`${styles.tabBtn} ${
               activeTab === "notifications" ? styles.activeTab : ""
             }`}
             onClick={() => setActiveTab("notifications")}
@@ -385,58 +318,7 @@ export default function SettingsPage() {
         </div>
 
         <div className={`${styles.contentCard} reveal-right`}>
-          {activeTab === "general" && (
-            <div className={styles.tabContent}>
-              <div className={styles.contentHeader}>
-                <h2>Tài khoản & Giao diện</h2>
-                <p>Điều chỉnh các tùy chọn hiển thị cơ bản của bạn.</p>
-              </div>
-              <form onSubmit={handleGeneralSave} className={styles.settingsForm}>
-                <div className={styles.formGrid}>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="settings-language">Ngôn ngữ giao diện</label>
-                    <select
-                      id="settings-language"
-                      value={generalSettings.language}
-                      onChange={(e) =>
-                        setGeneralSettings((prev) => ({
-                          ...prev,
-                          language: e.target.value,
-                        }))
-                      }
-                    >
-                      <option value="vi">Tiếng Việt (Vietnamese)</option>
-                      <option value="en">Tiếng Anh (English)</option>
-                    </select>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="settings-theme">Giao diện (Theme)</label>
-                    <select
-                      id="settings-theme"
-                      value={generalSettings.theme}
-                      onChange={(e) =>
-                        setGeneralSettings((prev) => ({
-                          ...prev,
-                          theme: e.target.value,
-                        }))
-                      }
-                    >
-                      <option value="light">Sáng (Light Mode)</option>
-                      <option value="dark">Tối (Dark Mode)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className={styles.formActions}>
-                  <button type="submit" className={styles.saveSubmitBtn}>
-                    Lưu thiết lập
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
+          {/* TAB 2: NOTIFICATIONS */}
           {activeTab === "notifications" && (
             <div className={styles.tabContent}>
               <div className={styles.contentHeader}>
