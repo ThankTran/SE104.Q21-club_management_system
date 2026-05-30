@@ -28,6 +28,7 @@
 - [Testing & Build](#-testing--build)
 - [Development Conventions](#-development-conventions)
 - [Future Improvements](#-future-improvements)
+- [Contributors](#-contributors)
 - [License](#-license)
 
 ---
@@ -474,6 +475,19 @@ npm run preview
 - Add OpenAPI / Swagger documentation
 - Expand automated testing coverage
 - Add CI/CD pipelines for linting, testing, and deployment
+
+---
+
+# 🤝 Contributors
+
+This project was developed by the following team members:
+
+| Name | GitHub |
+| --- | --- |
+| Tran Thi Hong Thanh | [ThankTran](https://github.com/ThankTran) |
+| Le Ngoc Minh Nhat | [Lenhat14810](https://github.com/Lenhat14810) |
+| Nguyen Ai My | [my](https://github.com/my) |
+| Pham Hoang Gia Hien | [hienpham0344](https://github.com/hienpham0344) |
 
 ---
 
