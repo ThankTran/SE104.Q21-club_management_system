@@ -5,7 +5,23 @@ import useScrollReveal from "../../hooks/useScrollReveal";
 import notiIcon from "../../assets/icons/noti.svg";
 import shieldIcon from "../../assets/icons/shield.svg";
 import settingIcon from "../../assets/icons/setting.svg";
+import {
+    getDepartmentsAPI,
+    createDepartmentAPI,
+    deleteDepartmentAPI,
+} from "../../services/department-service";
 
+import {
+    getSubjectsAPI,
+    createSubjectAPI,
+    updateSubjectAPI,
+    deleteSubjectAPI,
+} from "../../services/subject-service";
+
+import {
+    getMonthlyDueAmountAPI,
+    saveMonthlyDueAmountAPI,
+} from "../../services/system-setting-service";
 const DEFAULT_FUND_AMOUNT = "50000";
 
 const getErrorMessage = (error, fallback) => {
@@ -25,13 +41,41 @@ const normalizeSubject = (subject = {}) => ({
 
 export default function SettingsPage() {
   useScrollReveal();
-  const currentUser = useAuthStore((state) => state.user);
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
 
   // Active Tab State: 'notifications' | 'system'
   const [activeTab, setActiveTab] = useState("notifications");
 
   // Toast feedback state
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+    const [notifications, setNotifications] = useState({
+        emailAlerts: true,
+        activityUpdates: true,
+        financeReminder: true,
+        documentUploads: true,
+        eventRegistration: true,
+    });
+
+    const [systemLoading, setSystemLoading] = useState(false);
+    const [savingSystem, setSavingSystem] = useState(false);
+
+    const [departments, setDepartments] = useState([]);
+    const [subjects, setSubjects] = useState([]);
+
+    const [newDept, setNewDept] = useState("");
+    const [newSubject, setNewSubject] = useState("");
+
+    const [fundAmount, setFundAmount] = useState(DEFAULT_FUND_AMOUNT);
+
+    const [isAddingDept, setIsAddingDept] = useState(false);
+    const [removingDeptId, setRemovingDeptId] = useState(null);
+
+    const [isAddingSubject, setIsAddingSubject] = useState(false);
+    const [editingSubjectId, setEditingSubjectId] = useState(null);
+    const [editingSubjectName, setEditingSubjectName] = useState("");
+    const [savingSubjectId, setSavingSubjectId] = useState(null);
+    const [removingSubjectId, setRemovingSubjectId] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });

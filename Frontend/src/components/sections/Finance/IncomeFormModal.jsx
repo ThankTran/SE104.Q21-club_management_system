@@ -5,7 +5,7 @@ import { EMPTY_THU, HINH_THUC_OPTIONS } from '../Finance/financeConstants';
 
 import { toInputDate } from '../../../utils/Finance/financeUtils';
 
-export default function IncomeFormModal({ open, onClose, onSubmit, initial, loading }) {
+export default function IncomeFormModal({ open, onClose, onSubmit, initial, loading, memberOptions = [] }) {
   const isEdit = !!initial;
   const [form, setForm] = useState(EMPTY_THU);
   const [errors, setErrors] = useState({});
@@ -20,6 +20,7 @@ export default function IncomeFormModal({ open, onClose, onSubmit, initial, load
           ...initial, 
           soTien: initial.soTien || '', 
           maSuKien: initial.maSuKien || '' ,
+          memberId: initial.memberId || initial.raw?.memberId || '',
           ngayThu: toInputDate(initial.ngayThu),
         } 
         : EMPTY_THU
@@ -51,14 +52,31 @@ export default function IncomeFormModal({ open, onClose, onSubmit, initial, load
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payers = parsePayers(form.nguoiNop);
     if (isTransfer) {
-      onSubmit(payers.map((nguoiNop) => ({ ...form, mode: 'transfer', nguoiNop, soTien: Number(form.soTien) })));
+      onSubmit(payers.map((nguoiNop) => {
+        const member = resolveMember(nguoiNop, memberOptions);
+        return {
+          ...form,
+          mode: 'transfer',
+          nguoiNop: member?.name || nguoiNop,
+          memberId: member?.memberId || form.memberId || null,
+          soTien: Number(form.soTien),
+        };
+      }));
       return;
     }
     if (isEdit) {
       onSubmit({ ...form, nguoiNop: payers[0], soTien: Number(form.soTien) });
       return;
     }
-    onSubmit(payers.map((nguoiNop) => ({ ...form, nguoiNop, soTien: Number(form.soTien) })));
+    onSubmit(payers.map((nguoiNop) => {
+      const member = resolveMember(nguoiNop, memberOptions);
+      return {
+        ...form,
+        nguoiNop: member?.name || nguoiNop,
+        memberId: member?.memberId || form.memberId || null,
+        soTien: Number(form.soTien),
+      };
+    }));
   };
 
   return (
@@ -125,6 +143,29 @@ export default function IncomeFormModal({ open, onClose, onSubmit, initial, load
               )}
             </Field>
           </div>
+          {!isEdit && memberOptions.length > 0 && (
+            <Field label="Chọn nhanh thành viên">
+              <select
+                className={styles.select}
+                value={form.memberId || ''}
+                onChange={(event) => {
+                  const member = memberOptions.find((item) => String(item.memberId) === event.target.value);
+                  setForm((current) => ({
+                    ...current,
+                    memberId: event.target.value,
+                    nguoiNop: member ? member.name : current.nguoiNop,
+                  }));
+                }}
+              >
+                <option value="">-- Chọn thành viên --</option>
+                {memberOptions.map((member) => (
+                  <option key={member.memberId || member.id} value={member.memberId}>
+                    {member.name} {member.id ? `(${member.id})` : ''}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
           <Field 
             label={
               <>
@@ -211,4 +252,30 @@ function parsePayers(value) {
     .split(/\r?\n|,/)
     .map((name) => name.trim())
     .filter(Boolean);
+}
+
+function resolveMember(value, memberOptions) {
+  const keyword = normalizeLookup(value);
+  if (!keyword) return null;
+
+  return memberOptions.find((member) => {
+    const memberId = String(member.memberId || '');
+    const studentId = normalizeLookup(member.id || '');
+    const name = normalizeLookup(member.name || '');
+    const email = normalizeLookup(member.email || '');
+    return (
+      memberId === keyword ||
+      studentId === keyword ||
+      name === keyword ||
+      email === keyword
+    );
+  }) || null;
+}
+
+function normalizeLookup(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
 }

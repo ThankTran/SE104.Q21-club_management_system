@@ -71,7 +71,7 @@ export const toMemberPayload = (member = {}) => ({
   phoneNumber: member.phone,
   dateOfBirth: member.dateOfBirth,
   gender: GENDER_API[member.gender] || member.gender,
-  graduatedStatus: GRADUATION_API[member.graduationStatus] || member.graduationStatus,
+  graduatedStatus: GRADUATION_API[member.graduationStatus] || member.graduationStatus || 'ACTIVE',
   roleName: member.role,
 })
 

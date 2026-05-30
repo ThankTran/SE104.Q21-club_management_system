@@ -12,7 +12,10 @@ export const createUserAPI = (payload) =>
 export const updateUserForAdminAPI = (userId, payload) =>
   api.patch(`users/${userId}/admin`, payload)
 
-export const normalizeAccountFromApi = (user = {}, passwordHash = '') => {
+export const getUserSessionsAPI = (userId) =>
+  api.get(`users/${userId}/sessions`)
+
+export const normalizeAccountFromApi = (user = {}, passwordHash = '', sessions = []) => {
   const studentId = user.studentId || ''
   const memberId = user.memberId ? String(user.memberId) : ''
 
@@ -29,10 +32,10 @@ export const normalizeAccountFromApi = (user = {}, passwordHash = '') => {
     role: user.roleName || 'Thành viên',
     department: user.departmentName || '',
     status: user.reqStatus || '',
-    lastLogin: 'Chua co du lieu',
+    lastLogin: sessions[0]?.time || 'Chua co du lieu',
     createdAt: formatDate(user.createdAt),
     updatedAt: formatDate(user.updatedAt),
-    sessions: [],
+    sessions,
     raw: user,
   }
 }
@@ -52,5 +55,30 @@ function formatDate(value) {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+  }).format(date)
+}
+
+export const normalizeLoginSessionFromApi = (session = {}) => ({
+  id: String(session.sessionId || session.id || `${session.loginAt || ''}-${session.ipAddress || ''}`),
+  device: session.deviceLabel || 'Thiet bi khong xac dinh',
+  location: 'Khong co du lieu vi tri',
+  ip: session.ipAddress || '',
+  userAgent: session.userAgent || '',
+  time: formatDateTime(session.loginAt),
+  raw: session,
+})
+
+function formatDateTime(value) {
+  if (!value) return 'Chua cap nhat'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(date)
 }

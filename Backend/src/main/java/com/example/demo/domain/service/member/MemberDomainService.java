@@ -12,6 +12,10 @@ public interface MemberDomainService {
 
     void validateEmailFormat(String email);
 
+    void validateFullNameFormat(String fullName);
+
+    void validatePhoneFormat(String phone);
+
     void validateDefaultStatus(ApprovalStatusEnum status);
 
     void validateGender(GenderEnum gender);

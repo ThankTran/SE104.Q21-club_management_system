@@ -18,8 +18,8 @@ export const ROLES = [
   'Thành viên',
 ];
 
-export const GRADUATION_STATUSES = ['Chưa tốt nghiệp', 'Đã tốt nghiệp'];
 export const GENDERS = ['Nam', 'Nữ'];
+const ACTIVE_GRADUATION_STATUS = 'Chưa tốt nghiệp';
 
 const EMPTY_FORM = {
   id: '',
@@ -28,7 +28,7 @@ const EMPTY_FORM = {
   department: '',
   dateOfBirth: '',
   gender: '',
-  graduationStatus: 'Chưa tốt nghiệp',
+  graduationStatus: ACTIVE_GRADUATION_STATUS,
   role: 'Thành viên',
   phone: '',
 };
@@ -78,7 +78,12 @@ export default function MemberForm({
     else if (!/^\d{6,12}$/.test(studentId)) errs.id = 'MSSV phải là dãy số hợp lệ';
     else if (existingLookup.some((m) => m.id === studentId)) errs.id = 'MSSV đã tồn tại';
 
-    if (!form.name.trim()) errs.name = 'Vui lòng nhập họ tên';
+    const fullName = form.name.trim().replace(/\s+/g, ' ');
+    const phone = form.phone.replace(/[\s.-]/g, '');
+
+    if (!fullName) errs.name = 'Vui lòng nhập họ tên';
+    else if (fullName.length < 2 || fullName.length > 80) errs.name = 'Họ tên phải từ 2-80 ký tự';
+    else if (!/^[\p{L}][\p{L}\s'-]*$/u.test(fullName)) errs.name = 'Họ tên chỉ gồm chữ cái, khoảng trắng, dấu nháy hoặc gạch nối';
     if (!email) errs.email = 'Vui lòng nhập email';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Email không hợp lệ';
     else if (existingLookup.some((m) => m.email?.toLowerCase() === email)) errs.email = 'Email đã tồn tại';
@@ -86,11 +91,8 @@ export default function MemberForm({
     if (!form.department) errs.department = 'Vui lòng chọn khoa';
     if (!form.dateOfBirth) errs.dateOfBirth = 'Vui lòng chọn ngày sinh';
     if (!GENDERS.includes(form.gender)) errs.gender = 'Giới tính chỉ được là Nam hoặc Nữ';
-    if (!GRADUATION_STATUSES.includes(form.graduationStatus)) {
-      errs.graduationStatus = 'Tình trạng tốt nghiệp không hợp lệ';
-    } else if (form.graduationStatus !== 'Chưa tốt nghiệp') {
-      errs.graduationStatus = 'Thành viên phải là sinh viên chưa tốt nghiệp';
-    }
+    if (!phone) errs.phone = 'Vui lòng nhập số điện thoại';
+    else if (!/^(0\d{9}|\+84\d{9})$/.test(phone)) errs.phone = 'Số điện thoại phải có dạng 0xxxxxxxxx hoặc +84xxxxxxxxx';
     if (!form.role) errs.role = 'Vui lòng chọn vai trò';
     else if (!roles.includes(form.role)) errs.role = 'Vai trò không hợp lệ';
 
@@ -108,9 +110,10 @@ export default function MemberForm({
     onSubmit({
       ...form,
       id: form.id.trim(),
-      name: form.name.trim(),
+      name: form.name.trim().replace(/\s+/g, ' '),
       email: form.email.trim(),
-      phone: form.phone.trim(),
+      phone: form.phone.replace(/[\s.-]/g, ''),
+      graduationStatus: ACTIVE_GRADUATION_STATUS,
     });
   };
 
@@ -153,8 +156,8 @@ export default function MemberForm({
             <Field label="Email *" error={errors.email}>
               <input className={`${styles.input} ${errors.email ? styles.inputError : ''}`} type="email" value={form.email} onChange={handleChange('email')} placeholder="example@student.edu.vn" />
             </Field>
-            <Field label="Số điện thoại">
-              <input className={styles.input} type="tel" value={form.phone} onChange={handleChange('phone')} placeholder="0912 345 678" />
+            <Field label="Số điện thoại *" error={errors.phone}>
+              <input className={`${styles.input} ${errors.phone ? styles.inputError : ''}`} type="tel" value={form.phone} onChange={handleChange('phone')} placeholder="0912345678" />
             </Field>
           </div>
 
@@ -178,18 +181,11 @@ export default function MemberForm({
           </Field>
 
           <div className={styles.sectionTitle}>Phân quyền</div>
-          <div className={styles.row2}>
-            <Field label="Vai trò *" error={errors.role}>
-              <select className={`${styles.select} ${errors.role ? styles.inputError : ''}`} value={form.role} onChange={handleChange('role')}>
-                {roles.map((item) => <option key={item} value={item}>{item}</option>)}
-              </select>
-            </Field>
-            <Field label="Tình trạng tốt nghiệp *" error={errors.graduationStatus}>
-              <select className={`${styles.select} ${errors.graduationStatus ? styles.inputError : ''}`} value={form.graduationStatus} onChange={handleChange('graduationStatus')}>
-                {GRADUATION_STATUSES.map((item) => <option key={item} value={item}>{item}</option>)}
-              </select>
-            </Field>
-          </div>
+          <Field label="Vai trò *" error={errors.role}>
+            <select className={`${styles.select} ${errors.role ? styles.inputError : ''}`} value={form.role} onChange={handleChange('role')}>
+              {roles.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </Field>
 
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>Hủy</button>

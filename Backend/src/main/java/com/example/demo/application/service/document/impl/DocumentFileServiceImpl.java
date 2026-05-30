@@ -43,9 +43,7 @@ public class DocumentFileServiceImpl implements DocumentFileService {
     }
 
     @Override
-    @CacheEvict(
-            key = "'document:' + #request.documentId",
-            condition = "#request != null && #request.documentId != null")
+    @CacheEvict(cacheNames = {"documentFiles", "documents"}, allEntries = true)
     public DocumentFileResponse create(DocumentFileRequest request) {
         Document document = documentRepository.findById(request.getDocumentId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài liệu: " + request.getDocumentId()));

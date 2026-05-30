@@ -68,9 +68,8 @@ public class DashboardServiceImpl implements DashboardService {
                 .filter(event -> event.getReqStatus() == ApprovalStatusEnum.PENDING)
                 .count()
                 + documents.stream()
-                .filter(document -> document.getReqStatus() == ApprovalStatusEnum.PENDING)
+                .filter(document -> document.getReqStatus() == ApprovalStatusEnum.PENDING || document.getReqStatus() == ApprovalStatusEnum.REQUESTED_CHANGES)
                 .count();
-
         return List.of(
                 stat("Thành viên", members.size(), "#3b82f6", "#eff6ff", "#bfdbfe", "Tổng trong CLB", null),
                 stat("Sự kiện tháng này", eventsThisMonth, "#f59e0b", "#fffbeb", "#fde68a", "Đã lên lịch", null),

@@ -50,6 +50,10 @@ public class AccessControlInterceptor implements HandlerInterceptor {
             writeError(response, HttpStatus.UNAUTHORIZED, "Missing or invalid authorization token");
             return false;
         }
+        if (currentUser == null) {
+            writeError(response, HttpStatus.UNAUTHORIZED, "Missing or invalid authorization token");
+            return false;
+        }
 
         boolean manager = isManager(currentUser);
         request.setAttribute(CURRENT_USER_ATTRIBUTE, currentUser);
@@ -112,6 +116,10 @@ public class AccessControlInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        if ("PATCH".equalsIgnoreCase(method) && matches(path, "/api/transactions/*/complete")) {
+            return true;
+        }
+
         if ("DELETE".equalsIgnoreCase(method) && matchesOwnMember(path, memberId,
                 "^/api/notification-recipients/\\d+/members/(\\d+)$",
                 "^/api/events/[^/]+/registrations/(\\d+)$")) {
@@ -120,6 +128,7 @@ public class AccessControlInterceptor implements HandlerInterceptor {
 
         if ("POST".equalsIgnoreCase(method) && (
                 matches(path, "/api/events/*/registrations")
+                        || matches(path, "/api/ai/help")
                         || matches(path, "/api/documents")
                         || matches(path, "/api/document-files"))) {
             return true;

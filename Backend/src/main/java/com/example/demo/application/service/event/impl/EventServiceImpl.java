@@ -18,9 +18,8 @@ import com.example.demo.domain.repository.event.EventRepository;
 import com.example.demo.domain.repository.finance.TransactionRepository;
 import com.example.demo.domain.repository.member.MemberRepository;
 import com.example.demo.domain.service.event.EventDomainService;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -178,10 +177,13 @@ public class EventServiceImpl implements com.example.demo.application.service.ev
         }
 
         String details = buildEventDetails(event);
-        String dates = event.getStartTime().atZone(EVENT_TIMEZONE).withZoneSameInstant(ZoneId.of("UTC"))
+
+        String dates = event.getStartTime().atZone(EVENT_TIMEZONE).toInstant()
+                .atOffset(ZoneOffset.UTC)
                 .format(GOOGLE_CALENDAR_DATE_FORMAT)
                 + "/"
-                + event.getEndTime().atZone(EVENT_TIMEZONE).withZoneSameInstant(ZoneId.of("UTC"))
+                + event.getEndTime().atZone(EVENT_TIMEZONE).toInstant()
+                .atOffset(ZoneOffset.UTC)
                 .format(GOOGLE_CALENDAR_DATE_FORMAT);
 
         String googleCalendarLink = UriComponentsBuilder

@@ -258,7 +258,7 @@ public class DocumentServiceImpl implements DocumentService {
     private DocumentResponse toResponseWithPrimaryFile(Document document) {
         return documentMapper.toResponse(
                 document,
-                documentFileRepository.findFirstByDocumentDocumentIdOrderByUploadedAtAsc(document.getDocumentId())
+                documentFileRepository.findFirstByDocumentDocumentIdOrderByUploadedAtDesc(document.getDocumentId())
                         .orElse(null));
     }
 

@@ -58,6 +58,13 @@
   white-space: nowrap;
 }
 
+.indexCell {
+  width: 56px;
+  color: #64748b;
+  font-weight: 700;
+  text-align: center;
+}
+
 /* ── Member cell ── */
 .memberCell {
   display: flex;

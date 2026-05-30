@@ -10,5 +10,7 @@ public interface DocumentFileRepository extends JpaRepository<DocumentFile, Long
 
     Optional<DocumentFile> findFirstByDocumentDocumentIdOrderByUploadedAtAsc(Long documentId);
 
+    Optional<DocumentFile> findFirstByDocumentDocumentIdOrderByUploadedAtDesc(Long documentId);
+
     boolean existsByDocumentDocumentId(Long documentId);
 }

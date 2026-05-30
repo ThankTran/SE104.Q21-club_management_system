@@ -184,7 +184,7 @@ export default function EventRosterTable({
                     </button>
                   ) : (
                     <button className={styles.statusDoneBtn} disabled>
-                      {hasEvaluation ? 'Đã đánh giá' : 'Đã kết thúc'}
+                      Đã kết thúc
                     </button>
                   )}
                 </td>
@@ -199,18 +199,12 @@ export default function EventRosterTable({
                       <button
                         className={hasEvaluation ? styles.viewEvaluationBtn : styles.evaluateBtn}
                         onClick={() => onEvaluate(event)}
-                        title={hasEvaluation ? 'Xem đánh giá' : 'Đánh giá'}
+                        title={hasEvaluation ? 'Xem đánh giá' : 'Viết đánh giá'}
                       >
                         {hasEvaluation ? (
-                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                          </svg>
+                          'Xem đánh giá'
                         ) : (
-                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 11l3 3L22 4"/>
-                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-                          </svg>
+                          'Viết đánh giá'
                         )}
                       </button>
                     )}

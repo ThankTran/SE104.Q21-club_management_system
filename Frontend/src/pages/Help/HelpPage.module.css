@@ -776,6 +776,30 @@ a.contactValue:hover {
   box-shadow: var(--shadow-light);
 }
 
+.aiSourceBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-bottom: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.aiSourceReal {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.aiSourceFallback {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+}
+
 .botBubbleMessage strong {
   color: var(--primary-900);
 }

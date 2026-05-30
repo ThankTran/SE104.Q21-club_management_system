@@ -23,7 +23,7 @@ public interface TransactionService {
 
     TransactionResponse getById(String id);
 
-    TransactionResponse complete(String id);
+    TransactionResponse complete(String id, Long currentMemberId, boolean currentUserIsManager);
 
     void delete(String id);
 

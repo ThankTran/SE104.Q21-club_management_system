@@ -45,12 +45,14 @@ const matchesMemberSearch = (member, query) => {
     return normalizeSearchText(member[STUDENT_ID_KEY]).includes(normalizedQuery);
   }
 
-  return Object.entries(member).some(([key, value]) => (
-    key !== STUDENT_ID_KEY &&
-    value !== null &&
-    typeof value !== 'object' &&
-    normalizeSearchText(value).includes(normalizedQuery)
-  ));
+  const nameTokens = normalizeSearchText(member.name).split(/\s+/).filter(Boolean);
+  const matchesName = nameTokens.some((token) => token.startsWith(normalizedQuery));
+  const matchesEmail = normalizeSearchText(member.email).includes(normalizedQuery);
+  const matchesPhone = normalizeSearchText(member.phone).replace(/\s+/g, '').includes(
+    normalizedQuery.replace(/\s+/g, ''),
+  );
+
+  return matchesName || matchesEmail || matchesPhone;
 };
 
 export default function MemberAdminPage() {
