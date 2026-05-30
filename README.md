@@ -486,7 +486,7 @@ This project was developed by the following team members:
 | --- | --- |
 | Tran Thi Hong Thanh | [ThankTran](https://github.com/ThankTran) |
 | Le Ngoc Minh Nhat | [Lenhat14810](https://github.com/Lenhat14810) |
-| Nguyen Ai My | [my](https://github.com/my) |
+| Nguyen Ai My | [aimynguyen](https://github.com/aimynguyen) |
 | Pham Hoang Gia Hien | [hienpham0344](https://github.com/hienpham0344) |
 
 ---
