@@ -120,7 +120,7 @@
 
 .table {
   width: 100%;
-  min-width: 1260px;
+  min-width: 1320px;
   border-collapse: collapse;
   font-size: 13.5px;
   font-family: var(--font-family);
@@ -140,6 +140,11 @@
   color: var(--gray-500);
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.table thead th:nth-child(9),
+.table tbody td:nth-child(9) {
+  min-width: 140px;
 }
 
 .row {
@@ -363,10 +368,12 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  flex-wrap: nowrap;
 }
 
 .editBtn,
-.deleteBtn,
+.detailBtn,
+.cancelEventBtn,
 .evaluateBtn,
 .viewEvaluationBtn {
   width: 30px;
@@ -387,6 +394,13 @@
 }
 .editBtn:hover { background: var(--primary-700); color: white; }
 
+.detailBtn {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.detailBtn:hover { background: #1d4ed8; color: white; }
+
 .evaluateBtn {
   background: #ecfdf5;
   color: #047857;
@@ -401,12 +415,12 @@
 }
 .viewEvaluationBtn:hover { background: #1d4ed8; color: white; }
 
-.deleteBtn {
+.cancelEventBtn {
   background: #fff5f5;
   color: #e53e3e;
   border-color: #fed7d7;
 }
-.deleteBtn:hover { background: #e53e3e; color: white; }
+.cancelEventBtn:hover { background: #e53e3e; color: white; }
 
 .pagination {
   display: flex;
