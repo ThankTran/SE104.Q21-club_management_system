@@ -28,7 +28,10 @@ import {
 import { getSubjectsAPI } from '../../services/subject-service';
 import useAuthStore from '../../store/auth-store';
 import styles from './ResourceAdminPage.module.css';
-
+import {
+    getMembersAPI,
+    normalizeMemberFromApi,
+} from '../../services/member-service';
 export default function ResourceAdminPage() {
   const currentUser = useAuthStore((state) => state.user);
   const [resources, setResources] = useState(INITIAL_RESOURCES);
@@ -53,50 +56,97 @@ export default function ResourceAdminPage() {
   const [approveTarget, setApproveTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
 
-  const loadResources = () =>
-    getResourcesAPI()
-      .then((data) => {
-        const nextResources = Array.isArray(data)
-          ? data.map(normalizeResourceFromApi)
-          : [];
-        setResources(nextResources.length ? nextResources : INITIAL_RESOURCES);
-        setApiError('');
-      })
-      .catch((error) => {
-        setResources(INITIAL_RESOURCES);
-        setApiError(error?.message || 'Không tải được danh sách tài liệu từ API.');
-      });
+    const loadResources = () =>
+        Promise.all([getResourcesAPI(), getMembersAPI()])
+            .then(([resourceData, memberData]) => {
+                const normalizedMembers = Array.isArray(memberData)
+                    ? memberData.map(normalizeMemberFromApi)
+                    : [];
 
-  useEffect(() => {
-    let ignore = false;
+                const memberMap = new Map(
+                    normalizedMembers.map((member) => [Number(member.memberId), member])
+                );
 
-    Promise.allSettled([getResourcesAPI(), getResourceTypesAPI(), getSubjectsAPI()])
-      .then(([resourcesResult, typesResult, subjectsResult]) => {
-        if (ignore) return;
+                const nextResources = Array.isArray(resourceData)
+                    ? resourceData.map((resource) =>
+                        normalizeResourceFromApi(
+                            resource,
+                            memberMap.get(Number(resource.proposedById))
+                        )
+                    )
+                    : [];
 
-        if (resourcesResult.status === 'fulfilled') {
-          const nextResources = Array.isArray(resourcesResult.value)
-            ? resourcesResult.value.map(normalizeResourceFromApi)
-            : [];
-          setResources(nextResources.length ? nextResources : INITIAL_RESOURCES);
-          setApiError('');
-        } else {
-          setResources(INITIAL_RESOURCES);
-          setApiError(resourcesResult.reason?.message || 'Không tải được danh sách tài liệu từ API.');
-        }
+                setResources(nextResources.length ? nextResources : INITIAL_RESOURCES);
+                setApiError('');
+            })
+            .catch((error) => {
+                setResources(INITIAL_RESOURCES);
+                setApiError(error?.message || 'Không tải được danh sách tài liệu từ API.');
+            });
 
-        if (typesResult.status === 'fulfilled' && Array.isArray(typesResult.value)) {
-          setResourceTypes(typesResult.value);
-        }
-        if (subjectsResult.status === 'fulfilled' && Array.isArray(subjectsResult.value)) {
-          setSubjectOptions(subjectsResult.value);
-        }
-      });
+    useEffect(() => {
+        let ignore = false;
 
-    return () => {
-      ignore = true;
-    };
-  }, []);
+        Promise.allSettled([
+            getResourcesAPI(),
+            getResourceTypesAPI(),
+            getSubjectsAPI(),
+            getMembersAPI(),
+        ]).then(([resourcesResult, typesResult, subjectsResult, membersResult]) => {
+            if (ignore) return;
+
+            let memberMap = new Map();
+
+            if (
+                membersResult.status === 'fulfilled' &&
+                Array.isArray(membersResult.value)
+            ) {
+                const normalizedMembers = membersResult.value.map(normalizeMemberFromApi);
+
+                memberMap = new Map(
+                    normalizedMembers.map((member) => [Number(member.memberId), member])
+                );
+            }
+
+            if (resourcesResult.status === 'fulfilled') {
+                const nextResources = Array.isArray(resourcesResult.value)
+                    ? resourcesResult.value.map((resource) =>
+                        normalizeResourceFromApi(
+                            resource,
+                            memberMap.get(Number(resource.proposedById))
+                        )
+                    )
+                    : [];
+
+                setResources(nextResources.length ? nextResources : INITIAL_RESOURCES);
+                setApiError('');
+            } else {
+                setResources(INITIAL_RESOURCES);
+                setApiError(
+                    resourcesResult.reason?.message ||
+                    'Không tải được danh sách tài liệu từ API.'
+                );
+            }
+
+            if (
+                typesResult.status === 'fulfilled' &&
+                Array.isArray(typesResult.value)
+            ) {
+                setResourceTypes(typesResult.value);
+            }
+
+            if (
+                subjectsResult.status === 'fulfilled' &&
+                Array.isArray(subjectsResult.value)
+            ) {
+                setSubjectOptions(subjectsResult.value);
+            }
+        });
+
+        return () => {
+            ignore = true;
+        };
+    }, []);
 
   const stats = useMemo(() => ({
     total: resources.length,

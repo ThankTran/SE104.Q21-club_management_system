@@ -39,7 +39,7 @@ export default function ResourceReviewModal({ resource, onClose, onApprove, onRe
             <div className={styles.grid2}>
               <Info label="Họ và tên" value={resource.uploadedBy} />
               <Info label="Mã thành viên" value={resource.memberId} />
-              <Info label="Chức vụ" value={resource.memberRole || '—'} />
+                <Info label="Chức vụ" value={resource.position || resource.memberRole || 'Thành viên'} />
             </div>
           </div>
 

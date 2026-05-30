@@ -23,36 +23,40 @@ const detectFormat = (resource = {}) => {
   return 'Khác'
 }
 
-export const normalizeResourceFromApi = (resource = {}) => ({
-  id: resource.documentId,
-  title: resource.documentName || '',
-  formCode: `TL-${String(resource.documentId || '').padStart(3, '0')}`,
-  typeId: resource.typeId,
-  type: resource.typeName || '',
-  subjectId: resource.subjectId,
-  subject: resource.subjectName || '',
-  status: resource.reqStatus === 'APPROVED'
-    ? 'approved'
-    : resource.reqStatus === 'REJECTED'
-      ? 'rejected'
-      : 'pending',
-  reqStatus: resource.reqStatus,
-  format: detectFormat(resource),
-  source: resource.source || '',
-  description: resource.note || '',
-  link: resolveResourceLink(resource.primaryFileUrl || resource.fileUrl || resource.url || resource.files?.[0]?.fileUrl || ''),
-  fileName: resource.primaryFileName || resource.fileName || resource.files?.[0]?.fileName || '',
-  fileSize: resource.fileSize || resource.files?.[0]?.fileSize || 0,
-  mimeType: resource.mimeType || resource.files?.[0]?.mimeType || '',
-  lookupFolderId: resource.lookupFolderId || '',
-  uploadedBy: resource.proposedById ? String(resource.proposedById) : 'Admin',
-  memberId: resource.proposedById,
-  reviewedBy: resource.approvedById ? String(resource.approvedById) : '',
-  reviewedAt: resource.approvedAt ? String(resource.approvedAt).slice(0, 10) : '',
-  createdAt: resource.createdAt ? String(resource.createdAt).slice(0, 10) : '',
-  note: resource.note || '',
-  raw: resource,
-})
+export const normalizeResourceFromApi = (resource = {}, member = null) => ({
+    id: resource.documentId,
+    title: resource.documentName || '',
+    formCode: `TL-${String(resource.documentId || '').padStart(3, '0')}`,
+    typeId: resource.typeId,
+    type: resource.typeName || '',
+    subjectId: resource.subjectId,
+    subject: resource.subjectName || '',
+    status: resource.reqStatus === 'APPROVED'
+        ? 'approved'
+        : resource.reqStatus === 'REJECTED'
+            ? 'rejected'
+            : 'pending',
+    reqStatus: resource.reqStatus,
+    format: detectFormat(resource),
+    source: resource.source || '',
+    description: resource.note || '',
+    link: resolveResourceLink(resource.primaryFileUrl || resource.fileUrl || resource.url || resource.files?.[0]?.fileUrl || ''),
+    fileName: resource.primaryFileName || resource.fileName || resource.files?.[0]?.fileName || '',
+    fileSize: resource.fileSize || resource.files?.[0]?.fileSize || 0,
+    mimeType: resource.mimeType || resource.files?.[0]?.mimeType || '',
+    lookupFolderId: resource.lookupFolderId || '',
+
+    uploadedBy: member?.name || member?.fullName || resource.proposedByName || '—',
+    memberId: resource.proposedById || member?.memberId || '—',
+    memberCode: member?.id || member?.studentId || resource.proposedById || '—',
+    position: member?.role || member?.roleName || 'Thành viên',
+
+    reviewedBy: resource.approvedById ? String(resource.approvedById) : '',
+    reviewedAt: resource.approvedAt ? String(resource.approvedAt).slice(0, 10) : '',
+    createdAt: resource.createdAt ? String(resource.createdAt).slice(0, 10) : '',
+    note: resource.note || '',
+    raw: resource,
+});
 
 export const toResourcePayload = (resource = {}) => ({
   documentName: resource.title,
