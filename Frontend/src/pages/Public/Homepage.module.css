@@ -354,8 +354,11 @@
   backdrop-filter: blur(6px);
   border: 1px solid rgba(196, 198, 207, 0.15);
   border-radius: 16px;
-  padding: 33px;
-  margin-top: -33px;
+  padding-bottom: 30px;
+  padding-top: 16px;
+  padding-left: 33px;
+  padding-right: 33px;
+  margin-top: -14px;
 }
 
 .eventList {
@@ -552,4 +555,4 @@
   .statusGrid {
     grid-template-columns: 1fr;
   }
-}
+}
