@@ -250,6 +250,11 @@ export default function EventUserPage() {
               onClick={handleDownloadCalendar}
               disabled={registeredEvents.length === 0}
             >
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path d="M8 2v4M16 2v4" />
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M3 10h18M9 15l2 2 4-5" />
+              </svg>
               Thêm vào lịch
             </button>
           </div>

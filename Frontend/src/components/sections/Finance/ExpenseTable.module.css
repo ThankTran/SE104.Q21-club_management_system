@@ -104,11 +104,13 @@
 
 .tableWrap {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
+  max-height: 520px;
 }
 
 .table {
   width: 100%;
+  min-width: max-content;
   border-collapse: collapse;
   font-size: 13.5px;
   font-family: var(--font-family);
@@ -120,6 +122,10 @@
 }
 
 .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--white-soft);
   padding: 12px 18px;
   text-align: left;
   font-size: 11px;
@@ -147,6 +153,7 @@
   padding: 13px 18px;
   vertical-align: middle;
   color: var(--gray-900);
+  white-space: nowrap;
 }
 
 .idBadgeChi {
@@ -195,6 +202,7 @@
 
 .rowActions {
   display: flex;
+  align-items: center;
   gap: 6px;
 }
 
@@ -209,17 +217,29 @@
   white-space: nowrap;
 }
 
-.approveBtn {
-  padding: 5px 12px;
+.approveBtn,
+.rejectBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.approveBtn svg,
+.rejectBtn svg,
+.editBtn svg,
+.deleteBtn svg {
+  flex-shrink: 0;
+}
+
+.approveBtn {
   border: 1.5px solid #86efac;
   background: #dcfce7;
   color: #166534;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: var(--font-family);
-  transition: all 0.15s;
 }
 
 .approveBtn:hover {
@@ -228,16 +248,29 @@
   border-color: #166534;
 }
 
+.rejectBtn {
+  border: 1.5px solid #fcd34d;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.rejectBtn:hover {
+  background: #92400e;
+  color: white;
+  border-color: #92400e;
+}
+
 .editBtn {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 7px;
   border: 1.5px solid var(--primary-300);
   background: var(--primary-100);
   color: var(--primary-700);
-  font-size: 12px;
-  font-weight: 600;
   cursor: pointer;
-  font-family: var(--font-family);
   transition: all 0.15s;
 }
 
@@ -248,15 +281,16 @@
 }
 
 .deleteBtn {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 7px;
   border: 1.5px solid #fca5a5;
   background: #fee2e2;
   color: #b91c1c;
-  font-size: 12px;
-  font-weight: 600;
   cursor: pointer;
-  font-family: var(--font-family);
   transition: all 0.15s;
 }
 

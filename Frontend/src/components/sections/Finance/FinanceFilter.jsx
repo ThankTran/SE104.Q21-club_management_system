@@ -1,6 +1,14 @@
+import { useEffect, useRef } from 'react';
+
 import styles from './FinanceFilter.module.css';
 
 const HINH_THUC_OPTIONS = ['Tiền mặt', 'Chuyển khoản', 'Ví điện tử'];
+
+const CHI_STATUS_OPTIONS = [
+  { value: 'PENDING', label: 'Chờ duyệt' },
+  { value: 'COMPLETED', label: 'Đã duyệt' },
+  { value: 'REJECTED', label: 'Từ chối' },
+];
 
 export default function FinanceFilter({
   open,
@@ -9,6 +17,7 @@ export default function FinanceFilter({
   filters,
   setFilters,
 }) {
+  const wrapRef = useRef(null);
   const isIncome = type === 'income';
 
     const hasFilter = Object.values(filters).some(value => value !== '');
@@ -34,6 +43,7 @@ export default function FinanceFilter({
         setFilters({
         noiDung: '',
         nguoiNhan: '',
+        status: '',
         dateType: '',
         month: '',
         quarter: '',
@@ -42,8 +52,26 @@ export default function FinanceFilter({
     }
     };
 
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [open, setOpen]);
+
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} ref={wrapRef}>
       <button
         type="button"
         className={`${styles.filterBtn} ${hasFilter ? styles.filterBtnActive : ''}`}
@@ -108,6 +136,20 @@ export default function FinanceFilter({
                   value={filters.nguoiNhan}
                   onChange={(e) => updateFilter('nguoiNhan', e.target.value)}
                 />
+              </div>
+
+              <div className={styles.group}>
+                <label className={styles.groupLabel}>Trạng thái</label>
+                <select
+                  className={styles.select}
+                  value={filters.status}
+                  onChange={(e) => updateFilter('status', e.target.value)}
+                >
+                  <option value="">Tất cả</option>
+                  {CHI_STATUS_OPTIONS.map(item => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
+                  ))}
+                </select>
               </div>
             </>
           )}

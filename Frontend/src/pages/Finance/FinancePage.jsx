@@ -58,6 +58,7 @@ export default function FinancePage() {
   const [chiFilters, setChiFilters] = useState({
     noiDung: '',
     nguoiNhan: '',
+    status: '',
     dateType: '',
     month: '',
     quarter: '',
@@ -200,9 +201,15 @@ export default function FinancePage() {
         !chiFilters.nguoiNhan ||
         r.nguoiNhan.toLowerCase().includes(chiFilters.nguoiNhan.toLowerCase());
 
+      const matchStatus =
+        !chiFilters.status ||
+        (chiFilters.status === 'COMPLETED'
+          ? ['COMPLETED', 'APPROVED'].includes(String(r.status || '').toUpperCase())
+          : String(r.status || '').toUpperCase() === chiFilters.status);
+
       const matchDate = matchDateFilter(r.ngayLap, chiFilters);
 
-      return matchSearch && matchNoiDung && matchNguoiNhan && matchDate;
+      return matchSearch && matchNoiDung && matchNguoiNhan && matchStatus && matchDate;
     });
 
     return filtered.sort((a, b) => {
@@ -287,6 +294,19 @@ export default function FinancePage() {
     }
   };
 
+  const handleRejectExpense = async (item) => {
+    try {
+      const updated = await updateTransactionAPI(
+        item.id,
+        toExpensePayload({ ...item, status: 'REJECTED' }),
+      );
+      setChiList((prev) => prev.map((row) => row.id === item.id ? normalizeTransactionFromApi(updated) : row));
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'Không từ chối được phiếu chi.');
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
@@ -360,6 +380,7 @@ export default function FinancePage() {
           onEditChi={openEditChiModal}
           setDeleteTarget={setDeleteTarget}
           onApproveChi={handleApproveExpense}
+          onRejectChi={handleRejectExpense}
           canApproveExpense={canApproveExpense}
           sortChi={sortChi}
           setSortChi={setSortChi}

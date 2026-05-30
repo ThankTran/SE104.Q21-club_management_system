@@ -24,6 +24,7 @@ export default function BaoCaoQuy({ baocaoThang, setBaocaoThang, bcThu, bcChi, b
           <p className={styles.baocaoThang}>Tháng {baocaoThang} / {new Date().getFullYear()}</p>
         </div>
 
+        <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
             <tr><th>STT</th><th>NGÀY</th><th>LOẠI</th><th>HOẠT ĐỘNG / MÃ SỰ KIỆN</th><th>NỘI DUNG</th><th>SỐ TIỀN</th></tr>
@@ -54,6 +55,7 @@ export default function BaoCaoQuy({ baocaoThang, setBaocaoThang, bcThu, bcChi, b
             )}
           </tbody>
         </table>
+        </div>
 
         <div className={styles.baocaoTotals}>
           <div className={styles.totalRow}>

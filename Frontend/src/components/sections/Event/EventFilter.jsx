@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import styles from './EventFilter.module.css';
 
@@ -11,6 +11,7 @@ export default function EventFilter({
   tags,
   onApplyFilters,
 }) {
+  const wrapRef = useRef(null);
   const [draftStatusFilter, setDraftStatusFilter] = useState(statusFilter);
   const [draftTagFilter, setDraftTagFilter] = useState(tagFilter);
 
@@ -19,6 +20,24 @@ export default function EventFilter({
     setDraftStatusFilter(statusFilter);
     setDraftTagFilter(tagFilter);
   }, [open, statusFilter, tagFilter]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [open, setOpen]);
 
   const handleReset = () => {
     setDraftStatusFilter('all');
@@ -34,7 +53,7 @@ export default function EventFilter({
   };
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} ref={wrapRef}>
       <button
         className={styles.filterBtn}
         onClick={() => setOpen(!open)}
