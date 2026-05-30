@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,7 @@ public class GroqHttpChatClient implements GroqChatClient {
     private final String baseUrl;
     private final String model;
 
+    @Autowired
     public GroqHttpChatClient(
             @Value("${groq.api-key:}") String apiKey,
             @Value("${groq.base-url:https://api.groq.com/openai/v1}") String baseUrl,
