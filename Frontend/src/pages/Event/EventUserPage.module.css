@@ -33,12 +33,17 @@
    HERO
 ──────────────────────────────────────── */
 .hero {
+  width: min(100%, 1080px);
+  height: 80px;
   background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-700) 100%);
   border-radius: 16px;
   padding: 36px 40px;
   color: white;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   margin-top: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
 }
 
 .heroTitle {
@@ -59,9 +64,19 @@
   margin: 0 0 22px;
 }
 
-.heroActions { display: flex; gap: 10px; }
+.heroActions {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  display: flex;
+  gap: 10px;
+}
 
 .heroBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 9px 22px;
   border-radius: 8px;
   border: none;
@@ -73,6 +88,7 @@
   font-family: var(--font-family);
   transition: background 0.15s;
 }
+.heroBtnPrimary svg { flex-shrink: 0; }
 .heroBtnPrimary:hover { background: var(--primary-100); }
 .heroBtnPrimary:disabled {
   opacity: 0.55;
@@ -505,8 +521,16 @@
    RESPONSIVE
 ──────────────────────────────────────── */
 @media (max-width: 600px) {
-  .hero { padding: 24px 20px; }
+  .hero {
+    width: 100%;
+    padding: 24px 20px;
+  }
   .heroTitle { font-size: 22px; }
+  .heroSub { padding-right: 0; }
+  .heroActions {
+    position: static;
+    margin-top: 18px;
+  }
   .filterRow { flex-direction: column; align-items: flex-start; }
   .section,
   .sectionfut,

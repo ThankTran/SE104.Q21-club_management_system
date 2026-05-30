@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import styles from './ResourceFilter.module.css';
 
 const TYPES    = ['Giáo trình', 'Slide bài giảng', 'Tài liệu tham khảo', 'Khác'];
@@ -32,6 +34,7 @@ export default function ResourceFilter({
   setStatusFilter,
   showStatus = false,
 }) {
+  const wrapRef = useRef(null);
   const hasFilter =
     typeFilter !== 'all' ||
     formatFilter !== 'all' ||
@@ -45,8 +48,26 @@ export default function ResourceFilter({
     if (showStatus && setStatusFilter) setStatusFilter('all');
   };
 
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [open, setOpen]);
+
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} ref={wrapRef}>
       <button
         className={`${styles.filterBtn} ${hasFilter ? styles.filterBtnActive : ''}`}
         onClick={() => setOpen(!open)}

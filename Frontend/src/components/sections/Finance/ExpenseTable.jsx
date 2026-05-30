@@ -12,6 +12,7 @@ export default function ExpenseTable({
   onEditChi,
   setDeleteTarget,
   onApproveChi,
+  onRejectChi,
   canApproveExpense = false,
   sortChi,
   setSortChi,
@@ -75,10 +76,55 @@ export default function ExpenseTable({
                 <td>
                   <div className={styles.rowActions}>
                     {isPending(r.status) && canApproveExpense && (
-                      <button className={styles.approveBtn} onClick={() => onApproveChi(r)}>Duyệt</button>
+                      <>
+                        <button
+                          className={styles.approveBtn}
+                          onClick={() => onApproveChi(r)}
+                          title="Duyệt phiếu chi"
+                          aria-label="Duyệt phiếu chi"
+                        >
+                          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        </button>
+                        <button
+                          className={styles.rejectBtn}
+                          onClick={() => onRejectChi(r)}
+                          title="Từ chối phiếu chi"
+                          aria-label="Từ chối phiếu chi"
+                        >
+                          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                            <path d="M18 6 6 18" />
+                            <path d="M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </>
                     )}
-                    <button className={styles.editBtn} onClick={() => onEditChi(r)}>Sửa</button>
-                    <button className={styles.deleteBtn} onClick={() => setDeleteTarget(r)}>Xóa</button>
+                    <button
+                      className={styles.editBtn}
+                      onClick={() => onEditChi(r)}
+                      title="Sửa phiếu chi"
+                      aria-label="Sửa phiếu chi"
+                    >
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+                      </svg>
+                    </button>
+                    <button
+                      className={styles.deleteBtn}
+                      onClick={() => setDeleteTarget(r)}
+                      title="Xóa phiếu chi"
+                      aria-label="Xóa phiếu chi"
+                    >
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 7h16" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                        <path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" />
+                        <path d="M9 7V4h6v3" />
+                      </svg>
+                    </button>
                   </div>
                 </td>
               </tr>
