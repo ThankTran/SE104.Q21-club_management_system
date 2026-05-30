@@ -242,6 +242,16 @@ const NavbarFM = () => {
           </div>
         </button>
 
+        {canOpenSettings && (
+          <button
+            className={`${styles.iconBtn} ${isSettingsActive ? styles.activeIconBtn : ""}`}
+            title="Settings"
+            onClick={() => navigate("/settings")}
+          >
+            <img src={setting} alt="Settings" className={styles.iconImg} />
+          </button>
+        )}
+
         <div className={styles.notificationContainer}>
           <button
             className={`${styles.iconBtn} ${showNoti ? styles.activeIconBtn : ""}`}
@@ -265,16 +275,6 @@ const NavbarFM = () => {
             />
           )}
         </div>
-
-        {canOpenSettings && (
-          <button
-            className={`${styles.iconBtn} ${isSettingsActive ? styles.activeIconBtn : ""}`}
-            title="Settings"
-            onClick={() => navigate("/settings")}
-          >
-            <img src={setting} alt="Settings" className={styles.iconImg} />
-          </button>
-        )}
 
         <div className={styles.profileContainer} ref={profileRef}>
           <button
