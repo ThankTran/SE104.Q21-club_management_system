@@ -104,22 +104,6 @@ export default function NavbarLanding({ onLoginClick }) {
       </div>
 
       <button
-        onClick={() => navigate('/home')}
-        style={{
-          background: 'orange',
-          color: '#000',
-          border: 'none',
-          padding: '7px 14px',
-          borderRadius: '6px',
-          fontWeight: '700',
-          cursor: 'pointer',
-          fontSize: '12px',
-        }}
-      >
-        🏠 Test Home
-      </button>
-
-      <button
         className={styles.hamburger}
         onClick={() => setMenuOpen(!menuOpen)}
         aria-label="Toggle menu"
