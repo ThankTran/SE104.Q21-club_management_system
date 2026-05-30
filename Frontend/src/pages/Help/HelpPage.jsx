@@ -10,6 +10,7 @@ import resourcesIcon from "../../assets/icons/resources.svg";
 import financeIcon from "../../assets/icons/finance.svg";
 import VERIFY_ICON from "../../assets/icons/verify.svg";
 import infoIcon from "../../assets/icons/infor.svg";
+import { askHelpAiAPI } from "../../services/help-ai-service";
 
 const FAQ_DATA = [
   {
@@ -168,47 +169,65 @@ export default function HelpPage() {
     }, 500);
   };
 
-  const findBestAnswer = (userQuery) => {
+  const getAiAnswer = async (userQuery) => {
+    try {
+      const response = await askHelpAiAPI(userQuery, "/help");
+      if (response?.answer) {
+        return {
+          answer: response.answer,
+          source: response.source || "FALLBACK"
+        };
+      }
+    } catch {
+      return {
+        answer: "AI đang bận, bạn thử lại sau hoặc gửi yêu cầu hỗ trợ.",
+        source: "FALLBACK"
+      };
+    }
+
     const query = userQuery.toLowerCase().trim();
-    if (!query) return null;
+    if (!query) return { answer: null, source: "FALLBACK" };
     
     // Check exact or direct match of questions
     for (const question of ALL_AGENT_QUESTIONS) {
       if (question.toLowerCase().includes(query) || query.includes(question.toLowerCase())) {
-        return AI_ANSWERS[question];
+        return { answer: AI_ANSWERS[question], source: "FALLBACK" };
       }
     }
     
     // Keyword match logic
     if (query.includes("sự kiện") || query.includes("event") || query.includes("đăng ký")) {
-      return AI_ANSWERS["Quy trình đăng ký tham gia một sự kiện mới như thế nào?"];
+      return { answer: AI_ANSWERS["Quy trình đăng ký tham gia một sự kiện mới như thế nào?"], source: "FALLBACK" };
     }
     if (query.includes("tài liệu") || query.includes("resource") || query.includes("tải lên") || query.includes("pdf")) {
       if (query.includes("dung lượng") || query.includes("giới hạn") || query.includes("mb") || query.includes("định dạng")) {
-        return AI_ANSWERS["Có giới hạn dung lượng và định dạng cho tài liệu tải lên không?"];
+        return { answer: AI_ANSWERS["Có giới hạn dung lượng và định dạng cho tài liệu tải lên không?"], source: "FALLBACK" };
       }
-      return AI_ANSWERS["Làm cách nào để tải tài liệu học thuật lên hệ thống?"];
+      return { answer: AI_ANSWERS["Làm cách nào để tải tài liệu học thuật lên hệ thống?"], source: "FALLBACK" };
     }
     if (query.includes("cập nhật") || query.includes("thông tin") || query.includes("chuyên ngành") || query.includes("major") || query.includes("học tập")) {
-      return AI_ANSWERS["Làm thế nào để cập nhật thông tin học tập và chuyên ngành?"];
+      return { answer: AI_ANSWERS["Làm thế nào để cập nhật thông tin học tập và chuyên ngành?"], source: "FALLBACK" };
     }
     if (query.includes("tài chính") || query.includes("quỹ") || query.includes("thu chi") || query.includes("tiền") || query.includes("phí")) {
       if (query.includes("đóng") || query.includes("nộp")) {
-        return AI_ANSWERS["Làm sao để đóng lệ phí sinh hoạt CLB?"];
+        return { answer: AI_ANSWERS["Làm sao để đóng lệ phí sinh hoạt CLB?"], source: "FALLBACK" };
       }
-      return AI_ANSWERS["Tôi có thể theo dõi tình hình tài chính và quỹ CLB ở đâu?"];
+      return { answer: AI_ANSWERS["Tôi có thể theo dõi tình hình tài chính và quỹ CLB ở đâu?"], source: "FALLBACK" };
     }
     if (query.includes("mật khẩu") || query.includes("cài đặt") || query.includes("bảo mật") || query.includes("thông báo")) {
-      return AI_ANSWERS["Làm sao để thay đổi mật khẩu và cài đặt nhận thông báo?"];
+      return { answer: AI_ANSWERS["Làm sao để thay đổi mật khẩu và cài đặt nhận thông báo?"], source: "FALLBACK" };
     }
     if (query.includes("tuyển") || query.includes("tham gia ban") || query.includes("truyền thông") || query.includes("học thuật") || query.includes("vào clb")) {
-      return AI_ANSWERS["Tôi muốn tham gia Ban Học thuật hoặc Ban Truyền thông của CLB thì làm thế nào?"];
+      return { answer: AI_ANSWERS["Tôi muốn tham gia Ban Học thuật hoặc Ban Truyền thông của CLB thì làm thế nào?"], source: "FALLBACK" };
     }
     if (query.includes("liên hệ") || query.includes("admin") || query.includes("hotline") || query.includes("email") || query.includes("chủ nhiệm") || query.includes("gấp")) {
-      return AI_ANSWERS["Tôi muốn liên hệ gấp với Ban Quản Trị?"];
+      return { answer: AI_ANSWERS["Tôi muốn liên hệ gấp với Ban Quản Trị?"], source: "FALLBACK" };
     }
 
-    return "Cảm ơn bạn đã đặt câu hỏi. Hệ thống chưa tìm thấy tài liệu hướng dẫn khớp hoàn toàn với câu hỏi của bạn.\n\nBạn có thể gửi yêu cầu trực tiếp qua tab **Gửi yêu cầu hỗ trợ** bên cạnh hoặc liên hệ nhanh với Ban Quản trị qua Hotline **0987654321** để được giải đáp tức thì nhé! 💖";
+    return {
+      answer: "Cảm ơn bạn đã đặt câu hỏi. Hệ thống chưa tìm thấy tài liệu hướng dẫn khớp hoàn toàn với câu hỏi của bạn.\n\nBạn có thể gửi yêu cầu trực tiếp qua tab **Gửi yêu cầu hỗ trợ** bên cạnh hoặc liên hệ nhanh với Ban Quản trị qua Hotline **0987654321** để được giải đáp tức thì nhé! 💖",
+      source: "FALLBACK"
+    };
   };
 
   const handleSelectQuestion = (question) => {
@@ -225,12 +244,13 @@ export default function HelpPage() {
     setIsTyping(true);
     
     // AI response delay
-    setTimeout(() => {
-      const answer = findBestAnswer(question);
+    setTimeout(async () => {
+      const result = await getAiAnswer(question);
       const botMsg = {
         id: `bot-${Date.now()}`,
         sender: "bot",
-        text: answer
+        text: result.answer,
+        source: result.source
       };
       setChatMessages(prev => [...prev, botMsg]);
       setIsTyping(false);
@@ -252,12 +272,13 @@ export default function HelpPage() {
     setChatInputValue("");
     setIsTyping(true);
     
-    setTimeout(() => {
-      const answer = findBestAnswer(text);
+    setTimeout(async () => {
+      const result = await getAiAnswer(text);
       const botMsg = {
         id: `bot-${Date.now()}`,
         sender: "bot",
-        text: answer
+        text: result.answer,
+        source: result.source
       };
       setChatMessages(prev => [...prev, botMsg]);
       setIsTyping(false);
@@ -490,6 +511,11 @@ export default function HelpPage() {
                             </div>
                           ) : msg.text ? (
                             <div className={styles.botBubbleMessage}>
+                              {msg.source && (
+                                <span className={`${styles.aiSourceBadge} ${msg.source === "REAL_AI" ? styles.aiSourceReal : styles.aiSourceFallback}`}>
+                                  {msg.source === "REAL_AI" ? "AI thật" : "Hỗ trợ tự động"}
+                                </span>
+                              )}
                               {msg.text.split("\n").map((line, lIdx) => (
                                 <p key={lIdx} style={{ margin: line.trim() === "" ? "10px 0" : "4px 0" }}>
                                   {line}

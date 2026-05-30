@@ -9,6 +9,7 @@ import {
   unregisterEventAPI,
 } from '../../services/event-service';
 import useAuthStore from '../../store/auth-store';
+import { buildRegisteredEventsIcs } from '../../utils/Event/exportIcs';
 import styles from './EventUserPage.module.css';
 
 const PAGE_SIZE = 5;
@@ -23,33 +24,7 @@ const TAGS = [
   { value: 'OTHER', label: 'OTHER' },
 ];
 
-const pad2 = (value) => String(value).padStart(2, '0');
-
-const parseLocalDateTime = (date, time = '00:00') => {
-  if (!date) return null;
-  const [year, month, day] = String(date).split('-').map(Number);
-  const [hour = 0, minute = 0] = String(time || '00:00').split(':').map(Number);
-  if (![year, month, day].every(Number.isFinite)) return null;
-  return new Date(year, month - 1, day, hour, minute, 0);
-};
-
-const formatIcsDate = (date) =>
-  `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}`;
-
-const formatIcsDateTime = (date) =>
-  `${formatIcsDate(date)}T${pad2(date.getHours())}${pad2(date.getMinutes())}${pad2(date.getSeconds())}`;
-
-const formatIcsTimestamp = (date = new Date()) =>
-  `${date.getUTCFullYear()}${pad2(date.getUTCMonth() + 1)}${pad2(date.getUTCDate())}T${pad2(date.getUTCHours())}${pad2(date.getUTCMinutes())}${pad2(date.getUTCSeconds())}Z`;
-
-const escapeIcsText = (value = '') =>
-  String(value)
-    .replace(/\\/g, '\\\\')
-    .replace(/\n/g, '\\n')
-    .replace(/;/g, '\\;')
-    .replace(/,/g, '\\,');
-
-const buildRegisteredEventsIcs = (registeredEvents) => {
+const buildRegisteredEventsIcsLegacy = (registeredEvents) => {
   const dtstamp = formatIcsTimestamp();
   const items = registeredEvents
     .map((event) => {

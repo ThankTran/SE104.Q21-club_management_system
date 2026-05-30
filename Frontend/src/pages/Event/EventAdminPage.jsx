@@ -232,7 +232,11 @@ export default function EventAdminPage() {
       const matchSearch =
         event.title.toLowerCase().includes(query) ||
         event.location.toLowerCase().includes(query);
-      const matchStatus = statusFilter === 'all' || getDisplayStatus(event, evaluations) === statusFilter;
+      const matchStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'completed'
+          ? event.status === 'completed'
+          : getDisplayStatus(event, evaluations) === statusFilter);
       const matchTag = tagFilter === 'all' || event.tag === tagFilter;
 
       return matchSearch && matchStatus && matchTag;
@@ -322,23 +326,6 @@ export default function EventAdminPage() {
             setEvents((prev) =>
                 prev.map((event) => (event.id === eventId ? nextEvent : event)),
             );
-
-            if (nextEvent.evaluation) {
-                setEvaluations((prev) => {
-                    const existed = prev.find((item) => item.eventCode === nextEvent.eventCode);
-                    if (existed) return prev;
-                    return [
-                        ...prev,
-                        {
-                            id: createEvaluationCode(nextEvent.eventCode, prev.length),
-                            eventCode: nextEvent.eventCode,
-                            eventTitle: nextEvent.title,
-                            evaluationDate: nextEvent.evaluationDate || '',
-                            evaluation: nextEvent.evaluation,
-                        },
-                    ];
-                });
-            }
 
             setApiError('');
         } catch (error) {

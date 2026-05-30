@@ -23,7 +23,7 @@ export const normalizeTransactionFromApi = (transaction = {}) => {
       ...base,
       nguoiNop: displayName ? String(displayName) : '',
       lyDo: transaction.description || '',
-      hinhThuc: 'Tien mat',
+      hinhThuc: 'Tiền mặt',
       ngayThu: transactionDate ? String(transactionDate).slice(0, 10) : '',
     }
   }
@@ -57,7 +57,7 @@ export const toIncomePayload = (item = {}) => ({
   amount: Number(item.soTien || 0),
   description: item.lyDo,
   transactionDate: item.ngayThu ? `${item.ngayThu}T12:00:00` : null,
-  status: item.status || 'COMPLETED',
+  status: item.status || (item.memberId ? 'PENDING' : 'COMPLETED'),
   createdById: item.createdById || null,
   approvedById: item.approvedById || null,
 })
@@ -67,11 +67,11 @@ export const toExpensePayload = (item = {}) => ({
   eventId: item.maSuKien || null,
   memberId: item.memberId || null,
   counterpartyName: item.nguoiNhan || '',
-  type: 'Expense',
+  type: 'EXPENSE',
   amount: Number(item.soTien || 0),
   description: item.noiDung,
   transactionDate: item.ngayLap ? `${item.ngayLap}T12:00:00` : null,
-  status: item.status || 'COMPLETED',
+  status: item.status || 'PENDING',
   createdById: item.createdById || null,
   approvedById: item.approvedById || null,
 })

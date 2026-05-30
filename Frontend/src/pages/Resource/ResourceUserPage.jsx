@@ -177,10 +177,16 @@ export default function ResourceUserPage() {
         proposedById: currentUser.memberId,
       }));
 
-      const filePayload = new FormData();
-      filePayload.append('documentId', created.documentId);
-      filePayload.append('file', formData.file);
-      await createResourceFileAPI(filePayload);
+      try {
+        const filePayload = new FormData();
+        filePayload.append('documentId', created.documentId);
+        filePayload.append('file', formData.file);
+        await createResourceFileAPI(filePayload);
+      } catch (uploadError) {
+        await loadResources();
+        setApiError(uploadError?.message || 'Đã tạo phiếu nhưng tải tệp thất bại.');
+        return;
+      }
 
       await loadResources();
       setFormOpen(false);

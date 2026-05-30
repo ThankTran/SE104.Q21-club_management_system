@@ -123,6 +123,7 @@ export default function MemberTable({
         <table className={styles.table}>
           <thead>
             <tr>
+              <th>STT</th>
               <th>Thành viên</th>
               <th>Khoa</th>
               {showContact && <th>Liên hệ</th>}
@@ -133,12 +134,13 @@ export default function MemberTable({
             </tr>
           </thead>
           <tbody>
-            {members.map((m) => (
+            {members.map((m, index) => (
               <tr
                 key={m.id}
                 className={`${styles.row} ${onView ? styles.clickableRow : ''}`}
                 onClick={() => onView?.(m)}
               >
+                <td className={styles.indexCell}>{(page - 1) * pageSize + index + 1}</td>
                 <td>
                   <div className={styles.memberCell}>
                     <Avatar initials={m.avatar} name={m.name} />

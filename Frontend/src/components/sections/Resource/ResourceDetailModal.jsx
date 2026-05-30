@@ -99,7 +99,7 @@ export default function ResourceDetailModal({
         </div>
 
         {/* Link */}
-        {link && status === 'approved' && (
+        {link && status === 'approved' ? (
           <a
             href={link}
             target="_blank"
@@ -109,8 +109,10 @@ export default function ResourceDetailModal({
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
             </svg>
-            Xem / Tải tài liệu
+            Xem tài liệu
           </a>
+        ) : (
+          <span className={styles.downloadBtn}>Chưa có tệp</span>
         )}
 
         {/* Admin actions — chỉ hiện khi pending */}

@@ -15,15 +15,13 @@ import ExpenseFormModal from '../../components/sections/Finance/ExpenseFormModal
 import ConfirmModal from '../../components/sections/Finance/ConfirmModal';
 import TransferDueTable from '../../components/sections/Finance/TransferDueTable';
 import {
-  createTransferDue,
   deleteTransferDue,
-  getTransferIncomeReceipts,
   getTransferDues,
   markTransferDueCashPaid,
-  saveTransferDues,
   syncPaidTransferDuesToIncomeReceipts,
 } from '../../utils/Finance/transferDues';
 import {
+  completeTransactionAPI,
   createTransactionAPI,
   deleteTransactionAPI,
   getPendingMonthlyDuesAPI,
@@ -34,11 +32,16 @@ import {
   toIncomePayload,
   updateTransactionAPI,
 } from '../../services/finance-service';
+import { getMembersAPI, normalizeMemberFromApi } from '../../services/member-service';
+import useAuthStore from '../../store/auth-store';
+import { isManager } from '../../utils/access-control';
 
 export default function FinancePage() {
-  const [thuList, setThuList] = useState(() => mergeIncomeReceipts([]));
+  const currentUser = useAuthStore((state) => state.user);
+  const [thuList, setThuList] = useState([]);
   const [chiList, setChiList] = useState([]);
   const [transferDues, setTransferDues] = useState(() => getTransferDues());
+  const [memberOptions, setMemberOptions] = useState([]);
   const [pendingDues, setPendingDues] = useState([]);
   const [pendingDuesLoading, setPendingDuesLoading] = useState(false);
   const [apiError, setApiError] = useState('');
@@ -81,25 +84,28 @@ export default function FinancePage() {
     let ignore = false;
     setPendingDuesLoading(true);
 
-    Promise.all([getTransactionsAPI(), getPendingMonthlyDuesAPI()])
-      .then(([data, dueData]) => {
+    Promise.allSettled([getTransactionsAPI(), getPendingMonthlyDuesAPI(), getMembersAPI()])
+      .then(([transactionsResult, dueResult, membersResult]) => {
         if (ignore) return;
+        const data = transactionsResult.status === 'fulfilled' ? transactionsResult.value : [];
+        const dueData = dueResult.status === 'fulfilled' ? dueResult.value : [];
+        const memberData = membersResult.status === 'fulfilled' ? membersResult.value : [];
         const transactions = Array.isArray(data) ? data.map(normalizeTransactionFromApi) : [];
-        const income = transactions.filter((item) =>
-          item.raw?.type === 'INCOME' && ['COMPLETED', 'APPROVED'].includes(String(item.raw?.status || '').toUpperCase())
-        );
+        const income = transactions.filter((item) => item.raw?.type === 'INCOME');
         const expense = transactions.filter((item) => item.raw?.type !== 'INCOME');
 
-        setThuList(mergeIncomeReceipts(income));
+        setThuList(income);
         setChiList(expense);
         setPendingDues(Array.isArray(dueData) ? dueData.map(normalizeMemberDueFromApi) : []);
+        setMemberOptions(Array.isArray(memberData) ? memberData.map(normalizeMemberFromApi) : []);
         setApiError('');
       })
       .catch((error) => {
         if (ignore) return;
-        setThuList(mergeIncomeReceipts([]));
+        setThuList([]);
         setChiList([]);
         setPendingDues([]);
+        setMemberOptions([]);
         setApiError(error?.message || 'Không tải được dữ liệu thu chi từ API.');
       })
       .finally(() => {
@@ -111,12 +117,16 @@ export default function FinancePage() {
     };
   }, []);
 
-  const tongThu = thuList.reduce((s, r) => s + r.soTien, 0);
-  const tongChi = chiList.reduce((s, r) => s + r.soTien, 0);
+  const completedThuList = useMemo(() => thuList.filter(isSettledTransaction), [thuList]);
+  const completedChiList = useMemo(() => chiList.filter(isSettledTransaction), [chiList]);
+  const canApproveExpense = isManager(currentUser);
+
+  const tongThu = completedThuList.reduce((s, r) => s + r.soTien, 0);
+  const tongChi = completedChiList.reduce((s, r) => s + r.soTien, 0);
   const soDu    = tongThu - tongChi;
 
-  const bcThu = useMemo(() => thuList.filter(r => getThang(r.ngayThu) === baocaoThang), [thuList, baocaoThang]);
-  const bcChi = useMemo(() => chiList.filter(r => getThang(r.ngayLap) === baocaoThang), [chiList, baocaoThang]);
+  const bcThu = useMemo(() => completedThuList.filter(r => getThang(r.ngayThu) === baocaoThang), [completedThuList, baocaoThang]);
+  const bcChi = useMemo(() => completedChiList.filter(r => getThang(r.ngayLap) === baocaoThang), [completedChiList, baocaoThang]);
   const bcTongThu = bcThu.reduce((s, r) => s + r.soTien, 0);
   const bcTongChi = bcChi.reduce((s, r) => s + r.soTien, 0);
   const bcSoDu    = bcTongThu - bcTongChi;
@@ -211,12 +221,12 @@ export default function FinancePage() {
     const dues = getTransferDues();
     syncPaidTransferDuesToIncomeReceipts(dues);
     setTransferDues(dues);
-    setThuList((prev) => mergeIncomeReceipts(prev));
+    setThuList((prev) => [...prev]);
   };
 
   const handleMarkCashPaid = (id) => {
     setTransferDues(markTransferDueCashPaid(id));
-    setThuList((prev) => mergeIncomeReceipts(prev));
+    setThuList((prev) => [...prev]);
   };
 
   const handleThuSubmit = async (data) => {
@@ -225,16 +235,6 @@ export default function FinancePage() {
       if (editThu) {
         const updated = await updateTransactionAPI(editThu.id, toIncomePayload({ ...editThu, ...data }));
         setThuList(p => p.map(r => r.id === editThu.id ? normalizeTransactionFromApi(updated) : r));
-      } else if (data?.mode === 'transfer' || (Array.isArray(data) && data[0]?.mode === 'transfer')) {
-        const records = Array.isArray(data) ? data : [data];
-        setTransferDues((prev) => {
-          const created = records.map((record, index) =>
-            createTransferDue(record, [...prev, ...records.slice(0, index)])
-          );
-          const next = [...created, ...prev];
-          saveTransferDues(next);
-          return next;
-        });
       } else {
         const records = Array.isArray(data) ? data : [data];
         const created = await Promise.all(records.map((record, index) => {
@@ -274,6 +274,16 @@ export default function FinancePage() {
       setApiError(error?.message || 'Không lưu được phiếu chi.');
     } finally {
       setFormLoading(false);
+    }
+  };
+
+  const handleApproveExpense = async (item) => {
+    try {
+      const updated = await completeTransactionAPI(item.id);
+      setChiList((prev) => prev.map((row) => row.id === item.id ? normalizeTransactionFromApi(updated) : row));
+      setApiError('');
+    } catch (error) {
+      setApiError(error?.message || 'KhÃ´ng duyá»‡t Ä‘Æ°á»£c phiáº¿u chi.');
     }
   };
 
@@ -349,6 +359,8 @@ export default function FinancePage() {
           onOpenChi={openChiModal}
           onEditChi={openEditChiModal}
           setDeleteTarget={setDeleteTarget}
+          onApproveChi={handleApproveExpense}
+          canApproveExpense={canApproveExpense}
           sortChi={sortChi}
           setSortChi={setSortChi}
           filters={chiFilters}
@@ -383,6 +395,7 @@ export default function FinancePage() {
         onSubmit={handleThuSubmit}
         initial={editThu}
         loading={formLoading}
+        memberOptions={memberOptions}
       />
 
       <ExpenseFormModal
@@ -399,10 +412,6 @@ export default function FinancePage() {
   );
 }
 
-function mergeIncomeReceipts(baseReceipts) {
-  syncPaidTransferDuesToIncomeReceipts();
-  const transferReceipts = getTransferIncomeReceipts();
-  const existingIds = new Set(baseReceipts.map((receipt) => receipt.id));
-  const missingReceipts = transferReceipts.filter((receipt) => !existingIds.has(receipt.id));
-  return [...missingReceipts, ...baseReceipts];
+function isSettledTransaction(item) {
+  return ['COMPLETED', 'APPROVED'].includes(String(item?.status || item?.raw?.status || '').toUpperCase());
 }

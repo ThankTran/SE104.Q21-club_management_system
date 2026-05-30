@@ -6,8 +6,10 @@ import AccountTable from "../../components/sections/Account/AccountTable";
 import AccountToolbar from "../../components/sections/Account/AccountToolbar";
 import {
   createUserAPI,
+  getUserSessionsAPI,
   loadAccountUsersAPI,
   normalizeAccountFromApi,
+  normalizeLoginSessionFromApi,
   updateUserForAdminAPI,
 } from "../../services/account-service";
 import { getMembersAPI, normalizeMemberFromApi } from "../../services/member-service";
@@ -108,6 +110,38 @@ export default function AccountPage() {
   useEffect(() => {
     setPage(1);
   }, [search]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    let ignore = false;
+
+    getUserSessionsAPI(selectedId)
+      .then((sessions) => {
+        if (ignore) return;
+        const normalizedSessions = Array.isArray(sessions)
+          ? sessions.map(normalizeLoginSessionFromApi)
+          : [];
+        setAccounts((current) => current.map((account) => (
+          account.id === selectedId
+            ? {
+              ...account,
+              sessions: normalizedSessions,
+              lastLogin: normalizedSessions[0]?.time || account.lastLogin,
+            }
+            : account
+        )));
+      })
+      .catch(() => {
+        if (ignore) return;
+        setAccounts((current) => current.map((account) => (
+          account.id === selectedId ? { ...account, sessions: [] } : account
+        )));
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [selectedId]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAccounts.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);

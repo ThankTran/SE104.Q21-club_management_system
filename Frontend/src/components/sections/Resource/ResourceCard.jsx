@@ -113,7 +113,7 @@ function ResourceLink({ link, compact = false }) {
       target="_blank"
       rel="noopener noreferrer"
     >
-      Xem / tải tài liệu
+      Xem
     </a>
   );
 }
