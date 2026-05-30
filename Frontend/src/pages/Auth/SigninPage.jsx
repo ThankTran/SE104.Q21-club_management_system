@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import AuthLayout from "../../components/layout/Navigation/AuthLayout";
 import useAuth from "../../hooks/useAuth";
 import styles from "./SignupPage.module.css";
@@ -7,6 +8,7 @@ const LoginPage = () => {
   const { login, loading, error } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
   const [formError, setFormError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (event) => {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -38,14 +40,24 @@ const LoginPage = () => {
           onChange={handleChange}
           className={styles.textInput}
         />
-        <input
-          name="password"
-          type="password"
-          placeholder="Mật khẩu"
-          value={form.password}
-          onChange={handleChange}
-          className={styles.pwInput}
-        />
+        <div className={styles.passwordWrapper}>
+          <input
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Mật khẩu"
+            value={form.password}
+            onChange={handleChange}
+            className={styles.pwInput}
+          />
+          <button
+            type="button"
+            className={styles.passwordToggle}
+            onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
         <div className={styles.rememberForgot}>
           <div>
             <input type="checkbox" id="remember" name="remember" />
