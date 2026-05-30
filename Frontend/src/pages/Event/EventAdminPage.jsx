@@ -427,7 +427,7 @@ export default function EventAdminPage() {
     }
 
     const current = evaluations.find((item) => item.eventCode === event.eventCode);
-    const evaluationDate = current?.evaluationDate || event.evaluationDate || getTodayDateInputValue();
+    const evaluationDate = getTodayDateInputValue();
     const evaluation = current?.evaluation || event.evaluation || '';
     setEvaluationTarget({ ...event, evaluationDate, evaluation });
     setEvaluationForm({
@@ -464,7 +464,7 @@ export default function EventAdminPage() {
     }
 
     const errs = {};
-    const selectedDate = evaluationForm.evaluationDate || getTodayDateInputValue();
+    const selectedDate = getTodayDateInputValue();
     const eventEndDate = evaluationTarget?.date ? new Date(evaluationTarget.date) : null;
     const evaluationDate = new Date(selectedDate);
 

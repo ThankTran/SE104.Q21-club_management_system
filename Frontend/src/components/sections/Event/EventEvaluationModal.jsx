@@ -10,14 +10,14 @@ export default function EventEvaluationModal({
   onSubmit,
 }) {
   if (!event) return null;
-  const readOnly = Boolean(event.evaluation && event.evaluation.trim());
+  const isEditingEvaluation = Boolean(event.evaluation && event.evaluation.trim());
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.evaluationBox} onClick={(e) => e.stopPropagation()}>
         <div className={styles.evaluationHeader}>
           <div>
-            <h3 className={styles.title}>{readOnly ? 'Xem đánh giá sự kiện' : 'Phiếu đánh giá sự kiện'}</h3>
+            <h3 className={styles.title}>{isEditingEvaluation ? 'Chinh sua danh gia su kien' : 'Phieu danh gia su kien'}</h3>
             <p className={styles.evaluationMeta}>{event.eventCode} - {event.title}</p>
           </div>
           <button className={styles.closeIconBtn} onClick={onClose} aria-label="Đóng">
@@ -49,7 +49,6 @@ export default function EventEvaluationModal({
               rows={4}
               value={form.evaluation}
               onChange={(e) => onChange('evaluation', e.target.value)}
-              readOnly={readOnly}
               placeholder="Nhập kết quả, nhận xét hoặc bài học sau sự kiện..."
             />
             {errors.evaluation && <p className={styles.formError}>{errors.evaluation}</p>}
@@ -57,8 +56,8 @@ export default function EventEvaluationModal({
         </div>
 
         <div className={styles.actions}>
-          <button className={styles.cancelBtn} onClick={onClose}>{readOnly ? 'Đóng' : 'Hủy'}</button>
-          {!readOnly && <button className={styles.saveBtn} onClick={onSubmit}>Lưu đánh giá</button>}
+          <button className={styles.cancelBtn} onClick={onClose}>Hủy</button>
+          <button className={styles.saveBtn} onClick={onSubmit}>Lưu đánh giá</button>
         </div>
       </div>
     </div>
