@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import styles from './FinancePage.module.css';
 
 import { getThang } from '../../utils/Finance/financeUtils';
@@ -81,13 +81,12 @@ export default function FinancePage() {
   const [sortThu, setSortThu] = useState('desc');
   const [sortChi, setSortChi] = useState('desc');
 
-  useEffect(() => {
-    let ignore = false;
+  const loadFinanceData = useCallback((ignoreRef = { current: false }) => {
     setPendingDuesLoading(true);
 
-    Promise.allSettled([getTransactionsAPI(), getPendingMonthlyDuesAPI(), getMembersAPI()])
+    return Promise.allSettled([getTransactionsAPI(), getPendingMonthlyDuesAPI(), getMembersAPI()])
       .then(([transactionsResult, dueResult, membersResult]) => {
-        if (ignore) return;
+        if (ignoreRef.current) return;
         const data = transactionsResult.status === 'fulfilled' ? transactionsResult.value : [];
         const dueData = dueResult.status === 'fulfilled' ? dueResult.value : [];
         const memberData = membersResult.status === 'fulfilled' ? membersResult.value : [];
@@ -102,7 +101,7 @@ export default function FinancePage() {
         setApiError('');
       })
       .catch((error) => {
-        if (ignore) return;
+        if (ignoreRef.current) return;
         setThuList([]);
         setChiList([]);
         setPendingDues([]);
@@ -110,13 +109,32 @@ export default function FinancePage() {
         setApiError(error?.message || 'Không tải được dữ liệu thu chi từ API.');
       })
       .finally(() => {
-        if (!ignore) setPendingDuesLoading(false);
+        if (!ignoreRef.current) setPendingDuesLoading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    const ignoreRef = { current: false };
+    loadFinanceData(ignoreRef);
 
     return () => {
-      ignore = true;
+      ignoreRef.current = true;
     };
-  }, []);
+  }, [loadFinanceData]);
+
+  useEffect(() => {
+    const refreshFinanceData = () => {
+      loadFinanceData();
+    };
+
+    window.addEventListener('finance:transactions-updated', refreshFinanceData);
+    window.addEventListener('focus', refreshFinanceData);
+
+    return () => {
+      window.removeEventListener('finance:transactions-updated', refreshFinanceData);
+      window.removeEventListener('focus', refreshFinanceData);
+    };
+  }, [loadFinanceData]);
 
   const completedThuList = useMemo(() => thuList.filter(isSettledTransaction), [thuList]);
   const completedChiList = useMemo(() => chiList.filter(isSettledTransaction), [chiList]);

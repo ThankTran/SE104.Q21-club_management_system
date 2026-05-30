@@ -249,7 +249,7 @@ export default function AccountPage() {
             />
           )}
 
-          {totalPages > 1 && (
+          {!loading && filteredAccounts.length > 0 && (
             <div className={styles.pagination}>
               <span className={styles.paginationInfo}>
                 Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}-

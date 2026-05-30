@@ -23,7 +23,8 @@
 .dropdown {
   position: absolute;
   top: 50px;
-  right: 0;
+  left: 0;
+  right: auto;
   width: 265px;
   background: white;
   border: 1px solid #e2e8f0;

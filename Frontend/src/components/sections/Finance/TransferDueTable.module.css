@@ -70,16 +70,20 @@
 }
 
 .tableWrap {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: 560px;
 }
 
 .table {
   width: 100%;
+  min-width: max-content;
   border-collapse: collapse;
-  min-width: 1120px;
 }
 
 .table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   text-align: left;
   padding: 12px 16px;
   background: var(--white-soft);
@@ -94,6 +98,7 @@
   border-top: 1px solid #eef2f7;
   color: var(--gray-700);
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .codeCell {

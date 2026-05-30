@@ -53,6 +53,7 @@ export default function MemberPaymentPage() {
       const completed = await completeTransactionAPI(id);
       const normalized = normalizeDueFromTransaction(completed);
       setDues((prev) => prev.map((due) => (due.id === id ? normalized : due)).filter(Boolean));
+      window.dispatchEvent(new CustomEvent('finance:transactions-updated'));
       setActiveDue(null);
       setApiError('');
     } catch (error) {
