@@ -129,7 +129,7 @@ export default function EventRosterTable({
               const percent = memberCount > 0
                 ? Math.round((registeredCount / memberCount) * 100)
                 : 0;
-              const isCompleted = event.status === 'completed';
+              const isFinished = event.status === 'completed' || event.status === 'evaluated';
                 const hasEvaluation =
                     evaluations.some(
                         (item) =>
@@ -139,7 +139,7 @@ export default function EventRosterTable({
                             item.evaluation.trim() !== ''
                     ) ||
                     Boolean(event.evaluationDate && event.evaluation && event.evaluation.trim() !== '');
-              const displayStatus = isCompleted && hasEvaluation ? 'evaluated' : event.status;
+              const displayStatus = isFinished && hasEvaluation ? 'evaluated' : event.status;
               const status = statusLabels[displayStatus] || statusLabels.upcoming;
               const statusAction = STATUS_ACTIONS[event.status];
 
@@ -184,35 +184,54 @@ export default function EventRosterTable({
                     </button>
                   ) : (
                     <button className={styles.statusDoneBtn} disabled>
-                      Đã kết thúc
+                      {status.label}
                     </button>
                   )}
                 </td>
                 <td className={styles.centerCell}>
                   <div className={styles.actionBtns}>
-                    <button className={styles.editBtn} onClick={() => onEdit(event)} title="Chỉnh sửa">
-                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
-                    </button>
-                    {isCompleted && (
-                      <button
-                        className={hasEvaluation ? styles.viewEvaluationBtn : styles.evaluateBtn}
-                        onClick={() => onEvaluate(event)}
-                        title={hasEvaluation ? 'Xem đánh giá' : 'Viết đánh giá'}
-                      >
-                        {hasEvaluation ? (
-                          'Xem đánh giá'
-                        ) : (
-                          'Viết đánh giá'
-                        )}
+                    {event.status === 'cancelled' ? (
+                      <button className={styles.detailBtn} onClick={() => onEdit(event)} title="Xem chi tiết">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                          <path d="M14 2v6h6M8 13h8M8 17h5"/>
+                        </svg>
                       </button>
+                    ) : (
+                      <>
+                        <button className={styles.editBtn} onClick={() => onEdit(event)} title="Chỉnh sửa">
+                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path d="M8 2v4M16 2v4M3 10h18"/>
+                            <path d="M5 4h14a2 2 0 012 2v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                            <path d="M14.5 13.5l2 2L12 20H10v-2z"/>
+                          </svg>
+                        </button>
+                        {isFinished && (
+                          <button
+                            className={hasEvaluation ? styles.viewEvaluationBtn : styles.evaluateBtn}
+                            onClick={() => onEvaluate(event)}
+                            title={hasEvaluation ? 'Xem đánh giá' : 'Viết đánh giá'}
+                          >
+                            {hasEvaluation ? (
+                              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            ) : (
+                              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5"/>
+                                <path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-3 1 1-3z"/>
+                              </svg>
+                            )}
+                          </button>
+                        )}
+                        <button className={styles.cancelEventBtn} onClick={() => onUpdateStatus(event.id, 'cancelled')} title="Hủy sự kiện">
+                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
+                          </svg>
+                        </button>
+                      </>
                     )}
-                    <button className={styles.deleteBtn} onClick={() => onDelete(event)} title="Xoá">
-                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
-                      </svg>
-                    </button>
                   </div>
                 </td>
                 <td className={styles.centerCell}>

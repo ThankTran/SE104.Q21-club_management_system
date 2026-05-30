@@ -28,7 +28,7 @@ const STEPS = ['Thông tin cơ bản', 'Chi tiết tổ chức', 'Xác nhận'];
  *   initial  – event object (edit) | null (add)
  *   loading  – boolean
  */
-export default function EventForm({ open, onClose, onSubmit, initial = null, loading = false, existingEvents = [] }) {
+export default function EventForm({ open, onClose, onSubmit, initial = null, loading = false, existingEvents = [], readOnly = false }) {
   const isEdit = !!initial;
   const [step, setStep]     = useState(0);
   const [form, setForm]     = useState(EMPTY_FORM);
@@ -51,6 +51,7 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
   if (!open) return null;
 
   const handleChange = (field) => (e) => {
+    if (readOnly) return;
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
     setErrors((prev) => ({ ...prev, [field]: '' }));
   };
@@ -95,6 +96,10 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
   };
 
   const handleNext = () => {
+    if (readOnly) {
+      setStep((s) => s + 1);
+      return;
+    }
     const errs = validateStep(step);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setStep((s) => s + 1);
@@ -103,6 +108,7 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
   const handleBack = () => setStep((s) => s - 1);
 
   const handleSubmit = () => {
+    if (readOnly) return;
     onSubmit(form);
   };
 
@@ -114,10 +120,10 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>
-              {isEdit ? 'Chỉnh sửa sự kiện' : 'Tạo sự kiện mới'}
+              {readOnly ? 'Chi tiet su kien' : isEdit ? 'Chinh sua su kien' : 'Tao su kien moi'}
             </h2>
             <p className={styles.subtitle}>
-              {isEdit ? 'Cập nhật thông tin sự kiện' : 'Điền thông tin để tạo sự kiện'}
+              {readOnly ? 'Xem thong tin chi tiet su kien' : isEdit ? 'Cap nhat thong tin su kien' : 'Dien thong tin de tao su kien'}
             </p>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>
@@ -149,6 +155,7 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
 
         {/* ── Form content ── */}
         <div className={styles.body}>
+          <fieldset className={styles.fieldset} disabled={readOnly}>
 
           {/* Step 1 — Thông tin cơ bản */}
           {step === 0 && (
@@ -306,6 +313,7 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
               )}
             </div>
           )}
+          </fieldset>
         </div>
 
         {/* ── Footer actions ── */}
@@ -316,13 +324,13 @@ export default function EventForm({ open, onClose, onSubmit, initial = null, loa
             </button>
           )}
           <div style={{ flex: 1 }} />
-          <button className={styles.cancelBtn} onClick={onClose}>Huỷ</button>
+          <button className={styles.cancelBtn} onClick={onClose}>{readOnly ? 'Đóng' : 'Hủy'}</button>
 
           {step < STEPS.length - 1 ? (
             <button className={styles.nextBtn} onClick={handleNext}>
               Tiếp theo →
             </button>
-          ) : (
+          ) : !readOnly && (
             <button className={styles.submitBtn} onClick={handleSubmit} disabled={loading}>
               {loading ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Tạo sự kiện'}
             </button>

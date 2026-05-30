@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import EventForm from '../../components/sections/Event/EventForm';
 import exportEventsExcel from '../../utils/Export/exportEventsExcel';
@@ -43,6 +43,20 @@ const getTodayDateInputValue = () => {
   return localDate.toISOString().slice(0, 10);
 };
 
+const isPastEventDate = (date) => {
+  if (!date) return false;
+  const eventDate = new Date(date);
+  if (Number.isNaN(eventDate.getTime())) return false;
+  eventDate.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return eventDate < today;
+};
+
+const canAutoCompleteEvent = (event) =>
+  ['draft', 'upcoming', 'published'].includes(event.status) && isPastEventDate(event.date);
+
 const buildEvaluationsFromEvents = (events) =>
   events
     .filter((event) => event.evaluation)
@@ -54,6 +68,8 @@ const buildEvaluationsFromEvents = (events) =>
       evaluation: event.evaluation,
     }));
 
+const isFinishedEventStatus = (status) => status === 'completed' || status === 'evaluated';
+
 const hasEventEvaluation = (event, evaluations = []) => {
     const hasInline =
         typeof event?.evaluation === 'string' && event.evaluation.trim().length > 0;
@@ -62,7 +78,7 @@ const hasEventEvaluation = (event, evaluations = []) => {
 };
 
 const getDisplayStatus = (event, evaluations = []) =>
-  event.status === 'completed' && hasEventEvaluation(event, evaluations)
+  isFinishedEventStatus(event.status) && hasEventEvaluation(event, evaluations)
     ? 'evaluated'
     : event.status;
 
@@ -134,6 +150,7 @@ export default function EventAdminPage() {
   const [registeredMembers, setRegisteredMembers] = useState([]);
   const [registrationsByEvent, setRegistrationsByEvent] = useState({});
   const [memberCount, setMemberCount] = useState(0);
+  const autoCompletingIdsRef = useRef(new Set());
 
   useEffect(() => {
     let ignore = false;
@@ -211,6 +228,43 @@ export default function EventAdminPage() {
       ignore = true;
     };
   }, [registrationTarget]);
+
+  useEffect(() => {
+    const overdueEvents = events.filter(
+      (event) => canAutoCompleteEvent(event) && !autoCompletingIdsRef.current.has(event.id),
+    );
+
+    overdueEvents.forEach((event) => {
+      autoCompletingIdsRef.current.add(event.id);
+      updateEventAPI(
+        event.id,
+        toEventPayload({
+          ...event,
+          status: 'completed',
+          evaluationDate: '',
+          evaluation: '',
+        }),
+      )
+        .then((updated) => {
+          const nextEvent = applyRegistrationCounts(
+            [normalizeEventFromApi(updated)],
+            registrationsByEvent,
+          )[0];
+          setEvents((prev) =>
+            prev.map((item) =>
+              item.id === event.id
+                ? { ...nextEvent, status: 'completed', evaluationDate: '', evaluation: '' }
+                : item,
+            ),
+          );
+          setEvaluations((prev) => prev.filter((item) => item.eventCode !== event.eventCode));
+        })
+        .catch((error) => {
+          autoCompletingIdsRef.current.delete(event.id);
+          setApiError(error?.message || 'KhÃ´ng tá»± Ä‘á»™ng cáº­p nháº­t Ä‘Æ°á»£c sá»± kiá»‡n Ä‘Ã£ quÃ¡ ngÃ y.');
+        });
+    });
+  }, [events, registrationsByEvent]);
 
   const totalEstimated = events.reduce((sum, event) => sum + (Number(event.estimatedCost) || 0), 0);
   const totalActual = events
@@ -317,15 +371,30 @@ export default function EventAdminPage() {
         if (!current) return;
 
         try {
-            const updated = await updateEventAPI(eventId, toEventPayload({ ...current, status }));
+            const shouldResetEvaluation = status === 'completed';
+            const updated = await updateEventAPI(
+                eventId,
+                toEventPayload({
+                    ...current,
+                    status,
+                    evaluationDate: shouldResetEvaluation ? '' : current.evaluationDate,
+                    evaluation: shouldResetEvaluation ? '' : current.evaluation,
+                }),
+            );
             const nextEvent = applyRegistrationCounts(
                 [normalizeEventFromApi(updated)],
                 registrationsByEvent,
             )[0];
+            const nextDisplayEvent = shouldResetEvaluation
+                ? { ...nextEvent, status: 'completed', evaluationDate: '', evaluation: '' }
+                : nextEvent;
 
             setEvents((prev) =>
-                prev.map((event) => (event.id === eventId ? nextEvent : event)),
+                prev.map((event) => (event.id === eventId ? nextDisplayEvent : event)),
             );
+            if (shouldResetEvaluation) {
+                setEvaluations((prev) => prev.filter((item) => item.eventCode !== current.eventCode));
+            }
 
             setApiError('');
         } catch (error) {
@@ -352,16 +421,18 @@ export default function EventAdminPage() {
   };
 
   const openEvaluation = (event) => {
-    if (event.status !== 'completed') {
+    if (!isFinishedEventStatus(event.status)) {
       setApiError('Chỉ có thể tạo hoặc xem phiếu đánh giá cho sự kiện đã kết thúc.');
       return;
     }
 
     const current = evaluations.find((item) => item.eventCode === event.eventCode);
-    setEvaluationTarget(event);
+    const evaluationDate = current?.evaluationDate || event.evaluationDate || getTodayDateInputValue();
+    const evaluation = current?.evaluation || event.evaluation || '';
+    setEvaluationTarget({ ...event, evaluationDate, evaluation });
     setEvaluationForm({
-      evaluationDate: getTodayDateInputValue(),
-      evaluation: current?.evaluation || '',
+      evaluationDate,
+      evaluation,
     });
     setEvaluationErrors({});
   };
@@ -387,7 +458,7 @@ export default function EventAdminPage() {
   };
 
   const submitEvaluation = async () => {
-    if (evaluationTarget?.status !== 'completed') {
+    if (!isFinishedEventStatus(evaluationTarget?.status)) {
       setApiError('Chỉ có thể tạo phiếu đánh giá cho sự kiện đã kết thúc.');
       return;
     }
@@ -495,6 +566,7 @@ export default function EventAdminPage() {
         initial={editTarget}
         loading={formLoading}
         existingEvents={events}
+        readOnly={editTarget?.status === 'cancelled'}
       />
 
       <EventEvaluationModal
