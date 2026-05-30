@@ -11,6 +11,7 @@ import com.example.demo.domain.model.member.Member;
 
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
+import com.example.demo.domain.enums.GraduatedStatusEnum;
 
 import org.springframework.stereotype.Component;
 
@@ -40,6 +41,9 @@ public class MemberMapper {
                 .phone(request.getPhoneNumber())
                 .gender(GenderEnum.valueOf(request.getGender().toUpperCase()))
                 .dateOfBirth(request.getDateOfBirth())
+                .graduatedStatus(request.getGraduatedStatus() == null
+                        ? GraduatedStatusEnum.ACTIVE
+                        : request.getGraduatedStatus())
                 .reqStatus(ApprovalStatusEnum.PENDING)
                 .build();
     }

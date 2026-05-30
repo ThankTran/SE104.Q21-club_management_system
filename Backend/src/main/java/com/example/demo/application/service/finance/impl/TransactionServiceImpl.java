@@ -197,10 +197,22 @@ public class TransactionServiceImpl implements com.example.demo.application.serv
     }
 
     @CacheEvict(cacheNames = {"transactions", "finance"}, allEntries = true)
-    public TransactionResponse complete(String id) {
+    public TransactionResponse complete(String id, Long currentMemberId, boolean currentUserIsManager) {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay transaction: " + id));
+        if (transaction.getType() == TransactionType.Expense && !currentUserIsManager) {
+            throw new IllegalArgumentException("Chi co thanh vien co chuc vu moi duoc duyet phieu chi");
+        }
+        if (transaction.getType() == TransactionType.INCOME
+                && !currentUserIsManager
+                && (transaction.getMember() == null
+                || currentMemberId == null
+                || !currentMemberId.equals(transaction.getMember().getMemberId()))) {
+            throw new IllegalArgumentException("Ban chi co the thanh toan khoan thu cua chinh minh");
+        }
+        Member approver = currentMemberId == null ? null : memberRepository.findById(currentMemberId).orElse(null);
         transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setApprovedBy(approver);
         transaction.setApprovedAt(LocalDateTime.now());
         if (transaction.getTransactionDate() == null) {
             transaction.setTransactionDate(LocalDateTime.now());

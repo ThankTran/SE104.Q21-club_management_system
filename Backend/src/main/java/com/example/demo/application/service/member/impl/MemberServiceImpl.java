@@ -15,6 +15,7 @@ import com.example.demo.domain.repository.department.DepartmentRepository;
 import com.example.demo.domain.repository.role.RoleRepository;
 import com.example.demo.domain.enums.ApprovalStatusEnum;
 import com.example.demo.domain.enums.GenderEnum;
+import com.example.demo.domain.enums.GraduatedStatusEnum;
 import com.example.demo.domain.service.member.MemberDomainService;
 
 import java.text.Normalizer;
@@ -66,10 +67,15 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
     @Override
     @CacheEvict(allEntries = true)
     public MemberResponse registerMember(JoinClubRequest request) {
+        if (request.getGraduatedStatus() == null) {
+            request.setGraduatedStatus(GraduatedStatusEnum.ACTIVE);
+        }
 
         // Validate format — domain service lo
         memberDomainService.validateStudentIdFormat(request.getStudentId());
+        memberDomainService.validateFullNameFormat(request.getFullName());
         memberDomainService.validateEmailFormat(request.getEmail());
+        memberDomainService.validatePhoneFormat(request.getPhoneNumber());
         memberDomainService.validateNotGraduated(request.getGraduatedStatus());
         memberDomainService.validateGender(
                 GenderEnum.valueOf(request.getGender().toUpperCase())
@@ -235,9 +241,15 @@ public class MemberServiceImpl implements com.example.demo.application.service.m
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Không tìm thấy thành viên với ID: " + memberId));
+        if (request.getGraduatedStatus() == null) {
+            request.setGraduatedStatus(GraduatedStatusEnum.ACTIVE);
+        }
 
         // Validate email nếu thay đổi
+        memberDomainService.validateFullNameFormat(request.getFullName());
         memberDomainService.validateEmailFormat(request.getEmail());
+        memberDomainService.validatePhoneFormat(request.getPhoneNumber());
+        memberDomainService.validateNotGraduated(request.getGraduatedStatus());
         if (!member.getEmail().equals(request.getEmail())
                 && memberRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");

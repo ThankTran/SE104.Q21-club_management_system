@@ -1,5 +1,7 @@
 package com.example.demo.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -84,6 +86,25 @@ class AccessControlInterceptorTest {
         boolean allowed = interceptor.preHandle(new MockHttpServletRequest("GET", "/api/events/public-upcoming"), response, new Object());
 
         assertTrue(allowed);
+    }
+
+    @Test
+    void memberCanAskHelpAi() throws Exception {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean allowed = interceptor.preHandle(request("POST", "/api/ai/help"), response, new Object());
+
+        assertTrue(allowed);
+    }
+
+    @Test
+    void helpAiRequiresAuthentication() throws Exception {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean allowed = interceptor.preHandle(new MockHttpServletRequest("POST", "/api/ai/help"), response, new Object());
+
+        assertFalse(allowed);
+        assertEquals(401, response.getStatus());
     }
 
     private MockHttpServletRequest request(String method, String uri) {

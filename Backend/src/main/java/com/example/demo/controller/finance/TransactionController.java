@@ -3,6 +3,7 @@ package com.example.demo.controller.finance;
 import com.example.demo.application.dto.request.finance.TransactionRequest;
 import com.example.demo.application.dto.response.finance.TransactionResponse;
 import com.example.demo.application.service.finance.interfaces.TransactionService;
+import com.example.demo.config.AccessControlInterceptor;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -86,11 +87,17 @@ public class TransactionController {
     }
 
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<?> complete(@PathVariable String id) {
+    public ResponseEntity<?> complete(
+            @PathVariable String id,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_MEMBER_ID_ATTRIBUTE, required = false) Long currentMemberId,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_USER_IS_MANAGER_ATTRIBUTE, required = false) Boolean currentUserIsManager) {
         try {
-            return ResponseEntity.ok(transactionService.complete(id));
+            return ResponseEntity.ok(transactionService.complete(id, currentMemberId, Boolean.TRUE.equals(currentUserIsManager)));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            if (e.getMessage() != null && e.getMessage().startsWith("Khong tim thay transaction")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 

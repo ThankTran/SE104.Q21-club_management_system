@@ -4,7 +4,9 @@ import com.example.demo.application.dto.request.user.AdminUpdateUserRequest;
 import com.example.demo.application.dto.request.user.ChangePasswordRequest;
 import com.example.demo.application.dto.request.user.CreateUserRequest;
 import com.example.demo.application.dto.response.user.UserResponse;
+import com.example.demo.application.service.user.interfaces.LoginSessionService;
 import com.example.demo.application.service.user.interfaces.UserService;
+import com.example.demo.config.AccessControlInterceptor;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,9 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+    private final LoginSessionService loginSessionService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, LoginSessionService loginSessionService) {
         this.userService = userService;
+        this.loginSessionService = loginSessionService;
     }
 
     @PostMapping
@@ -91,5 +96,17 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/{id}/sessions")
+    public ResponseEntity<?> getSessions(
+            @PathVariable Long id,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_USER_ATTRIBUTE, required = false) UserResponse currentUser,
+            @RequestAttribute(value = AccessControlInterceptor.CURRENT_USER_IS_MANAGER_ATTRIBUTE, required = false) Boolean currentUserIsManager) {
+        if (!Boolean.TRUE.equals(currentUserIsManager)
+                && (currentUser == null || !id.equals(currentUser.getUserId()))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ban khong co quyen xem phien dang nhap nay");
+        }
+        return ResponseEntity.ok(loginSessionService.getSessionsByUser(id));
     }
 }

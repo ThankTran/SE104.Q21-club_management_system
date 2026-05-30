@@ -40,6 +40,31 @@ public class MemberDomainServiceImpl implements MemberDomainService {
     }
 
     @Override
+    public void validateFullNameFormat(String fullName) {
+        if (fullName == null || fullName.isBlank()) {
+            throw new IllegalArgumentException("Full name must not be empty");
+        }
+        String normalized = fullName.trim().replaceAll("\\s+", " ");
+        if (normalized.length() < 2 || normalized.length() > 80) {
+            throw new IllegalArgumentException("Full name must contain 2-80 characters");
+        }
+        if (!normalized.matches("^[\\p{L}][\\p{L}\\s'-]*$")) {
+            throw new IllegalArgumentException("Full name must contain letters, spaces, apostrophes, or hyphens only");
+        }
+    }
+
+    @Override
+    public void validatePhoneFormat(String phone) {
+        if (phone == null || phone.isBlank()) {
+            throw new IllegalArgumentException("Phone number must not be empty");
+        }
+        String normalized = phone.replaceAll("[\\s.-]", "");
+        if (!normalized.matches("^(0\\d{9}|\\+84\\d{9})$")) {
+            throw new IllegalArgumentException("Phone number must be 10 digits starting with 0 or +84 followed by 9 digits");
+        }
+    }
+
+    @Override
     public void validateDefaultStatus(ApprovalStatusEnum status) {
         if (status != ApprovalStatusEnum.PENDING) {
             throw new IllegalArgumentException("New member request status must be PENDING");

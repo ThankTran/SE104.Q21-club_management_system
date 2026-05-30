@@ -3,6 +3,7 @@ package com.example.demo.controller.auth;
 import com.example.demo.application.dto.request.user.CreateUserRequest;
 import com.example.demo.application.dto.request.user.LoginRequest;
 import com.example.demo.application.service.auth.interfaces.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,9 +23,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest servletRequest) {
         try {
-            return ResponseEntity.ok(authService.login(request));
+            return ResponseEntity.ok(authService.login(request, servletRequest));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
