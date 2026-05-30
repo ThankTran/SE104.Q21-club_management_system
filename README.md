@@ -322,10 +322,24 @@ http://localhost:5173
 
 # 🔧 Environment Configuration
 
+Backend reads the local AI environment from:
+
+```text
+Backend/.env
+```
+
+Use this shape:
+
+```env
+GROQ_API_KEY=
+GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+```
+
 Frontend uses the environment variable:
 
 ```env
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8081/api
 ```
 
 Create:
@@ -337,7 +351,7 @@ Frontend/.env
 If not configured, the frontend will use:
 
 ```text
-http://localhost:8080/api
+http://localhost:8081/api
 ```
 
 ---

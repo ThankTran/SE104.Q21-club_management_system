@@ -26,6 +26,8 @@ replay_pid*
 check-figma-connection.js
 mcp.json
 node_modules
+Backend/.env
+Frontend/.env
 Backend/data/
 Backend/uploads/
 
