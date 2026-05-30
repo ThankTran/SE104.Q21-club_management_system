@@ -1,7 +1,7 @@
 # 🎓 Club Management System
 
-> A full-stack club management platform designed for student organizations and academic clubs.  
-> The system supports member management, event organization, finance tracking, resource management, notifications, and internal operational workflows.
+> A full-stack club management platform for student organizations and academic clubs.  
+> The system supports member management, event organization, finance tracking, resource/document workflows, notifications, dashboard reporting, account management, and system settings.
 
 <p align="center">
   <img src="https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=openjdk&logoColor=white" />
@@ -38,12 +38,12 @@ Club Management System is a modern full-stack application built for university c
 
 The project focuses on solving common operational problems such as:
 
-- Member management
-- Event organization
-- Financial tracking
-- Resource/document approval workflows
-- Notification systems
-- Internal activity monitoring
+- Member registration, approval, search, filtering, and profile management
+- Event creation, registration, attendance, organizer assignment, and evaluation
+- Income, expense, revenue, and member due tracking
+- Resource/document submission, review, approval, and file attachment workflows
+- Notification delivery and recipient tracking
+- Dashboard reporting, account management, and system settings
 
 The architecture separates frontend and backend clearly for better scalability, maintainability, and testing.
 
@@ -54,18 +54,21 @@ The architecture separates frontend and backend clearly for better scalability, 
 ## 👥 Member Management
 
 - Register new club members
-- Approve or reject membership requests
+- Approve membership requests
 - Search, filter, and update member profiles
-- Manage departments, roles, and statuses
+- Manage departments, roles, and member statuses
+- Display public club leaders and member lists
 
 ---
 
 ## 🎉 Event Management
 
-- Create and manage events
+- Create, update, delete, and search events
+- Register or unregister members for events
+- Track attendance and event participation
 - Assign organizers and event roles
-- Track registrations and participation
-- Separate interfaces for admin and members
+- Store event evaluations and generate calendar links
+- Provide separate interfaces for administrators and members
 
 ---
 
@@ -73,26 +76,29 @@ The architecture separates frontend and backend clearly for better scalability, 
 
 - Record income and expenses
 - Track event-based financial activities
-- Generate Excel financial reports
-- Calculate revenue, expenses, and balances
+- Track monthly member dues and pending payments
+- Calculate income, expenses, and revenue
+- Export finance and event reports to spreadsheet files
 
 ---
 
 ## 📚 Resource & Document Management
 
-- Upload and manage documents
-- Categorize resources by type and subject
-- Approval and rejection workflows
-- Maintain processing history and attachments
+- Submit and manage learning resources/documents
+- Categorize resources by subject and document type
+- Review, approve, reject, or request changes
+- Manage document files and lookup folders
+- Maintain document history and attachments
 
 ---
 
-## 🔔 Notification System
+## 🔔 Notification, Account & Settings
 
 - Create and send notifications
-- Track notification recipients
+- Track notification recipients and read status
+- Manage user accounts and passwords
 - Store audit logs for system activities
-- Manage internal system configurations
+- Configure departments, subjects, and monthly due settings
 
 ---
 
@@ -116,10 +122,10 @@ The backend follows a layered architecture:
 
 | Layer | Responsibility |
 | --- | --- |
-| `controller` | Handle HTTP requests/responses |
-| `application` | DTOs, mappers, orchestration |
-| `domain` | Business models and services |
-| `infrastructure` | Persistence implementation |
+| `controller` | Handle HTTP requests and responses |
+| `application` | DTOs, mappers, service orchestration, and application rules |
+| `domain` | Domain models, repositories, enums, and domain services |
+| `config` | CORS, access control, async configuration, and sample data seeding |
 
 ---
 
@@ -128,10 +134,12 @@ The backend follows a layered architecture:
 | Folder | Responsibility |
 | --- | --- |
 | `pages` | Main application screens |
-| `components` | Reusable UI components |
+| `components` | Reusable UI, layout, and section components |
 | `services` | API communication layer |
 | `store` | Client-side state management |
-| `utils/hooks` | Utilities and reusable logic |
+| `data` | Local mock or static data used by screens |
+| `hooks` | Reusable React hooks |
+| `utils` | Shared utilities, API client, access control, and export helpers |
 
 ---
 
@@ -141,13 +149,13 @@ The backend follows a layered architecture:
 
 | Technology | Purpose |
 | --- | --- |
-| React 19 | UI Framework |
-| Vite 7 | Build Tool |
-| React Router | Routing |
-| Zustand | State Management |
-| TanStack Query | Server State |
-| Axios | HTTP Client |
-| CSS Modules | Component Styling |
+| React 19 | UI framework |
+| Vite 7 | Build tool |
+| React Router 7 | Routing |
+| Zustand 5 | Client-side state management |
+| TanStack Query 5 | Server state helpers |
+| Axios | HTTP client |
+| CSS Modules | Component styling |
 
 ---
 
@@ -155,11 +163,13 @@ The backend follows a layered architecture:
 
 | Technology | Purpose |
 | --- | --- |
-| Java 17 | Programming Language |
-| Spring Boot 4 | Backend Framework |
-| Spring Data JPA | ORM Layer |
+| Java 17 | Programming language |
+| Spring Boot 4.0.2 | Backend framework |
+| Spring Web MVC | REST API layer |
+| Spring Data JPA | ORM layer |
 | SQL Server | Database |
-| Maven | Dependency Management |
+| Maven Wrapper | Dependency management and build execution |
+| Lombok | Boilerplate reduction |
 
 ---
 
@@ -167,10 +177,12 @@ The backend follows a layered architecture:
 
 | Library | Usage |
 | --- | --- |
-| ExcelJS | Excel Export |
-| file-saver | File Download |
+| ExcelJS | Excel export |
+| file-saver | File download |
+| xlsx | Spreadsheet handling |
 | Lucide React | Icons |
-| JUnit | Testing |
+| JUnit / Spring Boot Test | Backend testing |
+| H2 | Backend test database |
 
 ---
 
@@ -181,13 +193,15 @@ club-management/
 ├── Backend/
 │   ├── src/main/java/com/example/demo/
 │   │   ├── application/
+│   │   ├── config/
 │   │   ├── controller/
 │   │   ├── domain/
-│   │   └── infrastructure/
+│   │   └── DemoApplication.java
 │   ├── src/main/resources/
-│   │   ├── application.properties
-│   │   └── db/migration/
+│   │   └── application.properties
 │   ├── src/test/
+│   ├── mvnw
+│   ├── mvnw.cmd
 │   └── pom.xml
 │
 ├── Frontend/
@@ -205,6 +219,8 @@ club-management/
 │   └── package.json
 │
 ├── package.json
+├── package-lock.json
+├── LICENSE
 └── README.md
 ```
 
@@ -259,25 +275,26 @@ Edit:
 Backend/src/main/resources/application.properties
 ```
 
-Example configuration:
+Current local configuration:
 
 ```properties
-spring.application.name=club-management
+spring.application.name=clubmanage
 
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=club_management;encrypt=true;trustServerCertificate=true
-spring.datasource.username=sa
-spring.datasource.password=your_password
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=clubmanage;integratedSecurity=true;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
+spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
 
-spring.jpa.hibernate.ddl-auto=none
+spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.use_nationalized_character_data=true
+
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+
+server.port=8081
 ```
 
-> If using an empty database, execute migration scripts inside:
->
-> ```text
-> Backend/src/main/resources/db/migration
-> ```
+The backend uses `SampleDataSeeder` to insert sample data when the main lookup/member tables are empty.
 
 ---
 
@@ -300,7 +317,7 @@ cd Backend
 Backend URL:
 
 ```text
-http://localhost:8080
+http://localhost:8081
 ```
 
 ---
@@ -325,29 +342,37 @@ http://localhost:5173
 Frontend uses the environment variable:
 
 ```env
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8081/api
 ```
 
-Create:
+Create this file when you need to override the default API URL:
 
 ```text
 Frontend/.env
 ```
 
-If not configured, the frontend will use:
+If not configured, the frontend uses:
 
 ```text
-http://localhost:8080/api
+http://localhost:8081/api
 ```
 
 ---
 
 # 👤 Sample Accounts
 
-| Role | Username | Email | Password |
-| --- | --- | --- | --- |
-| Admin | `admin` | `admin@club.test` | `admin123` |
-| Member | `member` | `member@club.test` | `member123` |
+When the database is empty, `SampleDataSeeder` creates sample users for the first seeded members.
+
+| User | Username | Password |
+| --- | --- | --- |
+| Seeded user 1 | `1` or `22130001` | `StudyHead@123` |
+| Seeded user 2 | `2` or `22130002` | `EventHead@123` |
+| Seeded user 3 | `3` or `22130003` | `Member01@123` |
+| Seeded user 4 | `4` or `22130004` | `Member02@123` |
+| Seeded user 5 | `5` or `22130005` | `Member03@123` |
+| Seeded user 6 | `6` or `22130006` | `Member04@123` |
+
+The login form sends `username` and `password`. The backend resolves a numeric username as a member ID first, then falls back to student ID lookup.
 
 > These accounts are intended for development environments only.
 
@@ -357,16 +382,24 @@ http://localhost:8080/api
 
 | Module | Endpoint |
 | --- | --- |
+| Authentication | `/api/auth` |
+| Users | `/api/users` |
+| Dashboard | `/api/dashboard` |
 | Members | `/api/members` |
 | Departments | `/api/departments` |
 | Roles | `/api/roles` |
 | Subjects | `/api/subjects` |
 | Events | `/api/events` |
 | Event Roles | `/api/event-roles` |
+| Event Organizers | `/api/event-organizers` |
+| Event Evaluations | `/api/event-evaluations` |
 | Finance | `/api/finance` |
 | Transactions | `/api/transactions` |
 | Documents | `/api/documents` |
+| Document Types | `/api/document-types` |
+| Document Files | `/api/document-files` |
 | Notifications | `/api/notifications` |
+| Notification Recipients | `/api/notification-recipients` |
 | Audit Logs | `/api/audit-logs` |
 | System Settings | `/api/system-settings` |
 
@@ -420,24 +453,24 @@ npm run preview
 # 📏 Development Conventions
 
 - Keep backend architecture aligned with:
-  
+
   ```text
-  controller → application → domain → infrastructure
+  controller -> application -> domain
   ```
 
 - Avoid coupling DTOs directly with persistence entities
-- Business logic should remain inside services/domain services
-- Frontend API calls should go through `src/services`
-- Shared UI components belong in `src/components/common`
+- Keep business rules inside application/domain services
+- Route frontend API calls through `src/services` and the shared API client in `src/utils/api.js`
+- Shared UI components belong in `src/components`
 - Never commit real credentials or sensitive information
 
 ---
 
 # 🛣️ Future Improvements
 
-- Add `/api/auth` authentication module
-- Integrate Spring Security + BCrypt
-- Standardize migrations with Flyway/Liquibase
+- Replace the current token helper with a stronger authentication mechanism
+- Integrate Spring Security and BCrypt password hashing
+- Standardize database changes with Flyway or Liquibase
 - Add OpenAPI / Swagger documentation
 - Expand automated testing coverage
 - Add CI/CD pipelines for linting, testing, and deployment
