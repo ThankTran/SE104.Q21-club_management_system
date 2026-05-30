@@ -27,7 +27,6 @@ export default function ResourceUserPage() {
   const [activeType, setActiveType]     = useState('Tất cả');
   const [activeFormat, setActiveFormat] = useState('Tất cả');
   const [activeSource, setActiveSource] = useState('Tất cả');
-  const [activeSubject, setActiveSubject] = useState('Tất cả');
   const [selectedCategory] = useState(null);
   const [selectedMajor, setSelectedMajor] = useState(null);
   const [selectedSubjectFolder, setSelectedSubjectFolder] = useState(null);
@@ -101,21 +100,46 @@ export default function ResourceUserPage() {
     };
   }, [currentUser?.memberId]);
 
-  // Derived data
-  const subjects = useMemo(
-    () => ['Tất cả', ...new Set(resources.map((r) => r.subject).filter(Boolean))].sort((a, b) =>
-      a === 'Tất cả' ? -1 : b === 'Tất cả' ? 1 : a.localeCompare(b)
-    ),
-    [resources]
-  );
-
   const selectedFolder = RESOURCE_LEAF_FOLDERS.find((folder) => folder.id === selectedFolderId);
+
+  const folderCounts = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    const counts = {};
+
+    resources
+      .filter(isApprovedResource)
+      .filter((r) => {
+        const matchSearch =
+          !q ||
+          String(r.title || '').toLowerCase().includes(q) ||
+          String(r.subject || '').toLowerCase().includes(q) ||
+          String(r.type || '').toLowerCase().includes(q) ||
+          String(r.format || '').toLowerCase().includes(q);
+
+        const matchType = activeType === "Tất cả" || r.type === activeType;
+        const matchFormat = activeFormat === "Tất cả" || r.format === activeFormat;
+        const matchSource = activeSource === "Tất cả" || r.source === activeSource;
+        return matchSearch && matchType && matchFormat && matchSource;
+      })
+      .forEach((r) => {
+        const folderId = resolveUserFolderId(r);
+        counts[folderId] = (counts[folderId] || 0) + 1;
+      });
+
+    return counts;
+  }, [
+    resources,
+    search,
+    activeType,
+    activeFormat,
+    activeSource,
+  ]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
 
     return resources
-      .filter((r) => r.status === "approved")
+      .filter(isApprovedResource)
       .filter((r) => {
         if (!selectedFolderId) return false;
         return resolveUserFolderId(r) === selectedFolderId;
@@ -131,9 +155,7 @@ export default function ResourceUserPage() {
         const matchType = activeType === "Tất cả" || r.type === activeType;
         const matchFormat = activeFormat === "Tất cả" || r.format === activeFormat;
         const matchSource = activeSource === "Tất cả" || r.source === activeSource;
-        const matchSubject = activeSubject === "Tất cả" || r.subject === activeSubject;
-
-        return matchSearch && matchType && matchFormat && matchSource && matchSubject;
+        return matchSearch && matchType && matchFormat && matchSource;
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [
@@ -142,7 +164,6 @@ export default function ResourceUserPage() {
     activeType,
     activeFormat,
     activeSource,
-    activeSubject,
     selectedFolderId,
   ]);
 
@@ -150,16 +171,15 @@ export default function ResourceUserPage() {
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Stats
-  const totalApproved = resources.filter((r) => r.status === 'approved').length;
+  const totalApproved = resources.filter(isApprovedResource).length;
   const totalSubjects = new Set(resources.map((r) => r.subject).filter(Boolean)).size;
 
-  const hasFilter = activeType !== 'Tất cả' || activeFormat !== 'Tất cả' || activeSource !== 'Tất cả' || activeSubject !== 'Tất cả';
+  const hasFilter = activeType !== 'Tất cả' || activeFormat !== 'Tất cả' || activeSource !== 'Tất cả';
 
   const resetFilters = () => {
     setActiveType('Tất cả');
     setActiveFormat('Tất cả');
     setActiveSource('Tất cả');
-    setActiveSubject('Tất cả');
     setSearch('');
     setPage(1);
   };
@@ -260,9 +280,10 @@ export default function ResourceUserPage() {
       )}
 
       {/* ══ MAIN LAYOUT: sidebar + content ══ */}
-      <div className={styles.layout}>
+      <div className={`${styles.layout} ${!selectedFolderId ? styles.folderOnlyLayout : ''}`}>
 
         {/* ── SIDEBAR ── */}
+        {selectedFolderId && (
         <aside className={styles.sidebar}>
           <div className={styles.sidebarInner}>
 
@@ -273,12 +294,12 @@ export default function ResourceUserPage() {
               </svg>
               <input
                 className={styles.searchInput}
-                placeholder="Tìm tài liệu, môn học..."
+                placeholder="Tìm tài liệu..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               />
               {search && (
-                <button className={styles.clearBtn} onClick={() => { setSearch(''); setPage(1); }}>✕</button>
+                <button className={styles.clearBtn} onClick={() => { setSearch(''); setPage(1); }}>×</button>
               )}
             </div>
 
@@ -321,30 +342,15 @@ export default function ResourceUserPage() {
               ))}
             </FilterSection>
 
-            {/* Môn học */}
-            <FilterSection title="Môn học">
-              <div className={styles.subjectScroll}>
-                {subjects.map((s) => (
-                  <FilterOption
-                    key={s}
-                    label={s}
-                    count={s === 'Tất cả' ? resources.length : resources.filter((r) => r.subject === s).length}
-                    active={activeSubject === s}
-                    onClick={() => handleFilter(setActiveSubject)(s)}
-                    small
-                  />
-                ))}
-              </div>
-            </FilterSection>
-
             {/* Reset */}
             {hasFilter && (
               <button className={styles.resetBtn} onClick={resetFilters}>
-                ✕ Xóa tất cả bộ lọc
+                × Xóa tất cả bộ lọc
               </button>
             )}
           </div>
         </aside>
+        )}
 
         {/* ── CONTENT ── */}
         <main className={styles.content}>
@@ -354,7 +360,7 @@ export default function ResourceUserPage() {
                 className={styles.backBtn}
                 onClick={() => {
                   setSelectedFolderId(null);
-                  setPage(1);
+                  resetFilters();
                 }}
               >
                 ← Quay lại
@@ -365,6 +371,7 @@ export default function ResourceUserPage() {
                   className={styles.breadcrumbLink}
                   onClick={() => {
                     setSelectedFolderId(null);
+                    resetFilters();
                   }}
                 >
                   Kho tài liệu
@@ -427,6 +434,7 @@ export default function ResourceUserPage() {
           {!selectedFolderId && (
             <ResourceFolderView
               selectedFolderId={selectedFolderId}
+              folderCounts={folderCounts}
               onSelectFolder={(folderId) => {
                 setSelectedFolderId(folderId);
                 setPage(1);
@@ -478,9 +486,6 @@ export default function ResourceUserPage() {
                 )}
                 {activeSource !== 'Tất cả' && (
                   <Chip label={activeSource} onRemove={() => handleFilter(setActiveSource)('Tất cả')} />
-                )}
-                {activeSubject !== 'Tất cả' && (
-                  <Chip label={activeSubject} onRemove={() => handleFilter(setActiveSubject)('Tất cả')} />
                 )}
               </div>
             )}
@@ -594,6 +599,11 @@ function resolveUserFolderId(resource) {
   ];
 
   return rules.find(([keyword]) => text.includes(keyword))?.[1] || 'nhap-mon-lap-trinh';
+}
+
+function isApprovedResource(resource) {
+  const status = String(resource.status || resource.reqStatus || '').toLowerCase();
+  return status === 'approved' || status === 'đã duyệt' || status === 'da duyet';
 }
 
 function StatPill({ icon, value, label }) {

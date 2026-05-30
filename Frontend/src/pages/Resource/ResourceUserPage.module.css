@@ -16,6 +16,7 @@
   padding: 36px 32px 32px;
   position: relative;
   overflow: hidden;
+  border-radius: 20px;
 }
 
 .hero::before {
@@ -185,6 +186,10 @@
   align-items: flex-start;
 }
 
+.folderOnlyLayout {
+  grid-template-columns: 1fr;
+}
+
 /* ── SIDEBAR ── */
 .sidebar {
   position: sticky;
@@ -350,6 +355,10 @@
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+}
+
+.folderOnlyLayout .content {
+  padding-left: 0;
 }
 
 /* Toolbar */

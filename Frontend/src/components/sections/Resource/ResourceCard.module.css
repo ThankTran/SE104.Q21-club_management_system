@@ -20,8 +20,8 @@
   display: flex;
   align-items: stretch;
   gap: 14px;
-  height: 100%;
-  padding: 16px 18px;
+  min-height: 90px;
+  padding: 14px 110px 48px 18px;
   background: var(--white-hard);
   border: 1px solid #e8edf3;
   border-radius: 14px;
@@ -53,8 +53,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 11px;
   flex-shrink: 0;
   gap: 2px;
@@ -75,14 +75,12 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .listTop {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  justify-content: space-between;
+  display: block;
+  min-height: 24px;
 }
 
 .listTitle {
@@ -114,7 +112,7 @@
   line-height: 1.55;
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -138,8 +136,16 @@
 .listDate {
   font-size: 11px;
   color: var(--gray-400);
-  margin-left: auto;
   white-space: nowrap;
+}
+
+.listCard .typeBadge {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  max-width: 112px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Arrow */
@@ -151,12 +157,12 @@
   background: var(--white-hard);
   border: 1px solid #e8edf3;
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px 16px 54px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 260px;
-  gap: 8px;
+  min-height: 210px;
+  gap: 6px;
   transition: box-shadow 0.2s ease, transform 0.15s ease, border-color 0.15s;
 }
 
@@ -182,7 +188,8 @@
   padding: 6px 10px;
   border-radius: 8px;
   align-self: flex-start;
-  margin-top: 8px;
+  margin-top: 6px;
+  max-width: calc(100% - 118px);
 }
 
 .gridFmtIcon { font-size: 16px; line-height: 1; }
@@ -219,7 +226,7 @@
   line-height: 1.55;
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex: 1;
@@ -228,17 +235,20 @@
 .gridFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 8px;
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid #f0f4f8;
 }
 
 .gridCard .typeBadge {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 12px;
+  right: 12px;
+  max-width: 116px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .gridDate {
@@ -266,6 +276,14 @@
   align-self: flex-end;
 }
 
+.gridCard .resourceLink,
+.listCard .resourceLinkCompact {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  margin-top: 0;
+}
+
 .resourceLink:hover {
   background: var(--primary-700);
   border-color: var(--primary-700);
@@ -274,8 +292,6 @@
 
 .resourceLinkCompact {
   flex-shrink: 0;
-  margin-top: auto;
-  align-self: flex-end;
 }
 
 .resourceLinkDisabled {

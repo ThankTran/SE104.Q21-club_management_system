@@ -1,7 +1,7 @@
 .folderTable {
   width: 100%;
   overflow: hidden;
-  border: 1px solid var(--gray-300);
+  border: 1px solid #e8edf3;
   border-radius: 16px;
   background: var(--white-hard);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
@@ -9,14 +9,19 @@
 
 .header {
   display: grid;
-  grid-template-columns: 96px 1fr;
+  grid-template-columns: minmax(0, 1fr) 64px;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-300);
-  background: var(--white-soft);
+  border-bottom: 1px solid #f0f4f8;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   color: var(--gray-700);
   font-size: 13px;
   font-weight: 800;
+}
+
+.header span:last-child {
+  text-align: right;
+  opacity: 0;
 }
 
 .tree {
@@ -33,7 +38,7 @@
   width: 100%;
   min-height: 46px;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
   align-items: center;
   gap: 10px;
   border: 0;
@@ -64,6 +69,49 @@
 
 .rowActive:hover {
   background: var(--primary-900);
+  color: var(--white-hard);
+}
+
+.countBadge {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.15s, transform 0.15s, background 0.15s, color 0.15s;
+}
+
+.countBadgeEmpty {
+  background: var(--gray-100);
+  color: var(--gray-400);
+}
+
+.row:hover .countBadge,
+.row:focus-visible .countBadge,
+.rowActive .countBadge {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.row:hover .countBadge,
+.row:focus-visible .countBadge {
+  background: var(--white-hard);
+  color: var(--primary-700);
+}
+
+.rowActive .countBadge,
+.rowActive:hover .countBadge {
+  background: rgba(255, 255, 255, 0.18);
   color: var(--white-hard);
 }
 
@@ -102,13 +150,19 @@
 
 @media (max-width: 700px) {
   .header {
-    grid-template-columns: 70px 1fr;
+    grid-template-columns: minmax(0, 1fr) 48px;
     padding: 14px;
   }
 
   .row {
-    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-columns: 32px minmax(0, 1fr) 36px;
     gap: 8px;
+  }
+
+  .countBadge {
+    min-width: 26px;
+    padding: 0 7px;
+    font-size: 11px;
   }
 
   .name {
