@@ -46,10 +46,11 @@ export default function ResourceCard({ resource, viewMode = 'list' }) {
 
         {description && <p className={styles.gridDesc}>{description}</p>}
 
+        <span className={styles.typeBadge} style={{ background: ts.bg, color: ts.color }}>
+          {type}
+        </span>
+
         <div className={styles.gridFooter}>
-          <span className={styles.typeBadge} style={{ background: ts.bg, color: ts.color }}>
-            {type}
-          </span>
           <span className={styles.gridDate}>{dateStr}</span>
         </div>
 
